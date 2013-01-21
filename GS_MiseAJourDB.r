@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-06 17:38:06 Laura>
+# Time-stamp: <2013-01-21 14:55:06 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -26,8 +26,6 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
 
 "import.tableaux" <- function(prep.tbl=TRUE) {
 
-  require(gdata) # package avec fonction read.xls()
-  
   # noms des objets correspondants sous R
   # attention ne pas changer ces noms car ils sont utilises dans plusieurs fonctions
   obj.names <- c("data.inv","bioeco","data.poissons","data.LIT","index.LIT","info.transect",

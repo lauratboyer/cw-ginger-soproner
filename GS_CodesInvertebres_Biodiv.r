@@ -1,6 +1,6 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 # ** Indices de biodiversité ** 
-# Time-stamp: <2013-01-08 17:18:03 Laura>
+# Time-stamp: <2013-01-21 14:45:51 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -90,8 +90,8 @@ inv.biodiv <- function(qunit="St",wC="all",save=FALSE) {
   
   if(save) {
     taxotag <- taxotagFunk()
-    write.xlsx(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodivPar",qunit,"_",taxotag,
-                          Sys.Date(),".xlsx",sep=""),row.names=FALSE) }
+    write.csv(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodivPar",qunit,"_",taxotag,
+                          Sys.Date(),".csv",sep=""),row.names=FALSE) }
   return(all.bioFN)
 }
 
@@ -152,8 +152,8 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
       ftag <- paste("_Filtre_",AS,"_",sep="")
       gtag <- gsub("N_","",paste(ff[-1],collapse="-"))
       taxotag <- taxotagFunk()  
-      write.xlsx(dd.geo.both,file=paste(tabl.dir,"Inv_IndexBiodiv_",gtag,ftag,taxotag,
-                         Sys.Date(),".xlsx",sep=""),row.names=FALSE) }
+      write.csv(dd.geo.both,file=paste(tabl.dir,"Inv_IndexBiodiv_",gtag,ftag,taxotag,
+                         Sys.Date(),".csv",sep=""),row.names=FALSE) }
   }
 
   ### 3. ########################################################
@@ -255,8 +255,8 @@ inv.sprich.tbl <- function(AS="A",grtax="Grp2",save=FALSE, filtre=FALSE) {
     # définir info filtre pour nom de fichier
     ftag <- c("_Filtre_Absent_",paste("_Filtre_",AS,"_",sep=""))[filtre + 1]
     taxotag <- taxotagFunk()
-    write.xlsx(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParGeomorph_",grtax, ftag,taxotag, 
-                            Sys.Date(),".xlsx",sep=""),row.names=FALSE)}
+    write.csv(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParGeomorph_",grtax, ftag,taxotag, 
+                            Sys.Date(),".csv",sep=""),row.names=FALSE)}
   return(tb.all)
   }
 
@@ -287,7 +287,7 @@ sprich.by.aggrtaxo <- function(AS="A", grtax="Grp2", filtre=TRUE, save=FALSE) {
     # définir info filtre pour nom de fichier
     ftag <- c("_Filtre_Absent_",paste("_Filtre_",AS,"_",sep=""))[filtre + 1]
     taxotag <- taxotagFunk()
-    write.xlsx(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParAggrTaxon",grtax, ftag,taxotag, 
-                            Sys.Date(),".xlsx",sep=""),row.names=FALSE)}
+    write.csv(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParAggrTaxon",grtax, ftag,taxotag, 
+                            Sys.Date(),".csv",sep=""),row.names=FALSE)}
   return(tb.all)
   }

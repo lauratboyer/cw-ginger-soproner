@@ -1,7 +1,7 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 ## ** Tableaux/graphiques de densité ** ##
 
-# Time-stamp: <2013-01-08 08:56:30 Laura>
+# Time-stamp: <2013-01-21 14:46:55 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -128,12 +128,8 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
   if(save) {
     ftag <- paste("_Filtre_",AS,"_",sep="")
     taxotag <- taxotagFunk()
-    if(grtax == "G_Sp"){
     write.csv(tb.all,file=paste(tabl.dir,"Inv_DensiteParST_",grtax,ftag,taxotag,
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
-  } else {
-    write.xlsx(tb.all,file=paste(tabl.dir,"Inv_DensiteParST_",grtax,ftag,taxotag,
-                            Sys.Date(),".xlsx",sep=""),row.names=FALSE) }
   }
 
   ### 5. ###############################

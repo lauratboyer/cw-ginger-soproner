@@ -1,17 +1,20 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-08 16:34:48 Laura>
+# Time-stamp: <2013-01-21 15:07:57 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
 
 # Mettre cette option à TRUE si vous voulez produire *toutes* les analyses, ou FALSE si vous
 # voulez ajuster certaines fonctions manuellement, ou tourner seulement certains des codes
-tourner.tout <- FALSE
+# tourner.tout <- FALSE # cette option n'est pas encore en place
 
-# Définition des variables principales pour l'analyse
+# Définition des variables principales pour l'analyse:
+
+### Filtre sur ANNEES ###
 filtre.annees <- 2006:2012 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
                            # exemples de format: c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
+### Filtre sur ESPECES ###
 filtre.sur.especes <- TRUE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
   
@@ -21,20 +24,19 @@ if(filtre.sur.especes) {
        }else{
          taxoF.incl <- "inclure"; taxoF.utaxo <- "Grp2"; taxoF.nom <- "tous" }
 
-sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
+### Sorties à produire ###
+sorties.INV <- TRUE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
 sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
 sorties.POISSONS <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 # Dossier où les analyses sont faites, et qui contient le code R et les graphiques/tableaux produits
-dossier.R <- ifelse(usernow=="Antoine", "C:/dossier.R/","/Users/Laura/Documents/Projects/Soproner_Noumea/Code-R/")
-#dossier.R <- "C:/Users/Utilisateur/Documents/Laura/KNS/dossier.R/" # pour ordi de Sara T-B
+dossier.R <- ifelse(usernow=="Antoine", "C:/dossier.R/","/Users/Laura/Projects/cw-ginger-soproner/")
 
 # Dossier de sauvegarde Dropbox
 dossier.DB <- ifelse(usernow=="Antoine","C:/dossier.DB/",
                      "/Users/Laura/Dropbox/KNS_GINGER-SOPRONER/DB_Dernieres_Versions/")
-#dossier.DB <- "C:/Users/Utilisateur/Documents/Laura/KNS/dossier.DB/"
 
-options('stringsAsFactors'=FALSE)
+options('stringsAsFactors'=FALSE) # option générale ôte les colonnes de type "factor" lors de l'import des données
 ######################################################
 ######################################################
 setwd(dossier.R) # défini le working directory de R
@@ -60,11 +62,6 @@ if(!(exists("data.read"))) import.tableaux()
 if(exists("data.read")) if(!data.read) import.tableaux()
 # (par défaut import.tableaux() lance la fonction prep.analyse()
 # ... une fois les tableaux importés de la DB DropBox)
-
-# Définir le filtre sur especes, seulement si l'objet "filtre.sur.especes" n'est pas "FALSE"
-#!!!! lancer manuellement filtre.especes("oui") ou filtre.especes() !!!!!!!
-#if(!filtre.sur.especes) { filtre.especes() }else{ filtre.especes("oui") }
-#filtre.especes() # temporaire en attendant de réparer filtre.especes()
 
 # Lancer les analyses
 if(sorties.INV) { Run.INV.biodiv(); Run.INV.densite() }

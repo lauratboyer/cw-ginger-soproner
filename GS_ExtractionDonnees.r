@@ -1,6 +1,6 @@
   ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-08 17:24:59 Laura>
+# Time-stamp: <2013-01-21 15:04:46 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -12,12 +12,8 @@ tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
 prep.analyse <- function() {
 
-  library(reshape)
-  library(dataframes2xls)
-  library(xlsx) # permet d'ecrire des .xlsx sans guillements
-  # objet INVnames.Key contient la conversion des Grp/S_Grp sans accents:
-  load(paste(dossier.R,"GS_TableauxNomsInvertebres.Rdata",sep=""),.GlobalEnv) 
-  
+  lp <- require(reshape) # load package reshape
+  if(!lp) install.packages("reshape") # installe reshape si requis
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
