@@ -1,6 +1,6 @@
   ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-21 15:04:46 Laura>
+# Time-stamp: <2013-06-26 15:47:24 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -28,21 +28,25 @@ prep.analyse <- function() {
   if(!exists("last")) {
   last <<- function(x) x[length(x)]
 }
-  
+
+  # remove trailing and leading zeroes
+  if(!exists("trim")) { #clumsy regexp
+      trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
+
   ####################################
   ###### Information transects #######
   ####################################
   # info.transect: informations sur les transects
   info.transect$cpus <- info.transect$Prod_ha # nouvelle colonne pour le cpus
-  
+
   # Nettoyer accents noms géométrie
   geom.key <- data.frame("Geom"=unique(info.transect$Geom),
                          "Geomorpho"=c("Recif barriere externe","Recif barriere interne",
                            "Recif reticule","Recif frangeant","Passe","Herbiers"))
   print("make geom.key robust to unique order of info.transect$Geom")
   info.transect <- merge(info.transect, geom.key, by="Geom")
-  
-  ########### Données LIT ############  
+
+  ########### Données LIT ############
   ####################################
   # data.LIT: données brutes LIT
   # index.LIT: info complementaires LIT
@@ -58,7 +62,7 @@ prep.analyse <- function() {
   ###### Information biologie/écologie poissons #######
   #####################################################
   # bioeco.all: info complémentaires sur les poissons
-  
+
   bioeco.all <- bioeco[,c("Code_Sp","famille","genre","espece","taille_moy","commercial_2",
                         "cible_VKP","a","b","groupe_troph1","mobilite")]
   names(bioeco.all) <- c("Code_SP","Famille","Genre","Espece","Taille","Peche","Cible",
@@ -75,7 +79,7 @@ prep.analyse <- function() {
   bioeco.all$fmlabel <- NA
   bioeco.all$fmlabel[bioeco.all$Famille=="POMACENTRIDAE"] <- "Pom"
   bioeco.all$fmlabel[bioeco.all$Famille=="CHAETODONTIDAE"] <- "Chaet"
-  
+
   # Rajouter info groupes trophiques:
   GT.label <- data.frame("Groupe_Trophique"=c("P","C","Z","H"),
                        "GTlabel"=c("Pisc","Carn","Planct","Herb"))
@@ -140,14 +144,14 @@ prep.analyse <- function() {
   # ... reunion avec données poissons pour rajouter les densité nulles
   data.poissons2 <- merge(all.comb.poissons,data.poissons,by=c("Campagne","St","Code_SP"),all.x=TRUE)
   data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
-  data.poissons <- data.poissons2 
+  data.poissons <- data.poissons2
 
-  
+
   ##########################################
   #### Données de comptage Invertébrés #####
   ##########################################
   # data.inv: données de comptage brutes pour invertébrés
-  
+
   dbio <- data.inv[,c("Campagne","St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans")]
   dbio$St <- toupper(data.inv$St)
 
@@ -155,13 +159,13 @@ prep.analyse <- function() {
   # nettoyage:
   # garde seulement les rangées avec transects A, B, C
   nTnd <- nrow(dbio[!(dbio$T %in% c("A","B","C")),])
-  dbio <- dbio[dbio$T %in% c("A","B","C"),]; print(paste("Approx",nTnd,"rangees otees vu transect non-def"))               
-  
+  dbio <- dbio[dbio$T %in% c("A","B","C"),]; print(paste("Approx",nTnd,"rangees otees vu transect non-def"))
+
   ############################
   # abondances nulles:
   # commencer par oter les rangées N=0 pour eliminer les stations où l'espèce n'est observée sur aucun T
   dbio <- dbio[dbio$N > 0,]
-  
+
   # rajouter les transects N=0 *seulement* lorsque l'espèce est observée sur la ST mais pas tous les transects
   # créer identifiant unique pour chaque combinaison campagne/st/espèce observée
   dbio$uID <- paste(dbio$Campagne,dbio$St,dbio$G_Sp,sep="_")
@@ -174,15 +178,15 @@ prep.analyse <- function() {
 
   ################
   # Oter les accents des noms des invertébrés pour éviter les erreurs dûes à l'encodage
-  # Si l'encodage UTF-8 est bien lu par l'ordi (les accents apparaissent correctement)    
+  # Si l'encodage UTF-8 est bien lu par l'ordi (les accents apparaissent correctement)
   dbio$Grp2 <- gsub("é","e",capitalize(tolower(trim(dbio$Grp2))))
   dbio$S_Grp2 <- gsub("é","e",dbio$S_Grp2)
   dbio$S_Grp2 <- gsub("è","e",dbio$S_Grp2)
   dbio$S_Grp2 <- gsub("ï","i",dbio$S_Grp2)
   dbio$S_Grp2 <- capitalize(tolower(trim(dbio$S_Grp2)))
-  #dbio$F2 <- 
+  #dbio$F2 <-
   print("trouver signe pour Pterasteridae")
-        
+
   # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire à <U+00E9>)
   # Conversion à encodage latin1 qui permet de substituer les charactères
   if("UTF-8" %in% unique(Encoding(dbio$Grp2))) {
@@ -200,7 +204,7 @@ prep.analyse <- function() {
   dbio$F2 <- capitalize(tolower(dbio$F2))
   dbio$G2 <- capitalize(tolower(dbio$G2))
 
-  # Renommer colonnes F2 et G2      
+  # Renommer colonnes F2 et G2
   names(dbio)[grep("F2",names(dbio))] <- "Famille"
   names(dbio)[grep("G2",names(dbio))] <- "Genre"
 
@@ -217,22 +221,22 @@ prep.analyse <- function() {
   dbio <- merge(dbio, ltrans.ind, by=c("Campagne","St","T"))
   dbio <- dbio[,!(names(dbio)=="Ltrans")]
   names(dbio)[names(dbio)=="Ltrans.new"] <- "Ltrans"
-   
+
   # rassembler en 1 rangée les observations de la même espèce sur le transect
   dbio <- aggregate(list("N"=dbio$N), as.list(dbio[,c("Campagne","St","T","Grp2","S_Grp2",
                            "Famille","Genre","G_Sp","Ltrans")]), sum)
-  
+
   # Calculer la densité en hectares
   # longueur du transect est de 50 mètres, largeur est définie sous Ltrans
   dbio$D <- dbio$N/(50*dbio$Ltrans) * 10000
- 
+
   ########################
   ### Tableaux annexes ###
 
   # clés noms des invertébrés
   InvGr.Key <- c("Algues","Ascidies","Cnidaires","Crustac?s","Echinodermes",
                  "Eponges","Mollusques","Phan?rogame","Vers")
-  
+
   # tableau index pour la taxonomie de toutes les espèces observée:
   index.invSp <- unique(dbio[,c("G_Sp","Genre","Famille","S_Grp2","Grp2")])
 
@@ -258,7 +262,7 @@ prep.analyse <- function() {
   # filtre.Camp: tableau des campagnes à utiliser pour analyses temporelles
   # modif après discussion avec Antoine 12 Octobre 2012:
   # re-créer tableau filtre à partir des années désirées pour l'analyse
-  
+
   creerFiltre <- function(qAnnees) {
 
     if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
@@ -280,12 +284,12 @@ prep.analyse <- function() {
                                    }else{
                                      wStat <- tb2$St[which(na.omit(tb3==1))]}
     T_A_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
-    
+
     return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv))
   }
 
   filtre.Camp <<- creerFiltre(filtre.annees)
-  
+
   ###################################################
   ######## Fonctions génériques #####################
   # Définition de fonctions qui seront utilisées couramment dans le code
@@ -361,7 +365,7 @@ prep.analyse <- function() {
       print("Pas de filtre sur espèces appliqué")
     } else { print(paste(c("Filtre sur espèces",capitalize(action),taxtype,
                            paste(taxnom,collapse=", ")),collapse=" :: ")) }
-    
+
     return(wtable)
   }
 
@@ -397,7 +401,7 @@ prep.analyse <- function() {
       taxotag <- paste(paste(abbreviate(c(capitalize(taxoF.incl), taxoF.nom)), collapse="-"),"_",sep="")
       return(taxotag) }
   }
-    
+
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
@@ -409,7 +413,7 @@ prep.analyse <- function() {
   bioeco <<- bioeco
   bioeco.all <<- bioeco.all
   pr.Bacip <<- pr.Bacip
-  
+
   # Tag TRUE when data read with no bugs
   data.read <<- TRUE
   wd.now <- dossier.R
