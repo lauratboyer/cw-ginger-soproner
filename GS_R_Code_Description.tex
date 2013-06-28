@@ -1,0 +1,234 @@
+\documentclass{article}
+\usepackage{Sweave}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+
+\begin{document}
+\newcommand{\mcode} {\texttt{GS\_MotherCode.r}}
+\hyphenation{GS\_-Mother-Code.r}
+
+\noindent {\Large \bfseries Code R pour l'analyse des données KNS}
+
+\section{Survol}
+
+\subsection*{Réglages initiaux}
+Pour lancer le code et produire tous les tableaux/graphiques,
+commencez par créer deux dossiers à l'emplacement de votre choix: 
+\begin{enumerate}
+      \item un dossier où les analyses R sont faites
+      [\texttt{dossier.R}], et qui contiendra les fichiers R requis par
+      les analyses
+  \item un dossier où les dernières versions des bases de données sont
+    sauvegardées \texttt{[dossier.DB]} (ce dossier doit être
+    synchronisé avec DropBox)
+     \end{enumerate}
+     \\
+     Une fois ces dossiers créés, placez dans le fichier \texttt{dossier.R}  le contenu du dossier
+\texttt{GS\_KNS\_Code-R} (disponible sous
+\texttt{DropBox/KNS\_GINGER-SOPRONER}). \\
+
+
+Ouvrez le fichier \texttt{GS\_MotherCode.r} \footnote{Un fichier .r
+  peut être modifié sous NotePad ou l'éditeur 
+compris avec R. Si vous programmez plus souvent, \emph{TINN-R} et \emph{R-Studio}
+sont deux alternatives disponibles gratuitement. Ces logiciels
+permettent non seulement 
+d'éditer sous R, mais aussi d'interagir plus facilement avec la
+console. } et définissez la valeur des objets \\ \texttt{dossier.R} et \texttt{dossier.DB}
+en fonction de l'emplacement choisi pour ces dossiers.
+Pour voir un exemple du format accepté par R pour la
+  définition de l'emplacement de dossiers, tapez dans la console R: 
+\begin{Schunk}
+\begin{Sinput}
+> getwd() # montre le working directory
+\end{Sinput}
+\end{Schunk}
+  \noindent Le symbole \texttt{\#} dénote le début d'un commentaire non-exécuté
+par R.\\
+
+
+\noindent \emph{Note:} Lorsque non-existants, une fonction dans \texttt{GS\_MotherCode.r} crée
+automatiquement les trois dossiers
+suivants dans le \texttt{dossier.R}: \emph{Tableaux},
+\emph{Graphiques} and \emph{Data}. \\
+
+   \subsection*{Routine de lancement des sorties de base}   
+   
+   Dans le fichier \mcode, s'assurez que les variables sont bien définies dans
+   la première section. Notamment, les variables
+   \texttt{sorties.INV}, \texttt{sorties.LIT} et
+   \texttt{sorties.POISSONS} devraient avoir la valeur \texttt{TRUE} si vous
+   voulez produire les sorties associées, ou \texttt{FALSE} dans le
+   cas opposé. La variable \texttt{filtre.sur.especes} contrôle les
+   espèces incluses dans l'analyse: lorsque sa valeur est
+   \texttt{FALSE} toutes les espèces sont incluses (voir prochaine
+   section). 
+   
+  Vérifiez aussi que l'objet \texttt{tourner.tout} (défini dans \mcode) a la valeur \texttt{TRUE} si vous voulez
+tout tourner immédiatement, ou \texttt{FALSE} si vous voulez
+charger les fonctions sous R et tourner certains
+aspects de l'analyse manuellement. 
+\\
+Ouvrez R \footnote{Une courte introduction aux concepts de bases de R peut
+  se trouver dans les Sections 1 et 2 du document \emph{SimpleR}, disponible
+  à l'adresse suivante:
+  \url{cran.r-project.org/doc/contrib/Verzani-SimpleR.pdf} (voir aussi
+  les autres sections qui survolent plusieurs applications
+  statistiques).}, et chargez le fichier \mcode {} avec la commande
+\texttt{source()}. 
+  En début de session seulement, donnez
+  l'emplacement complet de la fonction \texttt{GS\_MotherCode.r} (donc
+  remplacez ... par l'emplacement du \texttt{dossier.R}).
+. 
+
+\begin{Schunk}
+\begin{Sinput}
+> source(".../GS_KNS_MotherCode.r")
+\end{Sinput}
+\end{Schunk}
+
+\emph{Note}: La première fois que vous lancerez le code, il vous
+faudra installer certaines librairies R (vous aurez comme message d'erreur:
+\texttt{there is no package called ...}). \\
+\\
+
+\noindent {\color{red}Important!!} Vous devez charger le fichier \mcode {} au moins
+une fois en début de session, car ce fichier installe toutes les fonctions nécéssaires à la production des
+sorties et défini plusieurs
+variables utilisées dans l'analyse. 
+
+\subsection*{Rajouter un filtre sur les espèces}
+Si vous désirez inclure ou exclure de l'analyse certains groupes
+taxonomiques, mettez l'option \texttt{filtre.sur.especes =
+  TRUE}. Lorsque \mcode {} est lancé, R vous
+demandera automatiquement de spécifier les valeurs du filtre sur
+espèces (voir exemple ci-bas). Pour changer ces valeurs manuellement,
+vous pouvez également lancez
+vous même la fonction: 
+
+\begin{Schunk}
+\begin{Sinput}
+> filtre.especes("oui") 
+\end{Sinput}
+\end{Schunk}
+
+\texttt{\color{MidnightBlue} Inclure ou exclure? } \\
+\indent \indent \texttt{Inclure } \\
+\\
+\indent \texttt{\color{MidnightBlue} Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece)} \\
+\indent \indent \texttt{Grp2}\\
+\\
+\indent \texttt{\color{MidnightBlue} Nom?} \\
+\indent \indent \texttt{Crustaces, Mollusques, Echinodermes}\\
+\\
+
+\noindent Attention: lorsque \texttt{filtre.sur.especes =
+  FALSE}, lancer \texttt{GS\_KNS\_MotherCode.r} ôtera automatiquement
+le filtre enregistré au préalable. Pour ôter \emph{temporairement} ce comportement,
+vous pouvez rajoutez un \# devant la ligne qui exécute cette fonction,
+en prenant bien soin de l'ôter avant de quitter R pour qu'elle soit
+active lors de la prochaine session. \\
+\\
+\texttt{\#if(!filtre.sur.especes)\{filtre.especes()\}else\{filtre.especes("oui")\}}
+
+\begin{comment}
+\subsection*{Modifier les requêtes lancées par défaut}
+Le fichier \texttt{GS\_CodesInvertebres\_Launch.r} doit être édité
+pour modifier les requêtes lancées par défaut. 
+
+... 
+\end{comment}
+
+\section{Concepts utiles sous R}
+\subsection * {Fonctions}
+Le terme \emph{fonction} sous R dénomme un objet contenant une ou plusieurs
+lignes de codes qui performent une tâche spécifiée par le programmeur
+(sous Excel on appellerait ça une macro). Une fonction
+est très utile lorsqu'on veut répéter les mêmes lignes de code
+en ne changeant qu'un seul aspect à chaque fois, ou lorsqu'on veut pouvoir
+lancer une analyse complexe en ne tapant qu'une seule commande. Par exemple si je veux
+faire le même graphique pour les Crustacés, Mollusques et
+Échinodermes, je pourrais taper les même ligne de codes 3 fois en
+changeant les termes `Crustaces', Mollusques', etc., ou bien je pourrais
+écrire une fonction qui prend en \emph{argument} le groupe (taxonomique). 
+Par exemple: 
+\begin{Schunk}
+\begin{Sinput}
+> fonction.exemple <- function(x) x * 2 
+> fonction.exemple(4)
+\end{Sinput}
+\begin{Soutput}
+[1] 8
+\end{Soutput}
+\end{Schunk}
+\texttt{function()} est une fonction de base R utilisée pour 
+indiquer qu'on défini un objet de type ``function", qu'il s'appelle ``fonction.exemple",
+qu'il prend en argument ``x" et qu'il multiplie cet argument par la
+valeur 2.
+
+\begin{Schunk}
+\begin{Sinput}
+> fonction.exemple() 
+\end{Sinput}
+\end{Schunk}
+\begin{Schunk}
+\begin{Soutput}
+Error in x * 2 : 'x' is missing
+\end{Soutput}
+\end{Schunk}
+Ici ``x" n'a pas de valeur par défaut, donc R retourne un message
+d'erreur. Lorsqu'on définit une valeur par défaut pour \texttt{x}
+(e.g. \texttt{x=3}, voir ci-bas), 
+lancer \texttt{fonction.exemple()} ne retourne plus de message
+d'erreur, mais bien la valeur $6$. 
+\begin{Schunk}
+\begin{Sinput}
+> fonction.exemple <- function(x=3) x * 2 
+> fonction.exemple()
+\end{Sinput}
+\begin{Soutput}
+[1] 6
+\end{Soutput}
+\end{Schunk}
+
+Pour voir les valeurs par défaut définies dans les fonctions,
+vérifiez si les arguments sont suivis par un \texttt{$=$}, ou pas. Si vous lancez une
+fonction et ne définissez pas un des arguments, R prendra la valeur
+définie par défaut ou donnera un message d'erreur (si absente). A
+faire attention, donc: lorsque vous lancez des fonctions manuellement
+il faut s'assurer que les valeurs définies correspondent bien à ce que vous
+voulez produire. 
+
+
+\begin{comment}
+\section{Visualiser un tableau sous R}
+
+De plus, pour visualiser un des tableaux produits directement sous R,
+il suffit de lancer la commande manuellement dans la console comme
+suit: 
+
+... 
+
+Pour voir les premières (ou dernières) 6 lignes du tableau, utiliser
+la commande \texttt{head} (ou \texttt{tail}): 
+
+... et pour voir le tableau au complet vous tapez le nom de l'objet
+dans la console. 
+
+
+Pour sélectionnez seulement les lignes où la station à la valeur ... 
+
+... et si vous vouliez seulement voir les colonnes ... 
+
+Les opérateurs logiques sous R sont: 
+== est égal à 
+!= n'est pas égal à 
+x \& y les deux conditions doivent être respectées
+x | y l'une ou l'autre des conditions doivent être respectées
+\end{comment}
+
+\end{document}

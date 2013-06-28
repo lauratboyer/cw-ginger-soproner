@@ -1,6 +1,6 @@
   ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-28 09:25:40 Laura>
+# Time-stamp: <2013-06-28 10:02:20 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -21,7 +21,7 @@ prep.analyse <- function() {
   ### Fonctions utiles pour formattage
   if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
   capitalize <<- function(x) {
-    gsub('(\\w)(\\w*)','\\U\\1\\L\\2',tolower(x),perl=TRUE) }}
+    gsub('(\\w)(\\w*)','\\U\\1\\L\\2',x,perl=TRUE) }}
 
   if(!exists("getmatch")) { # extrait la partie correspondante au match
       getmatch <<- function(x,str2match,...) {
@@ -91,6 +91,10 @@ prep.analyse <- function() {
   mob.label <- data.frame("Mobilite"=0:4,"moblabel"=c("Mob.0","Terr","Sed","Mob","TrMob"))
   bioeco.all <- merge(bioeco.all,mob.label,by="Mobilite",all.x=TRUE)
 
+  # Ajuster si besoin le format pour les noms d'espèces:
+  bioeco.all[,c("Famille","Genre","Espece")] <-
+      sapply(bioeco.all[,c("Famille","Genre","Espece")], capitalize)
+
   # Tableau bioeco, info a + b seulement
   bioeco <- data.bioeco[,c("Code_Sp","a","b")]
   names(bioeco) <- c("Code_SP","a","b") # compatibilité avec data.poissons
@@ -118,8 +122,11 @@ prep.analyse <- function() {
   data.poissons$L <- as.numeric(data.poissons$L)
 
   # Ajuster si besoin le format pour les noms d'espèces:
-  data.poissons$G_Sp <- gsub('(\\w)(\\w*)','\\U\\1\\L\\2',tolower(data.poissons$G_Sp),perl=TRUE) # Lettre majuscule en premier seulement
-  data.poissons$St <- toupper(data.poissons$St) # Toutes les stations en majuscules
+  data.poissons[,c("Famille","Genre","Espece","G_Sp")] <-
+      sapply(data.poissons[,c("Famille","Genre","Espece","G_Sp")], capitalize)
+
+  # Toutes les stations en majuscules
+  data.poissons$St <- toupper(data.poissons$St)
 
   # Nettoyage du tableau: colonne D1/D2/N/L
   # Espèces sans Code_SP défini ôtées
@@ -160,6 +167,7 @@ prep.analyse <- function() {
 
   dbio <- data.inv[,c("Campagne","St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans")]
   dbio$St <- toupper(data.inv$St)
+  names(dbio) <- c("Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp","N","D","Ltrans")
 
   ############################
   # nettoyage:
@@ -175,8 +183,8 @@ prep.analyse <- function() {
   # rajouter les transects N=0 *seulement* lorsque l'espèce est observée sur la ST mais pas tous les transects
   # créer identifiant unique pour chaque combinaison campagne/st/espèce observée
   dbio$uID <- paste(dbio$Campagne,dbio$St,dbio$G_Sp,sep="_")
-  index.dbio <- unique(dbio[,c("uID","Campagne","St","Grp2","S_Grp2",
-                               "F2","G2","G_Sp","D","Ltrans")])
+  index.dbio <- unique(dbio[,c("uID","Campagne","St","Groupe","S_Groupe",
+                               "Famille","Genre","G_Sp","D","Ltrans")])
   dbio.allT <- expand.grid("T"=c("A","B","C"),"uID"=unique(dbio$uID),
                            stringsAsFactors=FALSE)
   dbio.tmp <- merge(dbio[,c("uID","T","N")],dbio.allT,by=c("uID","T"),all.y=TRUE)
@@ -186,38 +194,34 @@ prep.analyse <- function() {
   ################
   # Oter les accents des noms des invertébrés pour éviter les erreurs dûes à l'encodage
   # Si l'encodage UTF-8 est bien lu par l'ordi (les accents apparaissent correctement)
-  dbio$Grp2 <- gsub("é","e",capitalize(tolower(trim(dbio$Grp2))))
-  dbio$S_Grp2 <- gsub("é","e",dbio$S_Grp2)
-  dbio$S_Grp2 <- gsub("è","e",dbio$S_Grp2)
-  dbio$S_Grp2 <- gsub("ï","i",dbio$S_Grp2)
-  dbio$S_Grp2 <- capitalize(tolower(trim(dbio$S_Grp2)))
-  #dbio$F2 <-
+  dbio$Groupe <- gsub("é","e",capitalize(tolower(trim(dbio$Groupe))))
+  dbio$S_Groupe <- gsub("é","e",dbio$S_Groupe)
+  dbio$S_Groupe <- gsub("è","e",dbio$S_Groupe)
+  dbio$S_Groupe <- gsub("ï","i",dbio$S_Groupe)
+  dbio$S_Groupe <- capitalize(tolower(trim(dbio$S_Groupe)))
+  #dbio$Famille <-
   print("trouver signe pour Pterasteridae")
 
   # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire à <U+00E9>)
   # Conversion à encodage latin1 qui permet de substituer les charactères
-  if("UTF-8" %in% unique(Encoding(dbio$Grp2))) {
-    dbio$Grp2 <- iconv(dbio$Grp2,"UTF-8","latin1")
-    dbio$S_Grp2 <- iconv(dbio$S_Grp2,"UTF-8","latin1")
-    dbio$F2 <- iconv(dbio$F2,"UTF-8","latin1")
-    dbio$Grp2 <- gsub("<e9>","e",dbio$Grp2) # remplace e accent aigu
-    dbio$S_Grp2 <- gsub("<e9>","e",dbio$S_Grp2) # remplace e accent aigu
-    dbio$S_Grp2 <- gsub("<e8>","e",dbio$S_Grp2) # remplace e accent grave
-    dbio$S_Grp2 <- gsub("<ef>","i",dbio$S_Grp2) # remplace i accent trema
-    dbio$F2 <- gsub("<a0>","",dbio$F2) # remplace ae
+  if("UTF-8" %in% unique(Encoding(dbio$Groupe))) {
+    dbio$Groupe <- iconv(dbio$Groupe,"UTF-8","latin1")
+    dbio$S_Groupe <- iconv(dbio$S_Groupe,"UTF-8","latin1")
+    dbio$Famille <- iconv(dbio$Famille,"UTF-8","latin1")
+    dbio$Groupe <- gsub("<e9>","e",dbio$Groupe) # remplace e accent aigu
+    dbio$S_Groupe <- gsub("<e9>","e",dbio$S_Groupe) # remplace e accent aigu
+    dbio$S_Groupe <- gsub("<e8>","e",dbio$S_Groupe) # remplace e accent grave
+    dbio$S_Groupe <- gsub("<ef>","i",dbio$S_Groupe) # remplace i accent trema
+    dbio$Famille <- gsub("<a0>","",dbio$Famille) # remplace ae
   }
   # Première lettre en majuscule, le reste en minuscules
   dbio$G_Sp <- capitalize(tolower(dbio$G_Sp))
-  dbio$F2 <- capitalize(tolower(dbio$F2))
-  dbio$G2 <- capitalize(tolower(dbio$G2))
-
-  # Renommer colonnes F2 et G2
-  names(dbio)[grep("F2",names(dbio))] <- "Famille"
-  names(dbio)[grep("G2",names(dbio))] <- "Genre"
+  dbio$Famille <- capitalize(tolower(dbio$Famille))
+  dbio$Genre <- capitalize(tolower(dbio$Genre))
 
   # Correction d'erreur dans la base de données (temporaire)
   # tableau index espèce/sous-groupe/groupe
-  dbio[dbio$G_Sp %in% c("Paguritta sp.", "Ciliopagurus strigatus"),"S_Grp2"] <- "Decapodes"
+  dbio[dbio$G_Sp %in% c("Paguritta sp.", "Ciliopagurus strigatus"),"S_Groupe"] <- "Decapodes"
   dbio[dbio$G_Sp == "Drupa sp.","Famille"] <- "Muricidae"
   dbio[dbio$G_Sp == "Aplysia sp.","Famille"] <- "Aplysiidae"
   print("sous groupe de ciliopagurus strigatus devrait etre decapode et non crustace?, aussi fixed pour Drupa sp. et typo dans Aplysia sp.")
@@ -230,7 +234,7 @@ prep.analyse <- function() {
   names(dbio)[names(dbio)=="Ltrans.new"] <- "Ltrans"
 
   # rassembler en 1 rangée les observations de la même espèce sur le transect
-  dbio <- aggregate(list("N"=dbio$N), as.list(dbio[,c("Campagne","St","T","Grp2","S_Grp2",
+  dbio <- aggregate(list("N"=dbio$N), as.list(dbio[,c("Campagne","St","T","Groupe","S_Groupe",
                            "Famille","Genre","G_Sp","Ltrans")]), sum)
 
   # Calculer la densité en hectares
@@ -245,7 +249,7 @@ prep.analyse <- function() {
                  "Eponges","Mollusques","Phan?rogame","Vers")
 
   # tableau index pour la taxonomie de toutes les espèces observée:
-  index.invSp <- unique(dbio[,c("G_Sp","Genre","Famille","S_Grp2","Grp2")])
+  index.invSp <- unique(dbio[,c("G_Sp","Genre","Famille","S_Groupe","Groupe")])
 
   ################
   # infos sur station/mission/année
@@ -361,9 +365,9 @@ prep.analyse <- function() {
 
   # Filtre les donnees analysees par groupe taxonomique lorsque specifie
   filtreTaxo <<- function(wtable,action="inclure",
-                          taxtype="Grp2",taxnom="tous") {
+                          taxtype="Groupe",taxnom="tous") {
 
-      if(action == "inclure" & taxtype == "Grp2" & any(taxnom %in% "tous")) {
+      if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "tous")) {
       # Pas de filtre
       print("Pas de filtre sur especes applique")
           } else {
@@ -385,7 +389,7 @@ prep.analyse <- function() {
 
     if(aF == "tous") {
        taxoF.incl <<- "inclure"
-       taxoF.utaxo <<- "Grp2"
+       taxoF.utaxo <<- "Groupe"
        taxoF.nom <<- "tous"
      } else {
        print("Definition des filtres taxonomiques:")
@@ -393,8 +397,8 @@ prep.analyse <- function() {
     taxoF.incl <<- tolower(readLines(file("stdin"),1))
     cat("Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) ")
     taxoF.utaxo <<- capitalize(tolower(readLines(file("stdin"),1)))
-       if(taxoF.utaxo == "Groupe") taxoF.utaxo <<- "Grp2"
-       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Grp2"
+       if(taxoF.utaxo == "Groupe") taxoF.utaxo <<- "Groupe"
+       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Groupe"
        if(taxoF.utaxo == "Espece") taxoF.utaxo <<- "G_Sp"
     cat("Nom? ")
     taxoF.nom <<- readLines(file("stdin"),1) }
@@ -405,7 +409,7 @@ prep.analyse <- function() {
   # Cette fonction retourne une version abbrégée des noms des groupes taxonomiques
   # inclus (ou exclus) au besoin
   taxotagFunk <<- function() {
-    if(taxoF.incl=="inclure" & taxoF.utaxo == "Grp2" & any(taxoF.nom %in% "Tous")) {
+    if(taxoF.incl=="inclure" & taxoF.utaxo == "Groupe" & any(taxoF.nom %in% "Tous")) {
       return("") # si tous les groupes sont inclus, ne pas modifier le nom de fichiers
     } else {
       taxotag <- paste(paste(abbreviate(c(capitalize(taxoF.incl), taxoF.nom)), collapse="-"),"_",sep="")

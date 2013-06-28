@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-06-28 09:30:20 Laura>
+# Time-stamp: <2013-06-28 12:42:01 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -78,7 +78,7 @@ poissons.tableau.brut <- function(save=FALSE) {
                   "GTlabel","moblabel")]
 
   # renommer colonnes
-  names(tb.2) <- c("An","Campagne","Campagne.ID","St","Plongeur","Zone.Impact","Geomorpho",
+  names(tb.2) <- c("An","Campagne.Type","Campagne","St","Plongeur","Zone.Impact","Geomorpho",
                   "CPUS","Effort","Tx.Sed","Profondeur",
                   "Donnees.LIT","Code_SP","Famille","Genre","Espece","N","L","D1","D2",
                   "Peche","Cible","Coeff.a","Coeff.b","dens.obs","bio.obs",
@@ -159,21 +159,21 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
 # sédentaire (sed), territoriale (ter), mobile (mo), très mobile (tmo)
 # cible pêche nouvelle-calédonie, ou non
 
-poissons.ts1 <- function(save=FALSE) {
+poissons.ts1 <- function(AS="A",save=FALSE) {
 
   if(!exists("BDtable")) BDtable <<- BioDens.sp.poissons()
   dfh <- BDtable # produit par BioDens.sp.poissons()
 
   ### Appliquer filtre sur campagnes
   wf <- paste("T",AS,"poissons",sep="_") # colonne du filtre
-  dd.filt <- filtreTable(ds.df, wf)
+  dfh <- filtreTable(dfh, wf)
 
   ### Appliquer filtre sur espèces
-  dbn <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+  dfh <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Formatter
-  dfh$Seen <- 0 + BDtable$allN>0 # colonne pour présence/absence
-  ds.tmpl <- unique(BDtable[,c("St","Campagne")])
+  dfh$Seen <- 0 + dfh$allN>0 # colonne pour présence/absence
+  ds.tmpl <- unique(dfh[,c("St","Campagne")])
   ds.tmpl <- ds.tmpl[order(ds.tmpl$St, ds.tmpl$Campagne),]
 
   aggr.funk <- function(wm="mean",facteur="total") {
@@ -243,10 +243,10 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
 
   ### Appliquer filtre sur campagnes
   wf <- paste("T",AS,"poissons",sep="_") # colonne du filtre
-  dd.filt <- filtreTable(ds.df, wf)
+  ds.df <- filtreTable(ds.df, wf)
 
   ### Appliquer filtre sur espèces
-  dbn <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+  ds.df <- filtreTaxo(ds.df, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Toutes années/stations confondues
   alltog <- aggregate(list("TtStAn"=ds.df$dens),
