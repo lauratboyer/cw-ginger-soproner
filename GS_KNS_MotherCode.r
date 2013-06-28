@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-21 15:07:57 Laura>
+# Time-stamp: <2013-06-28 09:07:53 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -17,7 +17,7 @@ filtre.annees <- 2006:2012 # indiquer quelles années à inclure dans l'analyse 
 ### Filtre sur ESPECES ###
 filtre.sur.especes <- TRUE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
-  
+
        taxoF.incl <- "inclure"
        taxoF.utaxo <- "Grp2"
        taxoF.nom <- c("Crustaces","Mollusques","Echinodermes")
@@ -25,7 +25,7 @@ if(filtre.sur.especes) {
          taxoF.incl <- "inclure"; taxoF.utaxo <- "Grp2"; taxoF.nom <- "tous" }
 
 ### Sorties à produire ###
-sorties.INV <- TRUE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
+sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
 sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
 sorties.POISSONS <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
@@ -56,7 +56,8 @@ source("GS_CodesInvertebres_Launch.r") # contient la fonction Run.INV.biodiv()
 source("GS_CodesInvertebres_Densite.r")
 source("GS_CodesInvertebres_Biodiv.r")
 
-# si l'objet "data.read" n'existe pas, ou data.read existe, mais a la valeur FALSE,
+# si l'objet "data.read" n'existe pas, ou data.read existe,
+# mais a la valeur FALSE,
 # (ré)extraire et (re)formatter les données
 if(!(exists("data.read"))) import.tableaux()
 if(exists("data.read")) if(!data.read) import.tableaux()

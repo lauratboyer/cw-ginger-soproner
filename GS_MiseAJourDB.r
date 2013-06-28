@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-01-21 14:55:06 Laura>
+# Time-stamp: <2013-06-27 11:09:13 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -28,8 +28,8 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
 
   # noms des objets correspondants sous R
   # attention ne pas changer ces noms car ils sont utilises dans plusieurs fonctions
-  obj.names <- c("data.inv","bioeco","data.poissons","data.LIT","index.LIT","info.transect",
-                 "pr.Bacip")
+  obj.names <- c("data.inv","data.bioeco","data.poissons","data.LIT",
+                 "index.LIT","data.info.transect","pr.Bacip")
 
   # objet synthèse pour les noms de fichiers
   obj.files <- c(fc.inv,fc.bioeco,fc.poissons,fc.LIT,fc.typoLIT,fc.transect,fc.Bacip)#,fc.filtre)
@@ -42,7 +42,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   DBinf.now <- lapply(type.tbl,function(x)
                     file.info(paste(dossier.DB,obj.files[x],sep=""))$mtime)
   names(DBinf.now) <- type.tbl
-  
+
   # Chargement des dates de modifications précédentes
   if(!(file.exists(paste(dossier.donnees,"FichiersDropBox_DatesModif.Rdata",sep="")))) {
     memeVersion <- rep(TRUE,length(type.tbl)) # importer tous les fichiers de DB
@@ -72,7 +72,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   # Imprimer avertissement au sujet des guillements: s'il y a des guillements non-fermés dans les
   # fichiers excels l'import du tableau ne sera pas correct -- e.g. "pomme" est ok, mais pas pomme"
   print("Attention: s'assurer que tous les guillements sont fermés dans les fichiers Excel")
-  
+
   ############################################################
   ############################################################
   # Tous les tableaux sont maintenant à jour -> chargement sous R pour débuter les analyses

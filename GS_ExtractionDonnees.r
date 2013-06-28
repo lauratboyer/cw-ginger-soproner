@@ -1,6 +1,6 @@
   ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-26 15:47:24 Laura>
+# Time-stamp: <2013-06-28 09:25:40 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -19,17 +19,19 @@ prep.analyse <- function() {
   #######################################################################
 
   ### Fonctions utiles pour formattage
-  if(!exists("capitalize")) {
+  if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
   capitalize <<- function(x) {
-    gsub('(\\w)(\\w*)','\\U\\1\\L\\2',tolower(x),perl=TRUE)
-  }
-}
+    gsub('(\\w)(\\w*)','\\U\\1\\L\\2',tolower(x),perl=TRUE) }}
 
-  if(!exists("last")) {
-  last <<- function(x) x[length(x)]
-}
+  if(!exists("getmatch")) { # extrait la partie correspondante au match
+      getmatch <<- function(x,str2match,...) {
+          unlist(regmatches(x,regexpr(str2match,x,...))) }}
 
-  # remove trailing and leading zeroes
+  if(!exists("last")) { # dernier element de l'objet
+  last <<- function(x) x[length(x)] }
+
+  # ote les espaces au debut et apres un charactere
+  # e.g. "  Famille " -> "Famille"
   if(!exists("trim")) { #clumsy regexp
       trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
 
@@ -37,6 +39,7 @@ prep.analyse <- function() {
   ###### Information transects #######
   ####################################
   # info.transect: informations sur les transects
+  info.transect <- data.info.transect # extraire tableau brut
   info.transect$cpus <- info.transect$Prod_ha # nouvelle colonne pour le cpus
 
   # Nettoyer accents noms géométrie
@@ -62,8 +65,7 @@ prep.analyse <- function() {
   ###### Information biologie/écologie poissons #######
   #####################################################
   # bioeco.all: info complémentaires sur les poissons
-
-  bioeco.all <- bioeco[,c("Code_Sp","famille","genre","espece","taille_moy","commercial_2",
+  bioeco.all <- data.bioeco[,c("Code_Sp","famille","genre","espece","taille_moy","commercial_2",
                         "cible_VKP","a","b","groupe_troph1","mobilite")]
   names(bioeco.all) <- c("Code_SP","Famille","Genre","Espece","Taille","Peche","Cible",
                        "Coeff_a","Coeff_b","Groupe_Trophique","Mobilite")
@@ -90,7 +92,7 @@ prep.analyse <- function() {
   bioeco.all <- merge(bioeco.all,mob.label,by="Mobilite",all.x=TRUE)
 
   # Tableau bioeco, info a + b seulement
-  bioeco <- bioeco[,c("Code_Sp","a","b")]
+  bioeco <- data.bioeco[,c("Code_Sp","a","b")]
   names(bioeco) <- c("Code_SP","a","b") # compatibilité avec data.poissons
 
   # Vérifier s'il y a des espèces de poissons sans valeurs a ou b:
@@ -104,6 +106,9 @@ prep.analyse <- function() {
   names(data.poissons) <- c("Campagne","Date","St","Obs","Vis","Courant","Code_SP",
                           "Famille","Genre","Espece","G_Sp","N","L","D1","D2",
                           "Secteur","Categorie","Note")
+
+  # rajout année de la campagne
+  data.poissons$An <- getmatch(data.poissons$Campagne,"[0-9]+")
 
   ########################
   # Nettoyage du tableau:
@@ -137,15 +142,16 @@ prep.analyse <- function() {
   # ... l'espèce est non-observée
   all.comb.poissons <- expand.grid("Campagne"=unique(data.poissons$Campagne),
                                    "St"=unique(data.poissons$St),
-                                   "Code_SP"=unique(data.poissons$Code_SP))
+                                   "Code_SP"=unique(data.poissons$Code_SP),
+                                   stringsAsFactors=FALSE)
   St.by.year <- unique(data.poissons[,c("Campagne","St")]) # year/station samples
   all.comb.poissons <- merge(all.comb.poissons, St.by.year, by=c("Campagne","St"))
 
   # ... reunion avec données poissons pour rajouter les densité nulles
-  data.poissons2 <- merge(all.comb.poissons,data.poissons,by=c("Campagne","St","Code_SP"),all.x=TRUE)
+  data.poissons2 <- merge(all.comb.poissons,
+                          data.poissons,by=c("Campagne","St","Code_SP"),all.x=TRUE)
   data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
   data.poissons <- data.poissons2
-
 
   ##########################################
   #### Données de comptage Invertébrés #####
@@ -171,7 +177,8 @@ prep.analyse <- function() {
   dbio$uID <- paste(dbio$Campagne,dbio$St,dbio$G_Sp,sep="_")
   index.dbio <- unique(dbio[,c("uID","Campagne","St","Grp2","S_Grp2",
                                "F2","G2","G_Sp","D","Ltrans")])
-  dbio.allT <- expand.grid("T"=c("A","B","C"),"uID"=unique(dbio$uID))
+  dbio.allT <- expand.grid("T"=c("A","B","C"),"uID"=unique(dbio$uID),
+                           stringsAsFactors=FALSE)
   dbio.tmp <- merge(dbio[,c("uID","T","N")],dbio.allT,by=c("uID","T"),all.y=TRUE)
   dbio.tmp$N[is.na(dbio.tmp$N)] <- 0 # valeurs NA remplacées par 0 pour remplir les transects manquants
   dbio <- merge(dbio.tmp, index.dbio)
@@ -353,18 +360,21 @@ prep.analyse <- function() {
     }
 
   # Filtre les donnees analysees par groupe taxonomique lorsque specifie
-  filtreTaxo <<- function(wtable,action="inclure",taxtype="Grp2",taxnom="tous") {
+  filtreTaxo <<- function(wtable,action="inclure",
+                          taxtype="Grp2",taxnom="tous") {
 
-    if(any(taxnom %in% index.invSp[,taxtype])) {
-      if(action == "inclure") {
+      if(action == "inclure" & taxtype == "Grp2" & any(taxnom %in% "tous")) {
+      # Pas de filtre
+      print("Pas de filtre sur especes applique")
+          } else {
+      # On filtre les rangees selon les especes/groupes taxo specifie
+      print(paste(c("Filtre sur espèces",capitalize(action),taxtype,
+                    paste(taxnom,collapse=", ")),collapse=" :: "))
+
+      if(action == "inclure") { # inclusion des groupes X
       wtable <- wtable[wtable[,taxtype] %in% taxnom,]
-    } else {
+      } else { # exclusion des groupes X
       wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}
-
-    if(action == "inclure" & taxtype == "Grp2" & any(taxnom %in% "tous")) {
-      print("Pas de filtre sur espèces appliqué")
-    } else { print(paste(c("Filtre sur espèces",capitalize(action),taxtype,
-                           paste(taxnom,collapse=", ")),collapse=" :: ")) }
 
     return(wtable)
   }
@@ -408,6 +418,7 @@ prep.analyse <- function() {
   info.transect <<- info.transect
   info.transect.INV <<- info.transect.INV
   info.transect.INV.geo <<- info.transect.INV.geo
+  dpoissons <<- data.poissons
   dbio <<- dbio
   index.invSp <<- index.invSp
   bioeco <<- bioeco

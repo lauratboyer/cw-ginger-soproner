@@ -1,113 +1,118 @@
 # Ginger/Soproner
-# Time-stamp: <2013-06-26 15:41:46 Laura>
-#library(XLConnect) # pas pour le moment
+# Code pour calcul des densités et indices de biodiversité pour les poissons
+# Time-stamp: <2013-06-28 09:30:20 Laura>
 
-setwd("/Users/Laura/Documents/Projects/Soproner_Noumea")
-# Extraction tableaux des bases de données
+setwd(dossier.R)
+fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
+tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
+
+ # Extraction tableaux des bases de données
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
-# Définition lien fichiers pour sauvegarder graphiques/tableaux
-fig.dir <- "/Users/Laura/Documents/Projects/Soproner_Noumea/Graphiques/"
-tabl.dir <- "/Users/Laura/Documents/Projects/Soproner_Noumea/Tableaux/"
-
-library(plotrix)
-
-# Fichiers des données de comptage = data.poissons
+# Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 
 ########################################
-############# TABLEAUX #################
-########################################
+############# Tableaux #################
 
-tableau.brut <- function(save=FALSE) {
+# reformattage du tableau des données de comptage initial
+poissons.tableau.brut <- function(save=FALSE) {
 
   # Calcul de densité et de biomasse par observation/espèce/transect/campagne
   # Formule de distance sampling ajustée pour les observations individuelles
   # D.obs = N/(2xdm.obsxL); dm.obs= 0.5*(d1+d2) + 0.5
   # Bio.obs = N*a*T^b/(2xdm.obsxL)
 
-  # par défaut mais changer une fois que la colonne est ajoutée dans poissons.xls
+  # par défaut mais changer une fois que la colonne est ajoutée
+  # dans poissons.csv
   LT <- 50 # Longueur du transect
-  fc <- c("Campagne","St","Code.SP")
+  fc <- c("Campagne","An","St","Code_SP")
 
-  ds.calc <- data.poissons[,c(fc,"OBSERVATEUR","NOMBRE","TAILLE","D1","D2")]
-  names(ds.calc)[names(ds.calc)=="NOMBRE"] <- "N" # renommer colonne NOMBRE
-  print(paste(nrow(ds.calc[!(ds.calc$Code.SP %in% bioeco$Code.SP),]),
-              "rangées sans info bioeco"))
-  print(unique(ds.calc[!(ds.calc$Code.SP %in% bioeco$Code.SP),"Code.SP"]))
-  ds.calc <- merge(ds.calc, bioeco, by="Code.SP")
+  ds.calc <- dpoissons[,c(fc,"Obs","N","L","D1","D2")]
+  print(paste(nrow(ds.calc[!(ds.calc$Code_SP %in% bioeco$Code_SP),]),
+              "rangees sans info bioeco"))
+  ds.calc <- merge(ds.calc, bioeco, by="Code_SP")
 
   # Densité/biomasse par *observation*
   ds.calc$dm.obs <-  0.5*(ds.calc$D1+ds.calc$D2)+0.5 # dm.observation
   ds.calc$dens.obs <- ds.calc$N/(2*ds.calc$dm.obs*LT) # densité.observation
-  ds.calc$bio.obs <- ds.calc$N *ds.calc$a*(ds.calc$TAILLE^ds.calc$b)/(2*ds.calc$dm.obs*LT)
+  ds.calc$bio.obs <- ds.calc$N *ds.calc$a*(ds.calc$L^ds.calc$b)/(2*ds.calc$dm.obs*LT)
 
-  # ** Assemblage ** PRODUIT 1 ** Tableau données brutes **
+  # ** Assemblage ** Tableau données brutes **
   # Densité/biomasse par observation/espèce/transect/année/campagne
-  tb.1 <- ds.calc[,c("Campagne","St","Code.SP","OBSERVATEUR","N",
-                     "dens.obs","bio.obs","D1","D2","TAILLE","a","b")]
+  tb.1 <- ds.calc[,c("Campagne","An","St","Code_SP","Obs","N",
+                     "dens.obs","bio.obs","D1","D2","L","a","b")]
 
   # Joint à:
-  # Charactéristiques du transect: année/campagne/transect/plongeur/zone impact/...
+  # Charactéristiques du transect:
+  # année/campagne/transect/plongeur/zone impact/...
   # ... géomorphologie/pêche cpue/pêche effort/taux de sédimentation/...
   # profondeur moyenne (Z),
-  print("rajouter *taux sédimentation* au tableau brut poissons")
-
+  print("rajouter *taux sedimentation* au tableau brut poissons")
   tb.1 <- merge(tb.1,
-                info.transect[,c("St","Geomorpho","N_Impact","cpus","Effort_ha","Z")],
+                info.transect[,c("St","Geomorpho","N_Impact","cpus",
+                                 "Effort_ha","Z")],
                 by="St")
-  tb.1$Tx.Sed <- NA
+  tb.1$Tx.Sed <- "Non dispo"
 
   # + Données lit
-  print("rajouter données LIT au tableau brut poissons")
-  tb.1$Donnees.LIT <- NA
+  print("rajouter donnees LIT au tableau brut poissons")
+  tb.1$Donnees.LIT <- "Non dispo"
 
   # + Charactéristiques de l'espèce: code_espèce/famille/genre/espèce/...
   # ... état commercial/groupe trophique
-  tb.2 <- merge(tb.1, bioeco.all[,c("Code.SP","Famille","Genre","Espece",
+  tb.2 <- merge(tb.1, bioeco.all[,c("Code_SP","Famille","Genre","Espece",
                                     "Peche","Cible","GTlabel","moblabel")],
-                by="Code.SP",sort=FALSE)
+                by="Code_SP",sort=FALSE)
 
-  tb.2$An <- apply(sapply(2006:2011, function(x) x*grepl(x, tb.2$Campagne)),1,sum)
-  tb.2$Camp <- gsub("(\\w)(\\w*)","\\U\\1",tb.2$Campagne,perl=TRUE)
+  tb.2$Camp <- "Annuelle" # type de campagne
+  tb.2$Camp[grepl("^S",tb.2$Campagne)] <- "Semestrielle"
 
-  tb.2$Camp[tb.2$Camp == "S"] <- "semestrielle"
-  tb.2$Camp[tb.2$Camp == "A"] <- "annuelle"
+  tb.2 <- tb.2[order(tb.2$Camp,tb.2$St, tb.2$Code_SP),] # re-ordonner
 
-  tb.2 <- tb.2[order(tb.2$Camp,tb.2$St, tb.2$Code.SP),]
-
-  tb.2 <- tb.2[,c("An","Camp","Campagne","St","OBSERVATEUR","N_Impact","Geomorpho",
+  # selectionner colonnes a conserver
+  tb.2 <- tb.2[,c("An","Camp","Campagne","St","Obs","N_Impact","Geomorpho",
                   "cpus","Effort_ha","Tx.Sed","Z",
-                  "Donnees.LIT","Code.SP","Famille","Genre","Espece","N","TAILLE","D1","D2",
-                  "Peche","Cible","a","b","dens.obs","bio.obs","GTlabel","moblabel")]
+                  "Donnees.LIT","Code_SP","Famille","Genre","Espece",
+                  "N","L","D1","D2",
+                  "Peche","Cible","a","b","dens.obs","bio.obs",
+                  "GTlabel","moblabel")]
 
+  # renommer colonnes
   names(tb.2) <- c("An","Campagne","Campagne.ID","St","Plongeur","Zone.Impact","Geomorpho",
                   "CPUS","Effort","Tx.Sed","Profondeur",
-                  "Donnees.LIT","Code.SP","Famille","Genre","Espece","N","TAILLE","D1","D2",
+                  "Donnees.LIT","Code_SP","Famille","Genre","Espece","N","L","D1","D2",
                   "Peche","Cible","Coeff.a","Coeff.b","dens.obs","bio.obs",
                    "Groupe.Trophique","Groupe.Mobil")
 
-  tb.2.0 <<- tb.2[tb.2$N>0,]
-  # garde seulement observations N>0 pour réduire la taille du fichier .xls
-  # déclare tb.2 dans l'environnement global (pour fct write.xls)
+  tb.2s0 <- tb.2[tb.2$N>0,]
+  # garde seulement observations N>0 pour réduire la taille du fichier .csv
+
+  # Filtrer les espèces au besoin
+  dbn <- filtreTaxo(tb.2s0, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   if(save) {
-  # write.csv(t2b,file=paste(tabl.dir,
-  # "GS_Poissons_TableauDonnéesBrutes_",Sys.Date(),".csv",sep=""),
-  # row.names=FALSE)
-  write.xls(tb.2.0,file=paste(tabl.dir,
-  "GS_Poissons_TableauDonnéesBrutes_",Sys.Date(),".xls",sep=""))
-  }
-
+  write.csv(tb.2s0,file=paste(tabl.dir,
+  "GS_Poissons_TableauDonneesBrutes_",Sys.Date(),".csv",sep=""),
+  row.names=FALSE) }
   return(tb.2) }
 
-BD.by.sp <- function() {
 
-  # Calculate density/biomass by *species/transect/campagne* (not by observation)(??)
-  fc <- c("Campagne","St","Code.SP")
+##################################################
+##################################################
+# Tableau préparatoire pour utilisation par
+# TS1.poissons() et TS2.poissons
+# Calcul des densites/biomasses par campagne/transect/espece
+# utilise ds.calc produit par poissons.tableau.brut()
+
+BioDens.sp.poissons <- function() { # formerly BD.by.sp()
+
+  # Calcul densite/biomasse par espece/transect/campagne
+  fc <- c("Campagne","St","Code_SP")
   LT <- 50 # Longueur du transect
 
   ds.calc$dm.int <- ds.calc$N * (0.5*(ds.calc$D1+ds.calc$D2)+0.5)
-  ds.list <- list("Campagne"=ds.calc$Campagne.ID,"St"=ds.calc$St,"Code.SP"=ds.calc$Code.SP)
+  ds.list <- list("Campagne"=ds.calc$Campagne.ID,"St"=ds.calc$St,
+                  "Code_SP"=ds.calc$Code_SP)
   num.dm <- aggregate(ds.calc$dm.int,ds.list,sum)
   denom.dm <- aggregate(ds.calc$N,ds.list,sum)
   ds.df <- data.frame(num.dm[,fc], "dm"=num.dm$x/denom.dm$x)
@@ -115,39 +120,59 @@ BD.by.sp <- function() {
   ds.df$allN <- denom.dm$x # nombre individus total espèce/site/campagne
 
   # Calcul de la biomasse:
-  ds.calc$bio.int <- ds.calc$N * ds.calc$Coeff.a * ds.calc$TAILLE^ds.calc$Coeff.b
+  ds.calc$bio.int <- ds.calc$N * ds.calc$Coeff.a * ds.calc$L^ds.calc$Coeff.b
   num.bio <- aggregate(ds.calc$bio.int, ds.list, sum)
   ds.df$biomasse <- num.bio$x/(2*ds.df$dm*LT) # Biomasse
 
   # Calcul de la taille moyenne:
-  ds.calc$TM <- ds.calc$N*ds.calc$TAILLE
+  ds.calc$TM <- ds.calc$N*ds.calc$L
   ds.df$taille.moy <- aggregate(ds.calc$TM,ds.list,sum)[,"x"]/ds.df$allN
 
-  # Set biomasse/density to 0 if allN = 0, leave taille.moy at NA
-  # (we want taille.moy of observed individuals)
+  # Biomasse/Dens -> zero si allN=0 mais laisser la taille.moy a NA
+  # pour que les moyennes de tailles soient calculees sur les individus
+  # observés seulements
   ds.df[ds.df$allN==0,c("dens","biomasse")] <- 0
 
   # ordonner par campagne/sites
   ds.df <- ds.df[order(ds.df$St, ds.df$Campagne),]
 
+  # rajouter colonnes infos additionelles
+  facteurs <- c("An","St","Zone.Impact","Geomorpho","Code_SP",
+                "Peche","Groupe.Trophique","Groupe.Mobil","Cible")
+  ttble <- unique(ds.calc[,c("Campagne.ID",facteurs)])
+  names(ttble)[1] <- "Campagne"
+  BDtable.i <- merge(ds.df,ttble,c("Campagne","St","Code_SP"))
+  BDtable <- merge(BDtable.i,bioeco.all[,c("Code_SP","Famille","Genre","fmlabel")],
+                   by="Code_SP")
+
+  return(BDtable)
 }
 
-
+################################################
+################################################
+# Tableau synthèse 1:
+# moyenne et écart type pour: densité (d), biomasse (b),
+# richesse spécifique (rs), taille moyenne (tm)
+# calculé sur:
+# toutes espèces confondues (tot), commerciales (com), carnivore (car),
+# herbivore (her), piscivore (pis), planctonophage (pla),
+# sédentaire (sed), territoriale (ter), mobile (mo), très mobile (tmo)
+# cible pêche nouvelle-calédonie, ou non
 
 poissons.ts1 <- function(save=FALSE) {
 
-  # PRODUIT 2:
-  # Tableau synthèse 1:
-  # moyenne et écart type pour: densité (d), biomasse (b),
-  # richesse spécifique (rs), taille moyenne (tm)
-  # calculé sur:
-  # toutes espèces confondues (tot), commerciales (com), carnivore (car),
-  # herbivore (her), piscivore (pis), planctonophage (pla),
-  # sédentaire (sed), territoriale (ter), mobile (mo), très mobile (tmo)
-  # cible pêche nouvelle-calédonie, ou non
+  if(!exists("BDtable")) BDtable <<- BioDens.sp.poissons()
+  dfh <- BDtable # produit par BioDens.sp.poissons()
 
-  dfh <- BDtable;
-  dfh$Seen <- 0+ifelse(BDtable$allN==0,0,1) # colonne pour présence/absence
+  ### Appliquer filtre sur campagnes
+  wf <- paste("T",AS,"poissons",sep="_") # colonne du filtre
+  dd.filt <- filtreTable(ds.df, wf)
+
+  ### Appliquer filtre sur espèces
+  dbn <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+
+  # Formatter
+  dfh$Seen <- 0 + BDtable$allN>0 # colonne pour présence/absence
   ds.tmpl <- unique(BDtable[,c("St","Campagne")])
   ds.tmpl <- ds.tmpl[order(ds.tmpl$St, ds.tmpl$Campagne),]
 
@@ -157,7 +182,9 @@ poissons.ts1 <- function(save=FALSE) {
 
     # liste de facteurs
     flist <- list("Campagne"=dfh[,"Campagne"],"St"=dfh[,"St"])
-    if(facteur!="total") flist[[facteur]] <- dfh[,facteur] # rajoute facteur explicatif si specifie
+    # rajoute facteur explicatif si specifie
+    if(facteur!="total") flist[[facteur]] <- dfh[,facteur]
+
 
     # aggrégation par facteur
     if(wm=="richness") { frez <- aggregate(list("sp.rich"=dfh[,"Seen"]), flist, sum)
@@ -176,8 +203,6 @@ poissons.ts1 <- function(save=FALSE) {
     # fondre dans tableau cadre avec tous les facteurs
     frez.lab <- names(frez)
     frez.lab <- frez.lab[!(frez.lab %in% c("Campagne","St","biomasse","dens","taille.moy"))]
-
-
 
     frez.b <- merge(ds.tmpl,frez,by=c("St","Campagne"),all=TRUE)
     frez.c <- as.data.frame(frez.b[,frez.lab]); names(frez.c) <- frez.lab
@@ -199,74 +224,69 @@ poissons.ts1 <- function(save=FALSE) {
   richness.all <- do.call(data.frame,lapply(vcat, function(i) aggr.funk(wm="richness",facteur=i)))
   df.all <- data.frame(ds.tmpl[,c("Campagne","St")],mean.all,sd.all,richness.all)
   df.all <- merge(info.transect[,c("St","Geomorpho","N_Impact","cpus","Effort_ha")],df.all,by="St")
-  df.all <<- df.all # declare globally for write.xls function
 
-  if(save) write.xls(df.all,file=paste(tabl.dir,"GS_Poissons_TS1_",Sys.Date(),".xls",sep=""))
+  if(save) write.csv(df.all,file=paste(tabl.dir,"GS_Poissons_TS1_",Sys.Date(),".csv",sep=""),
+                     row.names=FALSE)
   return(df.all)
 }
 
-# PRODUIT 3
+################################################
+################################################
 # Tableau synthèse 2:
 # pour chaque espèce, moyenne de densité pour chaque année et totale,
 # pour chaque station et totale
 
-poissons.ts2 <- function(save=FALSE) {
+poissons.ts2 <- function(AS="A",save=FALSE) {
 
-  ds.df <- BDtable
+  if(!exists("BDtable")) BDtable <<- BioDens.sp.poissons()
+  ds.df <- BDtable # produit par BioDens.sp.poissons()
 
-  # Filtrer les stations pour garder les stations répétées sur toutes les campagnes annuelles
-  wfiltre <- "T_A_poissons"; print(paste("stations filtrées par",wfiltre))
-  fdf <- data.frame(filtre.Camp[,wfiltre]); names(fdf) <- "key"
-  st.keep <- merge(fdf,index.Camp)
-  ds.df <- merge(st.keep, ds.df, by=c("Campagne","St"))
+  ### Appliquer filtre sur campagnes
+  wf <- paste("T",AS,"poissons",sep="_") # colonne du filtre
+  dd.filt <- filtreTable(ds.df, wf)
 
-  # Format
-  ds.df$Year <- apply(sapply(2006:2011, function(x) x*grepl(x, ds.df$Campagne)),1,sum)
-  ds.df$Code.SP <- as.numeric(ds.df$Code.SP)
-  ds.df <- ds.df[order(ds.df$Code.SP),]
+  ### Appliquer filtre sur espèces
+  dbn <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Toutes années/stations confondues
   alltog <- aggregate(list("TtStAn"=ds.df$dens),
-                       list("Code.SP"=ds.df$Code.SP),mean,na.omit=TRUE)
+                       list("Code_SP"=ds.df$Code_SP),mean,na.omit=TRUE)
 
   # Par année/toutes stations confondues
   alltog.yr <- aggregate(list("TTSt"=ds.df$dens),
-                         as.list(ds.df[,c("Year","Code.SP")]),mean,na.omit=TRUE)
+                         as.list(ds.df[,c("An","Code_SP")]),mean,na.omit=TRUE)
 
-  alltyr.h <- reshape(alltog.yr, timevar="Year",idvar="Code.SP",direction="wide")
+  alltyr.h <- reshape(alltog.yr, timevar="An",idvar="Code_SP",direction="wide")
   alltyr.h <- alltyr.h[,sort(names(alltyr.h))]
 
   # Par station/toutes années
   allyears <- aggregate(list("TtAn"=ds.df$dens),
-                         as.list(ds.df[,c("St","Code.SP")]),mean, na.omit=TRUE)
-  ay.horiz <- reshape(allyears, timevar="St", idvar="Code.SP",direction="wide")
+                         as.list(ds.df[,c("St","Code_SP")]),mean, na.omit=TRUE)
+  ay.horiz <- reshape(allyears, timevar="St", idvar="Code_SP",direction="wide")
   ay.horiz <- ay.horiz[,sort(names(ay.horiz))]
   # Par station/année
   byyear <- aggregate(list("Dens"=ds.df$dens),
-                       as.list(ds.df[,c("St","Year","Code.SP")]),mean, na.omit=TRUE)
-  by.horiz <- reshape(byyear, timevar="St", idvar=c("Code.SP","Year"),direction="wide")
-  by.h.yr <- reshape(by.horiz, timevar="Year", idvar="Code.SP",direction="wide")
+                       as.list(ds.df[,c("St","An","Code_SP")]),mean, na.omit=TRUE)
+  by.horiz <- reshape(byyear, timevar="St", idvar=c("Code_SP","An"),direction="wide")
+  by.h.yr <- reshape(by.horiz, timevar="An", idvar="Code_SP",direction="wide")
   by.h.yr <- by.h.yr[,sort(names(by.h.yr))]
 
   df <- do.call(data.frame,list(alltog,alltyr.h,ay.horiz, by.h.yr))
 
-  # ote colonnes Code.SP redondantes
-  df <- df[,!(names(df) %in% paste("Code.SP.",1:3,sep=""))]
+  # ote colonnes Code_SP redondantes
+  df <- df[,!(names(df) %in% paste("Code_SP.",1:3,sep=""))]
   names(df) <- gsub("Dens.","",names(df)) # Ote "Dens." des noms de colonne
 
-  df.i <<- merge(bioeco.all[,c("Code.SP","Famille","Genre","Espece")],df,by="Code.SP")
+  df.i <- merge(bioeco.all[,c("Code_SP","Famille","Genre","Espece")],df,by="Code_SP")
 
-  if(save) write.xls(df.i, file=paste(tabl.dir,"GS_Poissons_TS2_",Sys.Date(),".xls",sep=""))
-  return(df)
+  if(save) write.csv(df.i, file=paste(tabl.dir,"GS_Poissons_TS2_",Sys.Date(),".xls",sep=""),
+                     row.names=FALSE)
+  return(df.i)
 }
 
 ########################################
 ############ GRAPHIQUES ################
-########################################
 
-#################################
-########### PRODUIT 3 ###########
-#################################
 poissons.p3 <- function(quel.graph="all",save=FALSE) {
 
   # Info par type de graphique:
@@ -367,8 +387,8 @@ poissons.p3 <- function(quel.graph="all",save=FALSE) {
 }
 
 #######################################
-########### Poissons cibles ###########
-#######################################
+##### Graphiques pour poissons cibles
+
 poissons.cible.graph <- function(save=FALSE) {
 
   if(dev.size()[1] != 9 | round(dev.size()[2],1) != 5.3) quartz(width=9, height=5.3)
@@ -459,39 +479,20 @@ poissons.cible.graph <- function(save=FALSE) {
     mtext(yx.lab[gr.lab==wtype],side=2,outer=TRUE,line=2, cex=1.1)
 
     if(save) {
-    dev.copy2pdf(file=paste(fig.dir,"GS_PoissonsST_ParCibleNC_",paste(wgeo,wtype,sep="."),"_",Sys.Date(),".pdf",sep=""))
+    dev.copy2pdf(file=paste(fig.dir,"GS_PoissonsST_ParCibleNC_",
+                 paste(wgeo,wtype,sep="."),"_",Sys.Date(),".pdf",sep=""))
 
   }
   }
-
 
   sapply(gr.lab[1:3], function(gg) sapply(names(dd.split), function(x) graph.geo(x, gg)))
-
   return(dd.split)
 }
 
 
-###################################################################################
-##################################################################################
-
-if(!(exists("ds.calc"))) ds.calc <- tableau.brut()
-
-if(!(exists("BDtable"))) { # fix this
-  BDtable <- BD.by.sp()
-  facteurs <- c("St","Zone.Impact","Geomorpho","Code.SP",
-                "Peche","Groupe.Trophique","Groupe.Mobil","Cible")
-  ttble <- unique(ds.calc[,c("Campagne.ID",facteurs)])
-  names(ttble)[1] <- "Campagne"
-  BDtable.i <- merge(BDtable,ttble,c("Campagne","St","Code.SP"))
-  BDtable <- merge(BDtable.i,bioeco.all[,c("Code.SP","fmlabel")],
-                   by="Code.SP")
-  }
-
-# Séries temporelles pour toutes les espèces, et par tous les types
-if(!exists("TS1")) TS1 <- poissons.ts1()
-if(!exists("TS2")) TS2 <- poissons.ts2()
-
+#######################################
 # Tableau index pour catégories figures
+
 graph.key <- data.frame("df.id"=c("Tot","Comm","Non.Comm","Cible.Oui","Cible.Non",
                           "Carn","Pisc","Herb","Planct",
                           "Chaet","Pom"),
@@ -500,17 +501,5 @@ graph.key <- data.frame("df.id"=c("Tot","Comm","Non.Comm","Cible.Oui","Cible.Non
                           "Especes ciblees", "Especes non-ciblees",
                           "Carnivores","Piscivores","Herbivores","Planctivores",
                           "Chaetodontidae","Pomacentridae"))
-
-############################################
-############################################
-# Pour re-sauver tout
-
-save.all <- FALSE
-if(save.all) {
-  ds.calc <- tableau.brut(save=TRUE)
-  TS1 <- poissons.ts1(save=TRUE)
-  TS2 <- poissons.ts2(save=TRUE)
-  poissons.p3(save=TRUE)
-}
 
 
