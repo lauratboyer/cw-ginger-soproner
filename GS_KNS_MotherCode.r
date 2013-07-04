@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-28 09:07:53 Laura>
+# Time-stamp: <2013-06-28 12:59:07 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -55,6 +55,10 @@ source("GS_ExtractionDonnees.r") # contient la fonction prep.analyse()
 source("GS_CodesInvertebres_Launch.r") # contient la fonction Run.INV.biodiv()
 source("GS_CodesInvertebres_Densite.r")
 source("GS_CodesInvertebres_Biodiv.r")
+source("GS_CodesPoissons_Launch.r")
+source("GS_CodesPoissons_BioDens.r") # contient les codes densités
+                                     # et biodiversités pour les poissons
+
 
 # si l'objet "data.read" n'existe pas, ou data.read existe,
 # mais a la valeur FALSE,
@@ -66,6 +70,7 @@ if(exists("data.read")) if(!data.read) import.tableaux()
 
 # Lancer les analyses
 if(sorties.INV) { Run.INV.biodiv(); Run.INV.densite() }
+if(sorties.poissons) Run.poissons.all()
 
 
 

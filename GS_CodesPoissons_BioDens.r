@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-06-28 12:42:01 Laura>
+# Time-stamp: <2013-07-03 09:35:55 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -94,7 +94,7 @@ poissons.tableau.brut <- function(save=FALSE) {
   write.csv(tb.2s0,file=paste(tabl.dir,
   "GS_Poissons_TableauDonneesBrutes_",Sys.Date(),".csv",sep=""),
   row.names=FALSE) }
-  return(tb.2) }
+  return(tb.2)}
 
 
 ##################################################

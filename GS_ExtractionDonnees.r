@@ -1,6 +1,6 @@
   ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-28 10:02:20 Laura>
+# Time-stamp: <2013-07-03 10:46:35 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -35,6 +35,22 @@ prep.analyse <- function() {
   if(!exists("trim")) { #clumsy regexp
       trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
 
+  # traduit les codes d'accent selon le type d'encodage
+  # right now assuming latin1
+  tradfunk <<- function(x) {
+      enc <- unique(Encoding(x))
+      enc <- enc[enc!="unknown"]
+      if(length(enc)>0) {
+          x <- iconv(x,enc,"latin1") # convert to latin1
+          x <- gsub("<e9>|<e8>","e",x) # remplace e accent aigu/grave
+          x <- gsub("<ef>","i",x) # remplace i accent trema
+          x <- gsub("<a0>","",x) # mystery character removed
+      }
+      return(x) }
+
+  # standard error
+  stand.err <<- function(x) sd(x)/sqrt(length(x))
+
   ####################################
   ###### Information transects #######
   ####################################
@@ -59,8 +75,9 @@ prep.analyse <- function() {
   # défini noms de colonnes pour index.LIT:
   names(index.LIT) <- c("Code_LIT","CODE_DET","S_Corail_Acro","S_Corail_Forme",
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
-  # réparer accents
-  index.LIT$S_Corail_Forme <- gsub("\216","e",index.LIT$S_Corail_Forme)
+  # oter accents
+  index.LIT <- sapply(index.LIT, tradfunk)
+
 
   ###### Information biologie/écologie poissons #######
   #####################################################
@@ -192,28 +209,24 @@ prep.analyse <- function() {
   dbio <- merge(dbio.tmp, index.dbio)
 
   ################
-  # Oter les accents des noms des invertébrés pour éviter les erreurs dûes à l'encodage
-  # Si l'encodage UTF-8 est bien lu par l'ordi (les accents apparaissent correctement)
+  # Oter les accents des noms des invertébrés pour éviter les erreurs
+  # dûes à l'encodage
+  # Si l'encodage UTF-8 est bien lu par l'ordi
+  # (les accents apparaissent correctement)
   dbio$Groupe <- gsub("é","e",capitalize(tolower(trim(dbio$Groupe))))
   dbio$S_Groupe <- gsub("é","e",dbio$S_Groupe)
   dbio$S_Groupe <- gsub("è","e",dbio$S_Groupe)
   dbio$S_Groupe <- gsub("ï","i",dbio$S_Groupe)
   dbio$S_Groupe <- capitalize(tolower(trim(dbio$S_Groupe)))
-  #dbio$Famille <-
-  print("trouver signe pour Pterasteridae")
 
   # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire à <U+00E9>)
   # Conversion à encodage latin1 qui permet de substituer les charactères
   if("UTF-8" %in% unique(Encoding(dbio$Groupe))) {
-    dbio$Groupe <- iconv(dbio$Groupe,"UTF-8","latin1")
-    dbio$S_Groupe <- iconv(dbio$S_Groupe,"UTF-8","latin1")
-    dbio$Famille <- iconv(dbio$Famille,"UTF-8","latin1")
-    dbio$Groupe <- gsub("<e9>","e",dbio$Groupe) # remplace e accent aigu
-    dbio$S_Groupe <- gsub("<e9>","e",dbio$S_Groupe) # remplace e accent aigu
-    dbio$S_Groupe <- gsub("<e8>","e",dbio$S_Groupe) # remplace e accent grave
-    dbio$S_Groupe <- gsub("<ef>","i",dbio$S_Groupe) # remplace i accent trema
-    dbio$Famille <- gsub("<a0>","",dbio$Famille) # remplace ae
+    dbio$Groupe <- tradfunk(dbio$Groupe)
+    dbio$S_Groupe <- tradfunk(dbio$S_Groupe)
+    dbio$Famille <- tradfunk(dbio$Famille)
   }
+
   # Première lettre en majuscule, le reste en minuscules
   dbio$G_Sp <- capitalize(tolower(dbio$G_Sp))
   dbio$Famille <- capitalize(tolower(dbio$Famille))
@@ -365,9 +378,9 @@ prep.analyse <- function() {
 
   # Filtre les donnees analysees par groupe taxonomique lorsque specifie
   filtreTaxo <<- function(wtable,action="inclure",
-                          taxtype="Groupe",taxnom="tous") {
+                          taxtype="Groupe",taxnom="Tous") {
 
-      if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "tous")) {
+      if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "Tous")) {
       # Pas de filtre
       print("Pas de filtre sur especes applique")
           } else {
@@ -390,7 +403,7 @@ prep.analyse <- function() {
     if(aF == "tous") {
        taxoF.incl <<- "inclure"
        taxoF.utaxo <<- "Groupe"
-       taxoF.nom <<- "tous"
+       taxoF.nom <<- "Tous"
      } else {
        print("Definition des filtres taxonomiques:")
     cat("Inclure ou exclure? ")
@@ -427,6 +440,7 @@ prep.analyse <- function() {
   index.invSp <<- index.invSp
   bioeco <<- bioeco
   bioeco.all <<- bioeco.all
+  index.LIT <<- index.LIT
   pr.Bacip <<- pr.Bacip
 
   # Tag TRUE when data read with no bugs
