@@ -1,6 +1,6 @@
-  ## Analyses des données KNS (Ginger/Soproner)
+## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-03 10:46:35 Laura>
+# Time-stamp: <2013-07-04 15:58:45 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -77,6 +77,17 @@ prep.analyse <- function() {
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
   # oter accents
   index.LIT <- sapply(index.LIT, tradfunk)
+
+  # creer categories de substrat pour tableaux syntheses
+  coraux.fig <- list("Coraux_Gen"=c("Coraux","Coraux morts","Coraux mous",
+                     "Algues","Abiotique","Autre faune"),
+                   "Coraux_Acro"=c("Acroporidae","Non-acroporidae"),
+                   "TS_All"=c("Coraux","Coraux morts","Coraux mous",
+                     "Algues","Abiotique","Autre faune","Acroporidae",
+                     "Non-acroporidae","Macro-algues","Assemblage d'algues",
+                     "Corail branchu","Corail tabulaire","Corail massif",
+                     "Corail encroutant","Corail foliaire","Corail submassif",
+                     "Corail digite"))
 
 
   ###### Information biologie/écologie poissons #######
@@ -441,6 +452,7 @@ prep.analyse <- function() {
   bioeco <<- bioeco
   bioeco.all <<- bioeco.all
   index.LIT <<- index.LIT
+  coraux.fig <<- coraux.fig
   pr.Bacip <<- pr.Bacip
 
   # Tag TRUE when data read with no bugs

@@ -1,16 +1,20 @@
 # Ginger/Soproner
 # Code pour analyses des données LIT
-# Time-stamp: <2013-07-03 15:09:15 Laura>
+# Time-stamp: <2013-07-04 15:52:38 Laura>
 
-
-setwd(dossier.R)
+try.wd <- try(setwd(dossier.R),silent=TRUE)
+if(class(try.wd)=="try-error") {
+    print("Commencez par charger le fichier GS_KNS_MotherCode.r
+ pour que dossier.R soit defini") }
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
  # Extraction tableaux des bases de données
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
-TB.lit <- function(save=FALSE,AS="A",filtre=FALSE) {
+# formerly TB.lit
+LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
+
     # Créer tableau données brutes pour analyses subséquentes
     # Appliquer filtres (ref: LIT.doc)
     # 1. AQCQ == NON
@@ -65,11 +69,13 @@ TB.lit <- function(save=FALSE,AS="A",filtre=FALSE) {
                    unlist(cat2keep))]
 
     # 6. Option d'appliquer un filtre sur le tableau final
-      if(filtre) {
+    # AS a la valeur "A" ou "S"
+      if(AS %in% c("A","S")) {
           wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
           dd.i2 <- filtreTable(dd.i2, wf) }
 
-    ftag <- ifelse(filtre,sprintf("%s_",AS),"") # nametag pour filtre
+    # nametag pour filtre au besoin
+    ftag <- ifelse(AS %in% c("A","S"),sprintf("%s_",AS),"")
 
     if(save) write.csv(dd.i2, file=paste(tabl.dir,"GS_LIT_TableauBrut_",ftag,
                              Sys.Date(),".csv",sep=""),
@@ -80,9 +86,10 @@ TB.lit <- function(save=FALSE,AS="A",filtre=FALSE) {
 
 # Tableau moyenne/SE suivant catégories dans "S_Corail_All",
 # par géomorphologie, en 2011
-lit.tb.1 <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
+# formerly LIT.ts1()
+LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
   # set AS to "A" or "S" based on campagne type
-  dl <- dd.ii[dd.ii$Campagne %in% paste(AS,yy,sep="_"),]
+  dl <- LIT.brut[LIT.brut$Campagne %in% paste(AS,yy,sep="_"),]
 
   # Groupes de coraux
   gC <- coraux.fig[[ff]]
@@ -101,9 +108,9 @@ lit.tb.1 <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
   return(d.all)
 }
 
-lit.BP.1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
+LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
 
-  tb1.lit <- lit.tb.1(yy=yy, ff=ff2, AS=AS)
+  tb1.lit <- LIT.resume(yy=yy, ff=ff2, AS=AS)
 
   hist.funk <- function(cat) {
 
@@ -142,14 +149,14 @@ lit.BP.1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
 }
 
 
-lit.TS.1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
+LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
   cnow <- coraux.fig$TS_All # categorie a utiliser
 
   # Stations échantillonées depuis 2006, à part pour "Récif barrière externe"
   # (distinction déjà pris en compte dans le tableau filtre)
   wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
-  dd.filt <- filtreTable(dd.ii, wf)
+  dd.filt <- filtreTable(LIT.brut, wf)
 
   # Calculs moyenne/SE
   val.mean <- aggregate(list("Moy"=dd.filt[,cnow]),
@@ -228,6 +235,7 @@ lit.TS.1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 }
 
   # double boucle sur la fonction fig.funk par geomorphologie X type de corail
+  geo.id <- unique(LIT.brut$Geomorpho)
   dmm <- sapply(geo.id, function(gg)
                 sapply(cnow,function(cc) fig.funk(wgeo=gg, wmorph=cc)))
 
@@ -238,10 +246,10 @@ lit.TS.1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
             paste(tabl.dir,"LIT_SerieTempTable_",AS,"_GeoMorphImpact_DiffCouv_",Sys.Date(),".xlsx",sep=""),
             row.names=FALSE)
 
-  return(list(VM.split, val.impact))
+  return(list(val.all, val.impact))
 }
 
-lit.TS.2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
+lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
     check.dev.size(8.5, 7) # ouvrir une fenetre graphique de la bonne grandeur au besoin
     cnow <- coraux.fig$TS_All
@@ -249,7 +257,7 @@ lit.TS.2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
     # Stations échantillonées depuis 2006, à part pour "Récif barrière externe"
     # (distinction déjà pris en compte dans le tableau filtre)
     wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
-    dd.filt <- filtreTable(dd.ii, wf)
+    dd.filt <- filtreTable(LIT.brut, wf)
 
     # calcul moyenne/SE
     val.mean <- aggregate(list("Moy"=dd.filt[,cnow]),
@@ -313,6 +321,7 @@ lit.TS.2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
   }
   }
     # lancer la boucle sur la fonction fig.funk par impact X geomorpho X type corail
+    geo.id <- unique(LIT.brut$Geomorpho)
     dmm <- sapply(c(0,1), function(wi) sapply(geo.id, function(gg)
                                               sapply(cnow,function(cc)
                                                      fig.funk(wgeo=gg, wmorph=cc,wimpact=wi))))
@@ -321,21 +330,11 @@ lit.TS.2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
     write.csv(val.all,
               paste(tabl.dir,"LIT_SerieTempTable_",AS,"_GeoMorphImpact_bySt_",Sys.Date(),".csv",sep=""),
               row.names=FALSE)
-    return(VM.split)
+    return(val.all)
 }
 ########################################################################################
 ########################################################################################
-if(!exists("dd.ii")) dd.ii <- TB.lit()
-geo.id <- unique(dd.ii$Geomorpho)
-coraux.fig <- list("Coraux_Gen"=c("Coraux","Coraux morts","Coraux mous",
-                     "Algues","Abiotique","Autre faune"),
-                   "Coraux_Acro"=c("Acroporidae","Non-acroporidae"),
-                   "TS_All"=c("Coraux","Coraux morts","Coraux mous",
-                     "Algues","Abiotique","Autre faune","Acroporidae",
-                     "Non-acroporidae","Macro-algues","Assemblage d'algues",
-                     "Corail branchu","Corail tabulaire","Corail massif",
-                     "Corail encroutant","Corail foliaire","Corail submassif",
-                     "Corail digite"))
+if(!exists("LIT.brut")) LIT.brut <- LIT.tableau.brut() #LIT.brut formerly dd.ii
 
 save.all <- FALSE
 if(save.all) {
@@ -347,21 +346,25 @@ if(save.all) {
   dmm <- TB.lit(save=TRUE, AS="S", filtre=TRUE)
 
   # Moyenne + SE par type de coraux dans une categorie par geomorphologie
-  dmm <- lit.tb.1(save=TRUE) # categorie par defaut: Coraux_Gen
-  dmm <- lit.tb.1(ff="Coraux_Acro",save=TRUE) # categorie acroporidae
+  # formely lit.tb.1()
+  # LIT.resume
+  dmm <- LIT.resume(save=TRUE) # categorie par defaut: Coraux_Gen
+  dmm <- LIT.resume(ff="Coraux_Acro",save=TRUE) # categorie acroporidae
 
-  # Graphiques
-  lit.BP.1() #graphique des valeurs obtenues en lit.tb.1
-  lit.BP.1(ff2="Coraux_Acro")
+  # Graphiques (avant: lit.BP.1)
+  LIT.bp1() #graphique des valeurs obtenues en LIT.ts1
+  LIT.bp1(ff2="Coraux_Acro")
 
   # Statistiques calculees sur geomorpho x impact (tableau + graph)
   # couverture moyenne par geomorpho, comparaison impact/non impact
-  lit.TS.1()
-  lit.TS.1("S")
+  # avant: lit.TS.1()
+  LIT.ts1()
+  LIT.ts1("S")
 
   # comparaison couverture moyenne par station, par geomorpho/impact/type de corail
-  lit.TS.2()
-  lit.TS.2("S")
+  # avant: lit.TS.2()
+  lit.ts2()
+  lit.ts2("S")
 
 }
 

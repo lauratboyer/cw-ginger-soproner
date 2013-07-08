@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-28 12:59:07 Laura>
+# Time-stamp: <2013-07-04 11:37:19 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -27,7 +27,7 @@ if(filtre.sur.especes) {
 ### Sorties à produire ###
 sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
 sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
-sorties.POISSONS <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
+sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 # Dossier où les analyses sont faites, et qui contient le code R et les graphiques/tableaux produits
 dossier.R <- ifelse(usernow=="Antoine", "C:/dossier.R/","/Users/Laura/Projects/cw-ginger-soproner/")
