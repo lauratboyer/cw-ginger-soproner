@@ -1,14 +1,16 @@
 \documentclass{article}
 \usepackage{Sweave}
 \usepackage[utf8]{inputenc}
+\usepackage{fullpage}
 \usepackage{url}
 \usepackage{verbatim}
 \usepackage{color}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
-
+\definecolor{darkblue}{rgb}{0,0,0.5}
 
 \begin{document}
 \newcommand{\mcode} {\texttt{GS\_MotherCode.r}}
+\newcommand{\bigtt}[1] {\textcolor{darkblue}{{\large {\texttt{#1}}}}}
 %\hyphenation{GS\_-Mother-Code.r}
 
 \noindent {\Large \bfseries Code R pour l'analyse des données KNS}
@@ -145,37 +147,94 @@ pour modifier les requêtes lancées par défaut.
 \section{Description des fonctions pour invertébrés, poissons et LIT}
 \subsection{Invertébrés}
 \subsection{Poissons}
+\begin{itemize}
+\item[] \bigtt{poissons.tableau.brut(save=FALSE):}\\
+\emph{GS\_Poissons\_TableauDonneesBrutes\_ + date + .csv}\\
+Reformattage du \textbf{tableau} de données brutes initiales en incluant les
+valeurs de densité et de biomasse pour chaque observation.
+
+
+\item[] \bigtt{BioDens.sp.poissons():} \\
+Tableau préparatoire (non sauvegardé) calculant les densités et
+biomasses par campagne, transect et espèce en se basant sur l'objet
+\texttt{ds.calc} produit par la fonction
+\texttt{poissons.tableau.brut()}. Le tableau produit par cette
+fonction (nommé \texttt{BDtable} dans l'environnement R) est utilisé
+par les fonctions \texttt{TS1.poissons()} et \texttt{TS2.poissons()}.
+
+\item[]\bigtt{poissons.ts1(AS="A",save=FALSE):}\\
+\emph{GS\_Poissons\_TS1\_ + filtre + date + .csv}\\
+ \textbf{Tableau} synthèse contenant la moyenne et l'écart type pour la
+ densité, la biomasse, la richesse spécifique et la taille moyenne,
+ calculés pour les catégories suivantes: toutes espèces confondues,
+ commerciales, carnivores, herbivores, piscivores, planctonophages,
+ sédentaires, territoriales, mobiles, très mobiles et ciblées (ou non)
+ par la pêche en Nouvelle-Calédonie.
+
+\item[]\bigtt{poissons.ts2(AS="A",save=FALSE):}\\
+  \emph{GS\_Poissons\_TS2\_ + filtre + date + .csv}\\
+\texttt{Tableau} synthèse contenant pour chaque espèce la densité
+moyenne sur toutes les années, pour chaque année, sur toutes les
+stations et pour chaque station.
+
+\item[]\bigtt{poissons.p3(quel.graph="all",save=FALSE):}\\
+ \emph{GS\_PoissonsST\_ [valeur représentée].[catégorie de poissons] +
+   date + .pdf}\\
+ Cette fonction produit des \textbf{graphiques} représentant des séries
+ temporelles de densité, biomasse ou richesse spécifique pour les
+ catégories de poissons définies dans l'objet
+ \texttt{graph.key\$df.id}. Par défaut le filtre annuel est
+ appliqué. Cette fonction est seulement executée dans le code
+ \texttt{GS\_CodePoissons\_Launch.r} si la valeur de l'objet
+ \texttt{graph.poissons} est changée à \texttt{TRUE}.
+
+  \end{itemize}
+
 \subsection{LIT}
 
 \begin{itemize}
-\item[] \texttt{LIT.tableau.brut(save=FALSE, AS="pas de filtre")}:\\
-  Nom de fichier: \emph{GS\_LIT\_TableauBrut\_ + filtre + date + .csv}\\
+\item[] \bigtt{LIT.tableau.brut(save=FALSE, AS="pas de filtre"):}\\
+  \emph{GS\_LIT\_TableauBrut\_ + filtre + date + .csv}\\
   \textbf{Tableau} formatté des données
-de couverture non-traitées avec une rangée par campagne/transect -- ce
+de couverture brutes (une rangée par campagne/transect) -- ce
 tableau est sauvegardé dans l'environnement R sous
 \texttt{LITbrut} et est utilisé par les autres fonctions LIT.
 
-\item[] \texttt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
-    save=FALSE)}:\\ \textbf{tableau} des couvertures moyennes (et SE) pour
+\item[] \bigtt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
+    save=FALSE)}:\\
+  \emph{GS\_LIT\_Tableau1A\_ + code catégorie de coraux + filtre + year + date + .csv}\\
+  \textbf{Tableau} des couvertures moyennes (et SE) pour
   chaque géomorphologie selon l'année et la catégorie de substrat
   spécifiées (par défaut, 2011 et types de substrat généraux).
 
-\item[] \texttt{LIT.ts1(AS="A")}:\\ produit \textbf{deux tableaux}, le premier contenant la
+\item[] \bigtt{LIT.ts1(AS="A")}:\\
+  Tableau 1: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_ + date + .csv}\\
+  Tableau 2: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_DiffCouv\_ + date + .csv}\\
+  Figures: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_ + type de coraux + géomorphologie + date + .pdf}\\
+  \textbf{Deux tableaux} sont produits. Le premier contient la
 moyenne (et SE) des couvertures pour chaque campagne, géomorphologie et
-zone d'impact, le deuxième contenant la différence entre les
+zone d'impact, le deuxième contient la différence entre les
 couvertures par géomorphologie des zones impactées et
 non-impactées. Des \textbf{graphiques} sont également produits et
 comparent pour chaque géomorphologie et catégorie de substrat les
 tendances de couvertures moyennes par campagne entre les zones
 impactées et non-impactées.
 
-\item[] \texttt{LIT.ts2(AS="A")}:\\ \textbf{tableau} des couvertures moyennes (et SE) pour
+\item[] \bigtt{LIT.ts2(AS="A")}:\\
+  Tableau: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_bySt\_ + date + .csv}\\
+  Figure: \emph{GS\_LIT\_SerieTemp\_ + filtre +
+    \_GeoMorphImpact\_bySt\_ + type de coraux + géomorphogie +
+    catégorie d'impact + date + .pdf}\\
+  \textbf{Tableau} des couvertures moyennes (et SE) pour
 chaque type de substrat par station et campagne. Cette fonction
 produit aussi des \textbf{graphiques} comparant la couverture moyenne de chaque
 type de substrat entre les stations de la même géomorphologie et zone
 d'impact.
 
-\item[] \texttt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}:\\ \textbf{graphiques} en barre comparant la
+\item[] \bigtt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}:\\
+  Nom de fichier: \emph{GS\_LIT\_Hist1\_ + year + code catégorie de coraux
+    + .pdf}\\
+  \textbf{Graphiques} en barre comparant la
   couverture moyenne (et SE) à l'intérieur d'une catégorie de substrat
   et pour l'année spécifiée.
 

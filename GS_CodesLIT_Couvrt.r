@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des données LIT
-# Time-stamp: <2013-07-04 15:52:38 Laura>
+# Time-stamp: <2013-07-12 10:24:54 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
@@ -137,7 +137,7 @@ LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
     legend("topleft",cat,fill=colv,bty="n",horiz=TRUE, inset=c(0,-0.1),
            x.intersp=0.5, cex=1.2, xpd=NA)
 
-    dev.copy2pdf(file=paste(fig.dir,"LIT_Hist1_",yy,"_",make.names(cat),".pdf",sep=""))
+    dev.copy2pdf(file=paste(fig.dir,"GS_LIT_Hist1_",yy,"_",make.names(cat),".pdf",sep=""))
   }
 
   if(ff2=="Coraux_Gen") {
@@ -229,7 +229,7 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
                      lty=1,pch=1,bty="n",xpd=NA, inset=c(0,-0.15), cex=1.2) }
 
       # sortir la figure en pdf
-      dev.copy2pdf(file=paste(fig.dir,"LIT_SerieTemp_",AS,"_GeoMorphImpact_",wmorph,
+      dev.copy2pdf(file=paste(fig.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_",wmorph,
                    "_",wgeo,"_",Sys.Date(),".pdf",sep=""))
 
 }
@@ -240,10 +240,10 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
                 sapply(cnow,function(cc) fig.funk(wgeo=gg, wmorph=cc)))
 
   # sauvegarde tableaux
-  write.csv(val.all, paste(tabl.dir,"LIT_SerieTempTable_",AS,"_GeoMorphImpact_",Sys.Date(),"csv",sep=""),
+  write.csv(val.all, paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_",Sys.Date(),"csv",sep=""),
             row.names=FALSE)
   write.csv(val.impact,
-            paste(tabl.dir,"LIT_SerieTempTable_",AS,"_GeoMorphImpact_DiffCouv_",Sys.Date(),".xlsx",sep=""),
+            paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_DiffCouv_",Sys.Date(),".csv",sep=""),
             row.names=FALSE)
 
   return(list(val.all, val.impact))
@@ -316,7 +316,7 @@ lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
                    pch=15:20,bty="n",xpd=NA, inset=c(-0.21,0), cex=1.1)
 
             #sauvegarde pdf
-            dev.copy2pdf(file=paste(fig.dir,"LIT_SerieTemp_",AS,"_GeoMorphImpact_bySt_",wmorph,
+            dev.copy2pdf(file=paste(fig.dir,"GS_LIT_SerieTemp_",AS,"_GeoMorphImpact_bySt_",wmorph,
                    "_",wgeo,"_",wimpact, "_",Sys.Date(),".pdf",sep=""))
   }
   }
@@ -328,7 +328,7 @@ lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
     #sauvegarder tableaux
     write.csv(val.all,
-              paste(tabl.dir,"LIT_SerieTempTable_",AS,"_GeoMorphImpact_bySt_",Sys.Date(),".csv",sep=""),
+              paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_bySt_",Sys.Date(),".csv",sep=""),
               row.names=FALSE)
     return(val.all)
 }

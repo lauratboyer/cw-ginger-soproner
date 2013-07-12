@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-07-03 09:35:55 Laura>
+# Time-stamp: <2013-07-12 11:42:34 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -225,7 +225,7 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
   df.all <- data.frame(ds.tmpl[,c("Campagne","St")],mean.all,sd.all,richness.all)
   df.all <- merge(info.transect[,c("St","Geomorpho","N_Impact","cpus","Effort_ha")],df.all,by="St")
 
-  if(save) write.csv(df.all,file=paste(tabl.dir,"GS_Poissons_TS1_",Sys.Date(),".csv",sep=""),
+  if(save) write.csv(df.all,file=paste(tabl.dir,"GS_Poissons_TS1_",AS,"_",Sys.Date(),".csv",sep=""),
                      row.names=FALSE)
   return(df.all)
 }
@@ -279,7 +279,7 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
 
   df.i <- merge(bioeco.all[,c("Code_SP","Famille","Genre","Espece")],df,by="Code_SP")
 
-  if(save) write.csv(df.i, file=paste(tabl.dir,"GS_Poissons_TS2_",Sys.Date(),".xls",sep=""),
+  if(save) write.csv(df.i, file=paste(tabl.dir,"GS_Poissons_TS2_",AS,"_",Sys.Date(),".csv",sep=""),
                      row.names=FALSE)
   return(df.i)
 }
@@ -289,7 +289,8 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
 
 poissons.p3 <- function(quel.graph="all",save=FALSE) {
 
-  # Info par type de graphique:
+    # filtre annuel par défaut
+    # Info par type de graphique:
   tgraph <- c("Densite","Biomasse","Richesse specifique")
   gr.lab <- c("Moy.dens","Moy.biomasse","sp.rich")
   yx.lab <- c(expression(paste("Densite (individus/",m^2,")",sep="")),
