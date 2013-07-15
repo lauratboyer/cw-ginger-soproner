@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des données LIT
-# Time-stamp: <2013-07-12 10:24:54 Laura>
+# Time-stamp: <2013-07-15 10:55:21 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
@@ -15,6 +15,7 @@ if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 # formerly TB.lit
 LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
 
+    print("Depart: Fonction LIT.tableau.brut")
     # Créer tableau données brutes pour analyses subséquentes
     # Appliquer filtres (ref: LIT.doc)
     # 1. AQCQ == NON
@@ -46,7 +47,6 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
         dl.ii <- reshape(dl.i, timevar=wc,
                          idvar=c("Campagne","St","T"),direction="wide")
         names(dl.ii) <- gsub("PC.","",names(dl.ii))
-        print(names(dl.ii))
         dl.ii <- dl.ii[,c("Campagne","St", "T",
                           cat2keep[[which(type.corail==wc)]])]
         }
@@ -81,7 +81,7 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
                              Sys.Date(),".csv",sep=""),
                              row.names=FALSE)
 
-    return(dd.i2) }
+    invisible(dd.i2) }
 
 
 # Tableau moyenne/SE suivant catégories dans "S_Corail_All",
@@ -105,7 +105,7 @@ LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
                      file=paste(tabl.dir,"GS_LIT_Tableau1A_",ff,"_",AS,"_",
                        yy,"_",Sys.Date(),".csv",sep=""),row.names=FALSE)
 
-  return(d.all)
+  invisible(d.all)
 }
 
 LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
@@ -116,7 +116,7 @@ LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
 
     par(family="serif",omi=c(0.25,0,0,0))
 
-    xx <- tb1.lit[,make.names(paste("Moy",cat))]; print(xx)
+    xx <- tb1.lit[,make.names(paste("Moy",cat))]
     xx.se <- tb1.lit[,make.names(paste("SE",cat))]
     se.up <- t(xx+xx.se); se.down <- t(xx-xx.se)
     yy <- tb1.lit$Geomorpho
@@ -185,9 +185,8 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
   VM.split <- split(val.all, list(val.all$Geomorpho))
 
   fig.funk <- function(wgeo,wmorph) {
-      print(c(wgeo,wmorph))
-
       par(omi=rep(0,4), family="serif")
+
       dnow <- VM.split[[wgeo]] # selectionne la geomorphologie pour le graphique courant
       # identifie les colonnes contentant la moyenne et le SE:
       wcol <- which(names(dnow) %in% make.names(paste(c("Moy","SE"),wmorph, sep=".")))
@@ -246,10 +245,10 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
             paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_DiffCouv_",Sys.Date(),".csv",sep=""),
             row.names=FALSE)
 
-  return(list(val.all, val.impact))
+  invisible(list(val.all, val.impact))
 }
 
-lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
+LIT.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
     check.dev.size(8.5, 7) # ouvrir une fenetre graphique de la bonne grandeur au besoin
     cnow <- coraux.fig$TS_All
@@ -270,9 +269,8 @@ lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
     VM.split <- split(val.all, list(val.all$Geomorpho,val.all$N_Impact))
 
     fig.funk <- function(wgeo,wmorph,wimpact) {
-        print(c(wgeo,wmorph,wimpact))
-
         par(family="serif", omi=c(0,0,0,1))
+
         dnow <- VM.split[[paste(wgeo,wimpact,sep=".")]]
 
         if(nrow(dnow)>0){
@@ -330,7 +328,7 @@ lit.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
     write.csv(val.all,
               paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_bySt_",Sys.Date(),".csv",sep=""),
               row.names=FALSE)
-    return(val.all)
+    invisible(val.all)
 }
 ########################################################################################
 ########################################################################################
@@ -340,10 +338,10 @@ save.all <- FALSE
 if(save.all) {
 
   # Tableau des données par transect:
-  dmm <- TB.lit(save=TRUE)
+  dmm <- LIT.tableau.brut(save=TRUE)
   # Données par transect, avec filtre A et S:
-  dmm <- TB.lit(save=TRUE, AS="A", filtre=TRUE)
-  dmm <- TB.lit(save=TRUE, AS="S", filtre=TRUE)
+  dmm <- LIT.tableau.brut(save=TRUE, AS="A", filtre=TRUE)
+  dmm <- LIT.tableau.brut(save=TRUE, AS="S", filtre=TRUE)
 
   # Moyenne + SE par type de coraux dans une categorie par geomorphologie
   # formely lit.tb.1()
@@ -363,8 +361,8 @@ if(save.all) {
 
   # comparaison couverture moyenne par station, par geomorpho/impact/type de corail
   # avant: lit.TS.2()
-  lit.ts2()
-  lit.ts2("S")
+  LIT.ts2()
+  LIT.ts2("S")
 
 }
 

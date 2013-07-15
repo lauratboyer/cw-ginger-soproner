@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-04 11:37:19 Laura>
+# Time-stamp: <2013-07-15 09:31:06 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -49,28 +49,35 @@ fig.dir <- paste(dossier.R,"/Graphiques/",sep="")
 tabl.dir <- paste(dossier.R,"/Tableaux/",sep="")
 dossier.donnees <- paste(dossier.R,"/Data/",sep="")
 
-# Importe les fonctions nécéssaires ? l'analyse:
+# Importe les fonctions nécéssaires au lancement des analyses
 source("GS_MiseAJourDB.r") # contient la fonction import.tableaux()
 source("GS_ExtractionDonnees.r") # contient la fonction prep.analyse()
 source("GS_CodesInvertebres_Launch.r") # contient la fonction Run.INV.biodiv()
 source("GS_CodesInvertebres_Densite.r")
 source("GS_CodesInvertebres_Biodiv.r")
-source("GS_CodesPoissons_Launch.r")
+source("GS_CodesPoissons_Launch.r") # lance les codes poissons
 source("GS_CodesPoissons_BioDens.r") # contient les codes densités
                                      # et biodiversités pour les poissons
+source("GS_CodesLIT_Launch.r") # lance les codes LIT
+source("GS_CodesLIT_Couvrt.r") # contient les codes pour statistiques LIT
 
 
-# si l'objet "data.read" n'existe pas, ou data.read existe,
-# mais a la valeur FALSE,
+# si l'objet "data.read" n'existe pas, ou data.read existe
+# mais a la valeur "FALSE"
 # (ré)extraire et (re)formatter les données
-if(!(exists("data.read"))) import.tableaux()
-if(exists("data.read")) if(!data.read) import.tableaux()
+if(!(exists("data.read"))) { import.tableaux()
+                         } else { if(!data.read) import.tableaux() }
 # (par défaut import.tableaux() lance la fonction prep.analyse()
 # ... une fois les tableaux importés de la DB DropBox)
 
-# Lancer les analyses
+########################
+# Lancement des analyses
+# Pour les INV, fonctions Run.INV.biodiv() et Run.INV.densite()
+# Pour les poissons, fonction Run.poissons.all()
+# Pour le LIT, fonction Run.LIT.all()
 if(sorties.INV) { Run.INV.biodiv(); Run.INV.densite() }
 if(sorties.poissons) Run.poissons.all()
+if(sorties.LIT) Run.LIT.all()
 
 
 
