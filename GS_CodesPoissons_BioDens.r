@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-07-12 11:42:34 Laura>
+# Time-stamp: <2013-07-15 15:38:56 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -88,7 +88,7 @@ poissons.tableau.brut <- function(save=FALSE) {
   # garde seulement observations N>0 pour réduire la taille du fichier .csv
 
   # Filtrer les espèces au besoin
-  dbn <- filtreTaxo(tb.2s0, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+#  dbn <- filtreTaxo(tb.2s0, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   if(save) {
   write.csv(tb.2s0,file=paste(tabl.dir,
@@ -110,8 +110,10 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
   fc <- c("Campagne","St","Code_SP")
   LT <- 50 # Longueur du transect
 
+  if(!exists("poissons.brut")) poissons.brut <<- BioDens.sp.poissons()
+  ds.calc <- poissons.brut # transfer a l'objet ds.calc
   ds.calc$dm.int <- ds.calc$N * (0.5*(ds.calc$D1+ds.calc$D2)+0.5)
-  ds.list <- list("Campagne"=ds.calc$Campagne.ID,"St"=ds.calc$St,
+  ds.list <- list("Campagne"=ds.calc$Campagne, "St"=ds.calc$St,
                   "Code_SP"=ds.calc$Code_SP)
   num.dm <- aggregate(ds.calc$dm.int,ds.list,sum)
   denom.dm <- aggregate(ds.calc$N,ds.list,sum)
@@ -139,8 +141,7 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
   # rajouter colonnes infos additionelles
   facteurs <- c("An","St","Zone.Impact","Geomorpho","Code_SP",
                 "Peche","Groupe.Trophique","Groupe.Mobil","Cible")
-  ttble <- unique(ds.calc[,c("Campagne.ID",facteurs)])
-  names(ttble)[1] <- "Campagne"
+  ttble <- unique(ds.calc[,c("Campagne",facteurs)])
   BDtable.i <- merge(ds.df,ttble,c("Campagne","St","Code_SP"))
   BDtable <- merge(BDtable.i,bioeco.all[,c("Code_SP","Famille","Genre","fmlabel")],
                    by="Code_SP")
@@ -169,7 +170,7 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
   dfh <- filtreTable(dfh, wf)
 
   ### Appliquer filtre sur espèces
-  dfh <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+#  dfh <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Formatter
   dfh$Seen <- 0 + dfh$allN>0 # colonne pour présence/absence
@@ -246,7 +247,7 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
   ds.df <- filtreTable(ds.df, wf)
 
   ### Appliquer filtre sur espèces
-  ds.df <- filtreTaxo(ds.df, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+#  ds.df <- filtreTaxo(ds.df, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Toutes années/stations confondues
   alltog <- aggregate(list("TtStAn"=ds.df$dens),
@@ -287,22 +288,25 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
 ########################################
 ############ GRAPHIQUES ################
 
-poissons.p3 <- function(quel.graph="all",save=FALSE) {
+poissons.p3 <- function(quel.graph="all",AS="A",save=FALSE) {
+
+    stop("Attention cette fonction a un bug elle ne tourne pas pour le moment")
+
+    # produire tableau de données à partir de la fonction poissons.ts1()
+    TS1 <- poissons.ts1(AS=AS)
 
     # filtre annuel par défaut
     # Info par type de graphique:
-  tgraph <- c("Densite","Biomasse","Richesse specifique")
-  gr.lab <- c("Moy.dens","Moy.biomasse","sp.rich")
-  yx.lab <- c(expression(paste("Densite (individus/",m^2,")",sep="")),
+    tgraph <- c("Densite","Biomasse","Richesse specifique")
+    gr.lab <- c("Moy.dens","Moy.biomasse","sp.rich")
+    yx.lab <- c(expression(paste("Densite (individus/",m^2,")",sep="")),
               expression(paste("Biomasse (g/",m^2,")",sep="")),
               "Richesse specifique")
 
-# Filtrer comme spécifié dans Tableau ...
-  wfiltre <- "T_A_poissons"; print(paste("stations filtrées par",wfiltre))
-  fdf <- data.frame(filtre.Camp[,wfiltre]); names(fdf) <- "key"
-  st.keep <- merge(fdf,index.Camp)
-  dd <- merge(st.keep, TS1, by=c("Campagne","St"))
-  dd$annee <- as.numeric(gsub("A_","",dd$Campagne))
+    ### Appliquer filtre sur campagnes
+    wf <- paste("T",AS,"poissons",sep="_") # colonne du filtre
+    dd <- filtreTable(TS1, wf)
+    dd$annee <- as.numeric(gsub("[AS]_","",dd$Campagne))
 
   graph.funk <- function(wt="Densité",wgroup="Tot") {
 
