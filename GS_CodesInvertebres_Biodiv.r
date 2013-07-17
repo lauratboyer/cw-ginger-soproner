@@ -1,6 +1,6 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 # ** Indices de biodiversité **
-# Time-stamp: <2013-06-28 09:06:38 Laura>
+# Time-stamp: <2013-07-17 11:12:36 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -13,14 +13,18 @@ if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 ## Tableau Indices de Biodiversité par station ##
 #################################################
 
-inv.biodiv <- function(qunit="St",wC="all",save=FALSE) {
-  print("Donnees non-filtrees par campagne")
+inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
+    departFunk() # message de depart
 
-  mf <- c("Campagne","St","T") # calcul des valeurs par transect
-  # ôte les abondances = 0
-  dbn <- dbio[dbio$N > 0,]
+    mf <- c("Campagne","St","T") # calcul des valeurs par transect
+    # ôte les abondances = 0
+    dbn <- dbio[dbio$N > 0,]
 
-  # Filtre les espèces au besoin
+  # Filtre sur les stations
+  wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
+  dbn <- filtreTable(dbn, wf)
+
+  # Filtre sur les espèces au besoin
   dbn <- filtreTaxo(dbn, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Indice de Shannon #
@@ -91,7 +95,9 @@ inv.biodiv <- function(qunit="St",wC="all",save=FALSE) {
   if(save) {
     taxotag <- taxotagFunk()
     write.csv(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodivPar",qunit,"_",taxotag,
-                          Sys.Date(),".csv",sep=""),row.names=FALSE) }
+                        Sys.Date(),".csv",sep=""),row.names=FALSE) }
+
+  finFunk()
   return(all.bioFN)
 }
 
@@ -213,7 +219,7 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
     }
 
   e1$rs.all <- rsfunk("G_Sp")
-  dmm <- lapply(c("Genre","Famille","S_Grp2","Grp2"), rsfunk)
+  dmm <- lapply(c("Genre","Famille","S_Groupe","Groupe"), rsfunk)
 
   return(e1$rs.all)
 }
@@ -222,7 +228,7 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
 ## Tableau synthèse: Nombre d'espèces ##
 ########################################
 
-inv.sprich.tbl <- function(AS="A",grtax="Grp2",save=FALSE, filtre=FALSE) {
+inv.sprich.tbl <- function(AS="A",grtax="Groupe",save=FALSE, filtre=FALSE) {
 
   ### 1. #############################
   ### Appliquer filtres ###############
@@ -260,7 +266,7 @@ inv.sprich.tbl <- function(AS="A",grtax="Grp2",save=FALSE, filtre=FALSE) {
   return(tb.all)
   }
 
-sprich.by.aggrtaxo <- function(AS="A", grtax="Grp2", filtre=TRUE, save=FALSE) {
+sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", filtre=TRUE, save=FALSE) {
 
   ### 1. #############################
   ### Appliquer filtres ###############

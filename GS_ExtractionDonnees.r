@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-04 15:58:45 Laura>
+# Time-stamp: <2013-07-17 10:23:16 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -396,7 +396,7 @@ prep.analyse <- function() {
       print("Pas de filtre sur especes applique")
           } else {
       # On filtre les rangees selon les especes/groupes taxo specifie
-      print(paste(c("Filtre sur espèces",capitalize(action),taxtype,
+      print(paste(c("Filtre sur especes",capitalize(action),taxtype,
                     paste(taxnom,collapse=", ")),collapse=" :: "))
 
       if(action == "inclure") { # inclusion des groupes X
@@ -439,6 +439,15 @@ prep.analyse <- function() {
       taxotag <- paste(paste(abbreviate(c(capitalize(taxoF.incl), taxoF.nom)), collapse="-"),"_",sep="")
       return(taxotag) }
   }
+
+  # Ces fonctions sont utilisées pour indiquer le départ et la fin
+  # des codes compris dans une fonction
+  departFunk <<- function() {
+      packageStartupMessage(sprintf("depart %s ...",sys.calls()[1]))
+      print(names(formals(sys.calls()[1])))
+      print(unlist(mget(names(formals(sys.calls()[1])), envir=environment())))
+      print(environment(sys.calls()[1]))}
+  finFunk <<- function() packageStartupMessage(sprintf("fin %s",sys.calls()[1]))
 
   ###################################################
   ###################################################
