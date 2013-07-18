@@ -5,6 +5,7 @@
 \usepackage{url}
 \usepackage{verbatim}
 \usepackage{color}
+\usepackage{hyperref}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \definecolor{darkblue}{rgb}{0,0,0.5}
 
@@ -13,8 +14,28 @@
 \newcommand{\bigtt}[1] {\textcolor{darkblue}{{\large {\texttt{#1}}}}}
 %\hyphenation{GS\_-Mother-Code.r}
 
-\noindent {\Large \bfseries Code R pour l'analyse des données KNS}
+\noindent {\Large \bfseries Description: Code R pour l'analyse des
+  données d'échantillonage}
 
+\tableofcontents
+\section{Accès rapide aux descriptions des fonctions R}
+\subsection{Invertébrés}
+
+\subsection{Poissons}
+\hyperlink{p1} {\bigtt{poissons.tableau.brut(save=FALSE)}}\\
+\hyperlink{p2} {\bigtt{BioDens.sp.poissons()}}\\
+\hyperlink{p3} {\bigtt{poissons.ts1(AS="A",save=FALSE)}}\\
+\hyperlink{p4} {\bigtt{poissons.ts2(AS="A",save=FALSE)}}\\
+\hyperlink{p5} {\bigtt{poissons.p3(quel.graph="all",save=FALSE)}}
+\subsection{LIT}
+\hyperlink{l1} {\bigtt{LIT.tableau.brut(save=FALSE, AS="pas de filtre")}}\\
+\hyperlink{l2} {\bigtt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
+    save=FALSE)}}\\
+\hyperlink{l3} {\bigtt{LIT.ts1(AS="A")}}\\
+\hyperlink{l4} {\bigtt{LIT.ts2(AS="A")}}\\
+\hyperlink{l5} {\bigtt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}}
+
+\clearpage
 \section{Survol}
 
 \subsection*{Réglages initiaux}
@@ -146,15 +167,37 @@ pour modifier les requêtes lancées par défaut.
 
 \section{Description des fonctions pour invertébrés, poissons et LIT}
 \subsection{Invertébrés}
+
+\begin{enumerate}
+  \item[] \bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE):} \\
+    \emph{Inv\_IndexBiodivPar + qunit + taxotag + date}
+  \textbf{Tableau} des indices de biodiversité (moyenne et écart type)
+  et richesse spécifique (via \bigtt{inv.RichSpecifique()}) par station (valeur par défaut, peut être
+  changée en modifiant l'argument \bigtt{qunit}). Le tableau produit
+  est utilisé par d'autres fonctions, entre autres inv.biodiv.geom().
+
+  \item[] \bigtt{inv.biodiv.geom(AS="A",save=FALSE):}
+  \item[] \bigtt{inv.sprich.tbl(AS="A",save=TRUE):}
+  \item[] \bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", filtre=TRUE, save=FALSE):}
+  \item[] \bigtt{inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St"):}
+
+  inv.dens.tbl
+  inv.dens.geom
+  inv.dens.tbl.parT
+  inv.graph.TS()
+  inv.graph.TS.top10
+
+\end{enumerate}
+
 \subsection{Poissons}
 \begin{itemize}
-\item[] \bigtt{poissons.tableau.brut(save=FALSE):}\\
+\item[] \hypertarget{p1}{\bigtt{poissons.tableau.brut(save=FALSE)}:}\\
 \emph{GS\_Poissons\_TableauDonneesBrutes\_ + date + .csv}\\
 Reformattage du \textbf{tableau} de données brutes initiales en incluant les
 valeurs de densité et de biomasse pour chaque observation.
 
 
-\item[] \bigtt{BioDens.sp.poissons():} \\
+\item[] \hypertarget{p2}{\bigtt{BioDens.sp.poissons()}:} \\
 Tableau préparatoire (non sauvegardé) calculant les densités et
 biomasses par campagne, transect et espèce en se basant sur l'objet
 \texttt{ds.calc} produit par la fonction
@@ -162,7 +205,7 @@ biomasses par campagne, transect et espèce en se basant sur l'objet
 fonction (nommé \texttt{BDtable} dans l'environnement R) est utilisé
 par les fonctions \texttt{TS1.poissons()} et \texttt{TS2.poissons()}.
 
-\item[]\bigtt{poissons.ts1(AS="A",save=FALSE):}\\
+\item[]\hypertarget{p3}{\bigtt{poissons.ts1(AS="A",save=FALSE)}:}\\
 \emph{GS\_Poissons\_TS1\_ + filtre + date + .csv}\\
  \textbf{Tableau} synthèse contenant la moyenne et l'écart type pour la
  densité, la biomasse, la richesse spécifique et la taille moyenne,
@@ -171,13 +214,13 @@ par les fonctions \texttt{TS1.poissons()} et \texttt{TS2.poissons()}.
  sédentaires, territoriales, mobiles, très mobiles et ciblées (ou non)
  par la pêche en Nouvelle-Calédonie.
 
-\item[]\bigtt{poissons.ts2(AS="A",save=FALSE):}\\
-  \emph{GS\_Poissons\_TS2\_ + filtre + date + .csv}\\
+\item[]\hypertarget{p4}{\bigtt{poissons.ts2(AS="A",save=FALSE)}:}\\
+  \emph{GS\_Poissons\_TS2\_ + filtre + date + .csv}\ \\
 \texttt{Tableau} synthèse contenant pour chaque espèce la densité
 moyenne sur toutes les années, pour chaque année, sur toutes les
 stations et pour chaque station.
 
-\item[]\bigtt{poissons.p3(quel.graph="all",save=FALSE):}\\
+\item[]\hypertarget{p5}{\bigtt{poissons.p3(quel.graph="all",save=FALSE)}:}\\
  \emph{GS\_PoissonsST\_ [valeur représentée].[catégorie de poissons] +
    date + .pdf}\\
  Cette fonction produit des \textbf{graphiques} représentant des séries
@@ -193,21 +236,21 @@ stations et pour chaque station.
 \subsection{LIT}
 
 \begin{itemize}
-\item[] \bigtt{LIT.tableau.brut(save=FALSE, AS="pas de filtre"):}\\
+\item[] \hypertarget{l1}{\bigtt{LIT.tableau.brut(save=FALSE, AS="pas de filtre")}:}\\
   \emph{GS\_LIT\_TableauBrut\_ + filtre + date + .csv}\\
   \textbf{Tableau} formatté des données
 de couverture brutes (une rangée par campagne/transect) -- ce
 tableau est sauvegardé dans l'environnement R sous
 \texttt{LITbrut} et est utilisé par les autres fonctions LIT.
 
-\item[] \bigtt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
-    save=FALSE)}:\\
+\item[] \hypertarget{l2}{\bigtt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
+    save=FALSE)}}:\\
   \emph{GS\_LIT\_Tableau1A\_ + code catégorie de coraux + filtre + year + date + .csv}\\
   \textbf{Tableau} des couvertures moyennes (et SE) pour
   chaque géomorphologie selon l'année et la catégorie de substrat
   spécifiées (par défaut, 2011 et types de substrat généraux).
 
-\item[] \bigtt{LIT.ts1(AS="A")}:\\
+\item[] \hypertarget{l3}{\bigtt{LIT.ts1(AS="A")}}:\\
   Tableau 1: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_ + date + .csv}\\
   Tableau 2: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_DiffCouv\_ + date + .csv}\\
   Figures: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_ + type de coraux + géomorphologie + date + .pdf}\\
@@ -220,7 +263,7 @@ comparent pour chaque géomorphologie et catégorie de substrat les
 tendances de couvertures moyennes par campagne entre les zones
 impactées et non-impactées.
 
-\item[] \bigtt{LIT.ts2(AS="A")}:\\
+\item[] \hypertarget{l4}{\bigtt{LIT.ts2(AS="A")}}:\\
   Tableau: \emph{GS\_LIT\_SerieTempTable\_ + filtre + \_GeoMorphImpact\_bySt\_ + date + .csv}\\
   Figure: \emph{GS\_LIT\_SerieTemp\_ + filtre +
     \_GeoMorphImpact\_bySt\_ + type de coraux + géomorphogie +
@@ -231,7 +274,7 @@ produit aussi des \textbf{graphiques} comparant la couverture moyenne de chaque
 type de substrat entre les stations de la même géomorphologie et zone
 d'impact.
 
-\item[] \bigtt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}:\\
+\item[] \hypertarget{l5}{\bigtt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}}:\\
   Nom de fichier: \emph{GS\_LIT\_Hist1\_ + year + code catégorie de coraux
     + .pdf}\\
   \textbf{Graphiques} en barre comparant la

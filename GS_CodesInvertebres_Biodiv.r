@@ -1,6 +1,6 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 # ** Indices de biodiversité **
-# Time-stamp: <2013-07-17 11:12:36 Laura>
+# Time-stamp: <2013-07-18 11:33:51 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -106,8 +106,8 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
 ########################################################
 
 inv.biodiv.geom <- function(AS="A", save=FALSE) {
-   # Campagnes "A"nnuelles ou "S"emestrielles
-
+    # Campagnes "A"nnuelles ou "S"emestrielles
+    departFunk() # message de depart
   all.bio <- inv.biodiv() # requiert tableau all.bio (~ 1 sec)
 
   ### 1. #############################
@@ -167,6 +167,7 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
   dd <- aggr.funk(c("Campagne","Geomorpho"))
   dd <- aggr.funk(c("Campagne","Geomorpho","N_Impact"))
 
+    finFunk()
 }
 
 ###################################################
@@ -174,7 +175,7 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
 ###################################################
 
 inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
-
+departFunk() # message de depart
   ### 1. #############################
   ### Appliquer filtres ###############
   ta.raw <- merge(dbio, info.transect[,c("St","Geomorpho","N_Impact")])
@@ -215,12 +216,14 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
 
     if(grtax != "G_Sp") e1$rs.all <- merge(e1$rs.all, tb.all, by=ff)
 
+    finFunk()
     return(tb.all)
     }
 
   e1$rs.all <- rsfunk("G_Sp")
   dmm <- lapply(c("Genre","Famille","S_Groupe","Groupe"), rsfunk)
 
+  finFunk()
   return(e1$rs.all)
 }
 
@@ -229,7 +232,7 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
 ########################################
 
 inv.sprich.tbl <- function(AS="A",grtax="Groupe",save=FALSE, filtre=FALSE) {
-
+departFunk() # message de depart
   ### 1. #############################
   ### Appliquer filtres ###############
   ta.raw <- merge(dbio, info.transect[,c("St","Geomorpho")])
@@ -267,17 +270,21 @@ inv.sprich.tbl <- function(AS="A",grtax="Groupe",save=FALSE, filtre=FALSE) {
   }
 
 sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", filtre=TRUE, save=FALSE) {
+    departFunk() # message de depart
+    on.exit(EM())
 
   ### 1. #############################
   ### Appliquer filtres ###############
   wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
   ta.raw <- filtreTable(dbio, wf)
-
+  on.exit(EM())
   # Filtre les espèces au besoin
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Créer colonnes de présence
   ta.raw$presence <- ifelse(ta.raw$N == 0, 0, 1)
+
+
   ta.raw$aggrTax <- ta.raw[,grtax]
 
   ### 2. ###########################################################
@@ -295,5 +302,6 @@ sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", filtre=TRUE, save=FALSE) 
     taxotag <- taxotagFunk()
     write.csv(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParAggrTaxon",grtax, ftag,taxotag,
                             Sys.Date(),".csv",sep=""),row.names=FALSE)}
-  return(tb.all)
+
+return(tb.all)
   }

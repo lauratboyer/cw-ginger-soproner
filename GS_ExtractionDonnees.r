@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-17 10:23:16 Laura>
+# Time-stamp: <2013-07-18 11:26:35 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -332,23 +332,20 @@ prep.analyse <- function() {
   # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <<- function(wtable, wfiltre) {
     if(wfiltre %in% c("T_A_inv","T_S_inv")) { # appliquer le filtre si spécifié
-    print(paste("Stations filtrées par",wfiltre))
+    message(paste("Stations filtrees par",wfiltre))
     wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
     dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
                      wtable,by="key", drop.x="key")
   } else {
     CmpTag <- paste(filtre.annees,collapse="|")
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-    print(wCampKeep)
+#    print(wCampKeep)
     wtable <- wtable[wtable$Campagne %in% wCampKeep,]
     }
   }
 
   # 2. Converti les noms de campagne en année (charactère -> numérique)
-  as.year <<- function(x) {
-    s1 <- sub("A_","",x)
-    s2 <- sub("S_","",s1)
-    return(as.numeric(s2)) }
+  as.year <<- function(x) as.numeric(sub("[AS]_","",x))
 
   # 3. Dessine les barres d'erreurs
   draw.SE <<- function(mat, couleur=1, typel=1) {
@@ -443,12 +440,29 @@ prep.analyse <- function() {
   # Ces fonctions sont utilisées pour indiquer le départ et la fin
   # des codes compris dans une fonction
   departFunk <<- function() {
-      packageStartupMessage(sprintf("depart %s ...",sys.calls()[1]))
-      print(names(formals(sys.calls()[1])))
-      print(unlist(mget(names(formals(sys.calls()[1])), envir=environment())))
-      print(environment(sys.calls()[1]))}
-  finFunk <<- function() packageStartupMessage(sprintf("fin %s",sys.calls()[1]))
+      sc <- sys.calls()
+      fname <- as.character(sc[[length(sc)-1]])[1] # extrait le nom de la fonction parent
+      packageStartupMessage(sprintf("\nDepart %s()...",fname))
+      print(unlist(mget(names(formals(fname)), envir=sys.frame(-1))))
+      message("#################\n")
+      }
+  finFunk <<- function() {
+      message("\n#################")
+      sc <- sys.calls()
+      fname <- as.character(sc[[length(sc)-2]])[1] # extrait le nom de la fonction parent
+      packageStartupMessage(sprintf("---> fin %s().",fname)) }
 
+  ## Si erreur dans une fonction, indiquer la fonction où l'erreur se produit
+  ## EM() est donnée en argument a la fonction on.exit() qui tourne automatiquement
+  ## l'argument spécifié quand une fonction se termine, naturellement ou avec
+  ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
+  ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
+  EM <<- function() {
+      if(identical(paste(last(.Traceback)), paste(sys.calls()[1]))) {
+          print("hop")
+      message(sprintf("Erreur dans la fonction %s()",
+                      paste(sys.calls()[[1]][1])))
+          } else {finFunk()} }
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
