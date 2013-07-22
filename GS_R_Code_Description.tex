@@ -168,26 +168,53 @@ pour modifier les requêtes lancées par défaut.
 \section{Description des fonctions pour invertébrés, poissons et LIT}
 \subsection{Invertébrés}
 
-\begin{enumerate}
+\begin{itemize}
   \item[] \bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE):} \\
-    \emph{Inv\_IndexBiodivPar + qunit + taxotag + date}
-  \textbf{Tableau} des indices de biodiversité (moyenne et écart type)
+    \emph{Inv\_IndexBiodivPar + qunit + filtre station + filtre taxo} \\
+  \textbf{Tableau} des indices de biodiversité (moyenne et écart type)
   et richesse spécifique (via \bigtt{inv.RichSpecifique()}) par station (valeur par défaut, peut être
   changée en modifiant l'argument \bigtt{qunit}). Le tableau produit
-  est utilisé par d'autres fonctions, entre autres inv.biodiv.geom().
+  est utilisé par d'autres fonctions, entre autres \texttt{inv.biodiv.geom()}.
 
-  \item[] \bigtt{inv.biodiv.geom(AS="A",save=FALSE):}
-  \item[] \bigtt{inv.sprich.tbl(AS="A",save=TRUE):}
-  \item[] \bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", filtre=TRUE, save=FALSE):}
-  \item[] \bigtt{inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St"):}
+  \item[] \bigtt{inv.biodiv.geom(AS="A",save=FALSE):}\\
+    \emph{Inv\_IndexBiodiv + géomorphologie/impact + filtre station + filtre taxo}\\
+    \textbf{Tableau} résumé des moyennes (et ET) sur station par
+    géomorphologie, et par géomorphologie/type d'impact.
 
-  inv.dens.tbl
+  \item[] \bigtt{inv.sprich.tbl(AS="A",grtax="Groupe",save=FALSE):}
+    \emph{Inv\_NumEspeceParGeomorph + groupe taxo + filtre station +
+      filtre taxo} \\
+    \textbf{Tableau} du nombre d'espèces pour chacun des membres de
+    l'aggrégation taxonomique spécifiée (\texttt{grtax}), proportion
+    des espèces contenues dans chaque membre, et nombre total
+    d'espèces observées par campagne/géomorphologie.
+
+  \item[] \bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", save=FALSE):}\\
+    \emph{Inv\_NumEspeceParAggrTaxon + groupe taxo + filtre station +
+      filtre taxo} \\
+    \textbf{Tableau} de la richesse spécifique (nombre d'espèces) pour
+    chaque membre du l'aggrégation taxonomique choisie
+    (\texttt{grtax}). Par exemple si \texttt{grtax = "S_Groupe"}, le
+    tableau contiendra pour chaque station le nombre d'espèce pour
+    chacun des sous-groupes taxonomiques observés sur les stations
+    contenues dans le filtre.
+
+  \item[] \bigtt{inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St"):}\\
+    \textbf{Tableau} interne non sauvegardé mais utilisé en
+    information complémentaire pour d'autres tableaux
+    (\texttt{inv.biodiv()}, \texttt{inv.biodiv.geom()}). Richesse
+    spécifique par niveau taxonomique (nombre de genres, familles, sous-groupes,
+    groupes) par station ou transect, avec option d'ajouter la moyenne
+    (ET) de la RS par géomorphologie (\texttt{aggr="geom"}) et zone
+    d'impact (\texttt{aj.impact = TRUE}).
+
+    inv.dens.tbl
   inv.dens.geom
   inv.dens.tbl.parT
   inv.graph.TS()
   inv.graph.TS.top10
 
-\end{enumerate}
+\end{itemize}
 
 \subsection{Poissons}
 \begin{itemize}

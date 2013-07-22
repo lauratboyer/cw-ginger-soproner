@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-18 11:26:35 Laura>
+# Time-stamp: <2013-07-22 11:54:20 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -339,7 +339,6 @@ prep.analyse <- function() {
   } else {
     CmpTag <- paste(filtre.annees,collapse="|")
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-#    print(wCampKeep)
     wtable <- wtable[wtable$Campagne %in% wCampKeep,]
     }
   }
@@ -458,10 +457,11 @@ prep.analyse <- function() {
   ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
   ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
   EM <<- function() {
-      if(identical(paste(last(.Traceback)), paste(sys.calls()[1]))) {
-          print("hop")
-      message(sprintf("Erreur dans la fonction %s()",
+      tb <- get(".Traceback",envir=baseenv()) # extraire messages d'erreur
+      if(identical(paste(last(tb)), paste(sys.calls()[1]))) {
+          message(sprintf("Erreur dans la fonction %s()",
                       paste(sys.calls()[[1]][1])))
+          assign(".Traceback"[[1]],999,envir=baseenv())
           } else {finFunk()} }
   ###################################################
   ###################################################
