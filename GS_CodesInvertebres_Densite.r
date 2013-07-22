@@ -1,7 +1,7 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 ## ** Tableaux/graphiques de densité ** ##
 
-# Time-stamp: <2013-01-21 14:46:55 Laura>
+# Time-stamp: <2013-07-22 16:16:25 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -22,7 +22,7 @@ inv.dens.tbl.parT <- function(AS="A", grtax="G_Sp", wZeroAll=FALSE, save=FALSE) 
   ### Appliquer filtre ###############
   # Campagnes:
   wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
-  
+
   ta.raw <- filtreTable(dbio, wf)
   # Espèces:
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
@@ -34,7 +34,7 @@ inv.dens.tbl.parT <- function(AS="A", grtax="G_Sp", wZeroAll=FALSE, save=FALSE) 
   ff <- c("Campagne","St","T",grtax) # facteurs d'aggrégation
 
   # Densité de chaque groupe taxonomique sur le transect
-  ta.raw <- aggregate(list("D"=ta.raw$D), as.list(ta.raw[,ff]), sum) 
+  ta.raw <- aggregate(list("D"=ta.raw$D), as.list(ta.raw[,ff]), sum)
 
   ### 3. Rajouter zéros partout si spécifié #######
   #################################################
@@ -88,11 +88,11 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
 
   ### 1. #################################
   ### Densité par transect ###############
-  ff <- c("Campagne","St","T","Grp2","S_Grp2","Famille","Genre","G_Sp")
+  ff <- c("Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp")
   ff <- ff[1:(which(ff==grtax))] # sélectionne la partie du vecteur allant jusqu'à grtax
 
   # Densité de chaque grtax sur le transect
-  dens.tb <- aggregate(list("D"=dbio$D), as.list(dbio[,ff]), sum) 
+  dens.tb <- aggregate(list("D"=dbio$D), as.list(dbio[,ff]), sum)
 
   ### 2. #############################
   ### Appliquer filtre ###############
@@ -107,7 +107,7 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
   ### 3. ######################################################
   ### Densité moyenne(SD) by Campagne/St/Espèce ###############
   ff <- ff[ff != "T"]
-  
+
   tb.1 <- aggregate(list("dens.moy"=ta.raw$D),
                     as.list(ta.raw[,ff]), mean)
   tb.1.b <- aggregate(list("dens.sd"=ta.raw$D),
@@ -118,11 +118,11 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
   tb.all[,c("dens.moy","dens.sd")] <- round(tb.all[,c("dens.moy","dens.sd")],5)
   iti <- info.transect.INV[,c("Annee","Mois","Mission","Campagne",
                                 "Geomorpho", "St","N_Impact")]
-  tb.all <- merge(iti, tb.all) 
+  tb.all <- merge(iti, tb.all)
 
   # ordonner colonnes:
   tb.all <- with(tb.all, tb.all[order(Annee, Mois, Geomorpho, St, N_Impact),])
-  
+
   ### 4. ###############################
   ### Sauvegarde des tableaux ############
   if(save) {
@@ -163,11 +163,11 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
   ### (i) #############################################################################
   ### Extraire tableau des densités moyennes pour le niveau taxonomique ###############
     if(!is.na(top10year)) {idtax <- "G_Sp"
-                          }else{ idtax <- ff[ff %in% c("Grp2","S_Grp2")] }
+                          }else{ idtax <- ff[ff %in% c("Groupe","S_Groupe")] }
 
     # valeur filtre définie dans l'argument de la fonction inv.dens.geom
     ta.raw <- inv.dens.tbl(grtax=idtax, AS=AS, save=FALSE)
-    
+
   ### (ii) #############################################################################
   ### Calculer densité moyenne sur la géomorphologie pour le niveau taxonomique ########
 
@@ -182,19 +182,19 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
 
     # (2) maintenant calculer moyenne/SD par groupement spatial
     tb.1 <- aggregate(list("dens.moy"=ta.raw.0$dens.moy),
-                      as.list(ta.raw.0[,ff]), mean) 
+                      as.list(ta.raw.0[,ff]), mean)
     tb.1.sd <- aggregate(list("dens.sd"=ta.raw.0$dens.moy),
                          as.list(ta.raw.0[,ff]), sd)
     tb.all <- merge(tb.1,tb.1.sd,by=ff)
 
   ### (iii) ##################################################
-  ### Extraire densité des espèces top 10 si spécifié ########  
+  ### Extraire densité des espèces top 10 si spécifié ########
     if(sum(grepl("G_Sp",ff))==1) {
-      grnow <- ff[ff %in% c("Grp2","S_Grp2")] # identification du groupement
+      grnow <- ff[ff %in% c("Groupe","S_Groupe")] # identification du groupement
       sptop10 <- top10sp(AS=AS, wyear=top10year, wff=grnow,
                          impact=aj.impact, spttcampagnes=spttcampagnes)
       tb.all <- merge(sptop10, tb.all, by=ff[ff != "Campagne"]) }
-    
+
   ### (iv) #####################################
   ### Formattage des tableaux de sortie ########
   ### (1) ordonner les valeurs par colonnes:
@@ -223,44 +223,44 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
 
   ### 3. ###############################################
   ### Densité moyenne(SD) par facteurs X ###############
-  ff.list <- list(c("Geomorpho","Campagne","Grp2"),
-                  c("Geomorpho","Campagne","S_Grp2"))
+  ff.list <- list(c("Geomorpho","Campagne","Groupe"),
+                  c("Geomorpho","Campagne","S_Groupe"))
 
   # Rajouter facteur impact si spécifié
   if(aj.impact) ff.list <- lapply(ff.list, function(i) c(i[1:2],"N_Impact",i[3]))
 
   # Appliquer les facteurs à la fonction d'aggrégation
   tbl.list <- lapply(ff.list, aggr.funk)
-  names(tbl.list) <- c("Grp2","S_Grp2") # deux tableaux produits: groupe/sous-gr
-  
+  names(tbl.list) <- c("Groupe","S_Groupe") # deux tableaux produits: groupe/sous-gr
+
   ### 4. ########################################################################
   ### Densité moyenne(SD) pour les 10 espèces les plus abondantes ###############
 
   # Calcul de la densité moyenne de chaque espèce par morphologie
-  # Rajouter G_Sp à la liste des facteurs et aggréger... 
+  # Rajouter G_Sp à la liste des facteurs et aggréger...
   ff.list.sp <- lapply(ff.list, function(i) c(i,"G_Sp"))
   # ... pour les 10 espèces les plus abondantes sur toute la série temporelle
   tbl.list.sp.1 <- lapply(ff.list.sp, function(x) aggr.funk(x, top10year="all"))
-  names(tbl.list.sp.1) <- c("Grp2","S_Grp2")
+  names(tbl.list.sp.1) <- c("Groupe","S_Groupe")
   # ... et pour les 10 espèces les plus abondantes en 2006
   tbl.list.sp.2 <- lapply(ff.list.sp, function(x) aggr.funk(x, top10year="1ere"))
-  names(tbl.list.sp.2) <- c("Grp2","S_Grp2")
+  names(tbl.list.sp.2) <- c("Groupe","S_Groupe")
   # ... et pour les 10 espèces les plus abondantes en 2011
   tbl.list.sp.3 <- lapply(ff.list.sp, function(x) aggr.funk(x, top10year="derniere"))
-  names(tbl.list.sp.3) <- c("Grp2","S_Grp2")
+  names(tbl.list.sp.3) <- c("Groupe","S_Groupe")
 
   ########################################################
   ########################################################
   return(list("allsp"=tbl.list, "top10all"=tbl.list.sp.1,
               "top102006"=tbl.list.sp.2,"top102011"=tbl.list.sp.3))
-  
+
   }
 
-top10sp <- function(AS="A", wyear="all", wff="Grp2", grtax="G_Sp",
+top10sp <- function(AS="A", wyear="all", wff="Groupe", grtax="G_Sp",
                     impact=FALSE, spttcampagnes=FALSE) {
 
   # wyear set to "1ere" ou "derniere"
-  
+
   # Cette function sélectionne les 10 espèces les plus abondantes ("wval")
   # à l'intérieur d'un facteur "wff", et par géomorphologie
   # dans le tableau "inv.Ab$AbdStEspece" (abondance totale espèce par station/campagne)
@@ -289,7 +289,7 @@ top10sp <- function(AS="A", wyear="all", wff="Grp2", grtax="G_Sp",
   ff <- c("Campagne","Geomorpho","N_Impact",wff, grtax)
   if(!impact) ff <- ff[ff != "N_Impact"]
   # abondance totale d'une espèce par campagne et géomorphologie (et impact si spécifié)
-  tb <- aggregate(list("N"=wdf$dens.moy),as.list(wdf[,ff]),sum) 
+  tb <- aggregate(list("N"=wdf$dens.moy),as.list(wdf[,ff]),sum)
 
   # Abondance totale / nombre de sites appartenant au groupe
   ff.num <- c("Geomorpho","N_Impact")[1:ifelse(impact,2,1)]
@@ -329,22 +329,22 @@ top10sp <- function(AS="A", wyear="all", wff="Grp2", grtax="G_Sp",
 
 top10sp.recc <- function(AS="A", grtax="G_Sp", filtre=FALSE, impact=FALSE) {
 
-  # identify species that are observed in all campagnes, on the géomorpho/impact 
+  # identify species that are observed in all campagnes, on the géomorpho/impact
   wdf <- inv.dens.tbl(AS=AS, grtax=grtax)
   wdf <- wdf[wdf$dens.moy > 0,] # ote les espèces avec densité nulle sur une station
 
   # filre
   if(filtre) wdf <- filtreTable(wdf, paste("T",AS,"inv",sep="_"))
-  
+
   d1 <- merge(wdf, info.transect[,c("St","Geomorpho","N_Impact")])
 
   ff <- c("Geomorpho","N_Impact")
   if(!impact) ff <- ff[ff!="N_Impact"]
-  
+
   d2 <- unique(d1[,c("Campagne",ff,grtax)])
   if(impact) {d2$SpatialGr <- paste(d2$Geomorpho, d2$N_Impact, sep="_")
             } else {d2$SpatialGr <- d2$Geomorpho}
-  
+
   d3 <- tapply(d2[,grtax], as.list(d2[,c(grtax,"Campagne","SpatialGr")]), length)
   campf <- dimnames(d3)$Campagne
   geof <- dimnames(d3)$SpatialGr
@@ -360,7 +360,7 @@ top10sp.recc <- function(AS="A", grtax="G_Sp", filtre=FALSE, impact=FALSE) {
     s2 <- data.frame(wg, names(s1))
     names(s2) <- c("SpatialGr",grtax)
     return(s2)}
-}  
+}
 
   d4 <- do.call(rbind,lapply(geof, subf))
   if(impact) {
@@ -373,10 +373,10 @@ top10sp.recc <- function(AS="A", grtax="G_Sp", filtre=FALSE, impact=FALSE) {
   d5 <- d5[,c(ff,ni)]
 }
 
-inv.graph.TS <- function(AS="A", wtype="allsp", wff="Grp2", top10year="", save=TRUE) {
+inv.graph.TS <- function(AS="A", wtype="allsp", wff="Groupe", top10year="", save=TRUE) {
 
   # option "wtype" peut-être "allsp" ou "top10" (pour les 10 espèces les plus abondantes)
-  
+
   # Données:
   ts.data <- inv.dens.geom(AS=AS)
 
@@ -395,21 +395,21 @@ inv.graph.TS <- function(AS="A", wtype="allsp", wff="Grp2", top10year="", save=T
     if(rds[1] != 8 | rds[2] != 6.5) quartz(width=8, height=6.5)
     par(family="serif",mai=c(0.8,0.1,0.5,0.1), omi=c(0,0.75,0,0.4))
     layout(cbind(1,1,1,1,1,2,2))
-    
+
     dfig <- dd[[i]]
     xl <- range(dfig$Campagne)
     yl <- c(0, max(dfig$dens.moy+dfig$dens.sd,na.rm=TRUE))
     lab.y <- c(expression(paste("Densite moyenne (individus/",m^2,")",sep="")))
-    
+
     dfig <- split(dfig,dfig[,wff])
     leg.lab <- names(dfig)
     lab.y <- c(expression(paste("Densite moyenne (individus/",m^2,")",sep="")))
-               
+
     plot(1,1,type="n",xlim=xl,ylim=yl,las=1,ylab="",xlab="Annee",
          cex.lab=1.5, cex.axis=1.25)
     mtext(paste(names(dd)[i],":",sep=""), adj=0, cex=1.2)
     mtext(lab.y, side=2, outer=TRUE, line=3.5)
-    
+
     subfunk <- function(i) {
       dnow <- dfig[[i]]
       lines(dnow$Campagne, dnow$dens.moy, type="b", lty=i, col=i)
@@ -434,10 +434,10 @@ inv.graph.TS <- function(AS="A", wtype="allsp", wff="Grp2", top10year="", save=T
 
 }
 
-inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
+inv.graph.TS.top10 <- function(AS="A", wff="Groupe", top10year="all", save=TRUE) {
 
   # option "wtype" peut-être "allsp" ou "top10" (pour les 10 espèces les plus abondantes)
-  
+
   # Données:
  ts.data <- inv.dens.geom(AS=AS)
 
@@ -448,7 +448,7 @@ inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
   dd <- ts.data[[paste("top10",top10year,sep="")]][[wff]]
   dd$Campagne <- as.year(dd$Campagne)
   jfact <- unique(dd[,wff])
-  
+
   dd <- split(dd, dd$Geomorpho)
 
   # Fonction figure:
@@ -458,11 +458,11 @@ inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
     if(rds[1] != 8 | rds[2] != 6.5) quartz(width=8, height=6.5)
     layout(cbind(1,1,1,1,1,2,2))
     par(family="serif",mai=c(0.8,0.1,0.5,0.1), omi=c(0,0.75,0,0.4))
-   
+
     dfig <- dd[[geo]][dd[[geo]][,wff]==gtype,]
     # faire seulement un graph s'il y a des données pour cette géomorpho/groupe
     if(nrow(dfig)>0){
-      
+
       xl <- c(2006,2011)
     dfig$dens.sd[is.na(dfig$dens.sd)] <- 0
     yl <- c(0, max(dfig$dens.moy+dfig$dens.sd,na.rm=TRUE))
@@ -470,7 +470,7 @@ inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
     dfig <- split(dfig,dfig[,"G_Sp"])
     leg.lab <- names(dfig)
     lab.y <- c(expression(paste("Densite moyenne (individus/",m^2,")",sep="")))
-               
+
     plot(1,1,type="n",xlim=xl,ylim=yl,las=1,xlab="Annee",
          cex.lab=1.5, cex.axis=1.25)
       mtext(paste(names(dd)[geo],"/",gtype,":",sep=""), adj=0, cex=1.2)
@@ -486,7 +486,7 @@ inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
 
       lapply(1:length(dfig),subfunk)
       plot(1,1,type="n",ann=FALSE, axes=FALSE)
-      
+
     legend("topleft",leg.lab, bty="n",lty=1:length(dfig), col=1:length(dfig),
            xpd=NA, ncol=1, cex=1.25)
 
@@ -505,7 +505,7 @@ inv.graph.TS.top10 <- function(AS="A", wff="Grp2", top10year="all", save=TRUE) {
 
 
 
-  
+
 ####################################################################################################
 ####################################################################################################
 ####################################################################################################
