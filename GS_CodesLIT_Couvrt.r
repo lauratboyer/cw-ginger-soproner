@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des données LIT
-# Time-stamp: <2013-07-15 10:55:21 Laura>
+# Time-stamp: <2013-07-22 16:40:33 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
@@ -329,41 +329,6 @@ LIT.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
               paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_bySt_",Sys.Date(),".csv",sep=""),
               row.names=FALSE)
     invisible(val.all)
-}
-########################################################################################
-########################################################################################
-if(!exists("LIT.brut")) LIT.brut <- LIT.tableau.brut() #LIT.brut formerly dd.ii
-
-save.all <- FALSE
-if(save.all) {
-
-  # Tableau des données par transect:
-  dmm <- LIT.tableau.brut(save=TRUE)
-  # Données par transect, avec filtre A et S:
-  dmm <- LIT.tableau.brut(save=TRUE, AS="A", filtre=TRUE)
-  dmm <- LIT.tableau.brut(save=TRUE, AS="S", filtre=TRUE)
-
-  # Moyenne + SE par type de coraux dans une categorie par geomorphologie
-  # formely lit.tb.1()
-  # LIT.resume
-  dmm <- LIT.resume(save=TRUE) # categorie par defaut: Coraux_Gen
-  dmm <- LIT.resume(ff="Coraux_Acro",save=TRUE) # categorie acroporidae
-
-  # Graphiques (avant: lit.BP.1)
-  LIT.bp1() #graphique des valeurs obtenues en LIT.ts1
-  LIT.bp1(ff2="Coraux_Acro")
-
-  # Statistiques calculees sur geomorpho x impact (tableau + graph)
-  # couverture moyenne par geomorpho, comparaison impact/non impact
-  # avant: lit.TS.1()
-  LIT.ts1()
-  LIT.ts1("S")
-
-  # comparaison couverture moyenne par station, par geomorpho/impact/type de corail
-  # avant: lit.TS.2()
-  LIT.ts2()
-  LIT.ts2("S")
-
 }
 
 

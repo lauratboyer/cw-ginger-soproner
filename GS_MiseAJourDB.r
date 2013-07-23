@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-06-27 11:09:13 Laura>
+# Time-stamp: <2013-07-22 17:35:40 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -80,8 +80,16 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   # (objets importés dans l'environnment global .GlobalEnv pour qu'ils soient accessibles partout
   check.o <- obj.names %in% ls() # verifier s'il y a des tableaux deja chargés
   if(sum(check.o)>0) rm(list=obj.names[check.o]) # oter les objets au besoin
-  dmm <- sapply(1:length(obj.names),function(x) assign(obj.names[x],
-                read.csv(paste(dossier.donnees, obj.files[x], sep=""), encoding="UTF-8"),.GlobalEnv))
+
+  # fonction pour tester si les rangees sont vides:
+  is.empty <- function(x) all(c(is.na(x) | is.null(x) | x == ""))
+
+  # extraire des fichiers csv et assigner aux noms d'objets (voir obj.names)
+  dmm <- sapply(1:length(obj.names),function(x) {
+      objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""), encoding="UTF-8");
+      objnow <- objnow[!apply(objnow,1,is.empty),]; # oter les rangees vides
+      assign(obj.names[x], objnow, .GlobalEnv)} # creer l'objet dans l'envir global
+
   print("Tableaux importés:")
   print(DBinf.now[obj.names %in% ls(.GlobalEnv)])
 

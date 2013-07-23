@@ -1,12 +1,13 @@
 ## Ginger/Soproner: Produits/Analyses poissons
 # ** Code central pour lancer analyses couvertures LIT moy/SE
-# Time-stamp: <2013-07-15 10:25:09 Laura>
+# Time-stamp: <2013-07-22 16:33:37 Laura>
 
 ########################################################
 ########################################################
-if(!exists("LIT.tableau.brut")) source("GS_CodesLIT_Couvrt.r")
 
 Run.LIT.all <- function() {
+
+    if(!exists("LIT.tableau.brut")) source("GS_CodesLIT_Couvrt.r")
 
     # Tableaux seulement:
     ####################

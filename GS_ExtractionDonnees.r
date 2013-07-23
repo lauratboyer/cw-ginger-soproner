@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-22 11:54:20 Laura>
+# Time-stamp: <2013-07-22 16:31:49 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -462,7 +462,7 @@ prep.analyse <- function() {
           message(sprintf("Erreur dans la fonction %s()",
                       paste(sys.calls()[[1]][1])))
           assign(".Traceback"[[1]],999,envir=baseenv())
-          } else {finFunk()} }
+          } else { finFunk()} }
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
@@ -474,6 +474,7 @@ prep.analyse <- function() {
   index.invSp <<- index.invSp
   bioeco <<- bioeco
   bioeco.all <<- bioeco.all
+  data.LIT <<- data.LIT
   index.LIT <<- index.LIT
   coraux.fig <<- coraux.fig
   pr.Bacip <<- pr.Bacip

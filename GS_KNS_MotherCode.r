@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-16 11:21:18 Laura>
+# Time-stamp: <2013-07-22 16:45:59 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -30,6 +30,7 @@ sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRU
 sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 # Dossier où les analyses sont faites, et qui contient le code R et les graphiques/tableaux produits
+# Attention de rajouter un "/" à la fin, selon le format "C:/.../dossier.R/"
 dossier.R <- ifelse(usernow=="Antoine", "C:/dossier.R/","/Users/Laura/Projects/cw-ginger-soproner/")
 
 # Dossier de sauvegarde Dropbox
