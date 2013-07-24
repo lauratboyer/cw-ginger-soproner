@@ -1,20 +1,21 @@
-# Ginger/Soproner: Produits/Analyses invertébrés
-## ** Tableaux/graphiques de densité ** ##
+# Ginger/Soproner: Produits/Analyses invertebres
+## ** Tableaux/graphiques de densite ** ##
 
-# Time-stamp: <2013-07-22 16:16:25 Laura>
+# Time-stamp: <2013-07-24 12:28:12 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
- # Extraction tableaux des bases de données
+ # Extraction tableaux des bases de donnees
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 print("TO DO: inv.dens.tbl should be the same as inv.dens.TS - not the case right now")
-print("TO DO: get new data from Antoine + make sure a single month is entered in db")
+print("TO DO: make sure a single month is entered in DB")
 
 #########################################################################
-# Calcul de la densité moyenne des espèces observées par transect/station/campagne
+# Calcul de la densite moyenne des especes
+# observees par transect/station/campagne
 
 inv.dens.tbl.parT <- function(AS="A", grtax="G_Sp", wZeroAll=FALSE, save=FALSE) {
 
@@ -27,10 +28,10 @@ inv.dens.tbl.parT <- function(AS="A", grtax="G_Sp", wZeroAll=FALSE, save=FALSE) 
   # Espèces:
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-  # Densité par transect: Nombre d'individus/Aire du transect -> N/(50*Ltrans)
-  # (confirmé par valeurs "D" existantes)
+  # Densite par transect: Nombre d'individus/Aire du transect -> N/(50*Ltrans)
+  # (confirme par valeurs "D" existantes)
   ### 2. #################################
-  ### Densité par transect ###############
+  ### Densite par transect ###############
   ff <- c("Campagne","St","T",grtax) # facteurs d'aggrégation
 
   # Densité de chaque groupe taxonomique sur le transect
@@ -82,7 +83,7 @@ inv.dens.tbl.parT <- function(AS="A", grtax="G_Sp", wZeroAll=FALSE, save=FALSE) 
 #########################################################################
 # Calcul de la densité moyenne des espèces observées par station/campagne
 
-inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
+inv.dens.tbl <- function(AS="A", smpl.unit="St", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
 
   # Densité par transect: Nombre d'individus/Aire du transect -> N/(50*Ltrans)
 
@@ -93,54 +94,75 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
 
   # Densité de chaque grtax sur le transect
   dens.tb <- aggregate(list("D"=dbio$D), as.list(dbio[,ff]), sum)
-
-  ### 2. #############################
-  ### Appliquer filtre ###############
   ta.raw <- merge(dens.tb, info.transect[,c("St","Geomorpho")])
 
+  ### 2. #############################
+  ### Appliquer filtres ###############
   # Campagnes:
   wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
   ta.raw <- filtreTable(ta.raw, wf)
+
   # Espèces:
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-  ### 3. ######################################################
-  ### Densité moyenne(SD) by Campagne/St/Espèce ###############
-  ff <- ff[ff != "T"]
+  if(smpl.unit!="T") {
 
-  tb.1 <- aggregate(list("dens.moy"=ta.raw$D),
-                    as.list(ta.raw[,ff]), mean)
-  tb.1.b <- aggregate(list("dens.sd"=ta.raw$D),
-                      as.list(ta.raw[,ff]), sd)
-  tb.all <- merge(tb.1,tb.1.b,by=ff)
+      ### 3. ######################################################
+      ### Densité moyenne(SD) by Campagne/St/Espèce ###############
+      ff <- ff[!(ff=="T")] # ôter le facteur transect pour calculer sur stations
+      print(ff)
 
+      tb.1 <- aggregate(list("dens.moy"=ta.raw$D),
+                        as.list(ta.raw[,ff]), mean)
+      tb.1.b <- aggregate(list("dens.sd"=ta.raw$D),
+                          as.list(ta.raw[,ff]), sd)
+      tb.all <- merge(tb.1,tb.1.b,by=ff)
 
-  tb.all[,c("dens.moy","dens.sd")] <- round(tb.all[,c("dens.moy","dens.sd")],5)
+      tb.all[,c("dens.moy","dens.sd")] <- round(tb.all[,c("dens.moy","dens.sd")],5)
+
+      } else {tb.all <- ta.raw # si smpl.unit == T, on continue avec le tableau transect seulement
+          names(tb.all)[names(tb.all)=="D"] <- "dens" # renomme colonne densité
+          }
+
+  # Rajouter infos additionelles
   iti <- info.transect.INV[,c("Annee","Mois","Mission","Campagne",
                                 "Geomorpho", "St","N_Impact")]
   tb.all <- merge(iti, tb.all)
 
   # ordonner colonnes:
-  tb.all <- with(tb.all, tb.all[order(Annee, Mois, Geomorpho, St, N_Impact),])
+  ord.ff <- c("Annee", "Mois", "Geomorpho", "N_Impact", "St")
+  if(smpl.unit) ord.ff <- c(ord.ff,"T") # ordonner par transect si applicable
+  tb.all <- tb.all[do.call(order, tb.all[,ord.ff]),]
 
   ### 4. ###############################
   ### Sauvegarde des tableaux ############
   if(save) {
-    ftag <- paste("_Filtre_",AS,"_",sep="")
+    ftag <- paste("_Filtre-",AS,"_",sep="")
     taxotag <- taxotagFunk()
-    write.csv(tb.all,file=paste(tabl.dir,"Inv_DensiteParST_",grtax,ftag,taxotag,
+    write.csv(tb.all,file=paste(tabl.dir,"Inv_DensitePar_",smpl.unit,"_",ftag, grtax, taxotag,
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
   }
 
   ### 5. ###############################
   ### Si spécifié, rajouter abondances nulles sur les sites non-occupés
   if(wZeroAll) {
-    idtbl <- expand.grid(unique(tb.all$Campagne), unique(tb.all$St), unique(tb.all[,grtax]))
-    names(idtbl) <- c("Campagne","St", grtax)
+      dlab <- ifelse(smpl.unit == "T", "dens", "dens.moy") # spécifier type de densité
+      mfacts <- c("Campagne","St", grtax)
 
-    tb.all2 <- merge(tb.all, idtbl, by=c("Campagne","St", grtax), all=TRUE)
-    tb.all2$dens.moy[is.na(tb.all2$dens.moy)] <- 0 # mettre valeurs NA à zéro
-    tb.all <- tb.all2 }
+      if(smpl.unit == "T") {
+          idtbl <- expand.grid(unique(tb.all$Campagne), unique(tb.all$St),
+                               unique(tb.all[,grtax]), T=c("A","B","C"))
+          mfacts <- c(mfacts, "T") # rajouter facteur Transect pour merge zéros
+      }else{
+          idtbl <- expand.grid(unique(tb.all$Campagne), unique(tb.all$St), unique(tb.all[,grtax]))}
+
+      # nommer colonnes
+      names(idtbl)[1:3] <- c("Campagne","St", grtax)
+
+      # fusionner avec tableau-toutes-combinaisons (idtbl) pour rajouter les zéros
+      tb.all2 <- merge(tb.all, idtbl, by=mfacts, all=TRUE)
+      tb.all2[,dlab][is.na(tb.all2[,dlab])] <- 0 # mettre valeurs NA à zéro
+      tb.all <- tb.all2 }
 
   return(tb.all)
 }
@@ -152,8 +174,8 @@ inv.dens.tbl <- function(AS="A", grtax="G_Sp", save=FALSE, wZeroAll=FALSE) {
 #####################################################################################
 ## Option de rajouter l'effect Impact (aj.impact=TRUE) ##############################
 
-inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
-                        spttcampagnes=FALSE) {
+inv.dens.geom <- function(AS="A", aj.impact=FALSE,
+                        spttcampagnes=FALSE, save=FALSE) {
 
   ### 1. ###############################
   ### Définir fonction d'aggrégation ###
@@ -171,15 +193,17 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
   ### (ii) #############################################################################
   ### Calculer densité moyenne sur la géomorphologie pour le niveau taxonomique ########
 
-    # (1) rajouter abondances nulles pour les stations où le grtax est absent
+    # (1) rajouter abondances nulles pour géomorphologie/zone d'impact où
+    # l'espèce (grtax) n'est pas observée sur toutes les stationsn
     # identification des espéces uniques observées sur le grspatial
-    # par campagne / géomorphologie (impact) / St / grtax
+    # par campagne / géomorphologie (impact) / St / grta
     ind1 <- unique(ta.raw[,ff])
     ind2 <- nst.par.gs(AS=AS, impact=aj.impact)$nomsSt
     ind3 <- merge(ind1, ind2, all=TRUE)
     ta.raw.0 <- merge(ta.raw, ind3, all=TRUE)
     ta.raw.0$dens.moy[is.na(ta.raw.0$dens.moy)] <-  0 # mettre les D à zéro si NA après le merge
 
+    idnow <<- idtax
     # (2) maintenant calculer moyenne/SD par groupement spatial
     tb.1 <- aggregate(list("dens.moy"=ta.raw.0$dens.moy),
                       as.list(ta.raw.0[,ff]), mean)
@@ -209,7 +233,7 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
 
   ### (3) sauvegarde des fichiers
     if(save) {
-      ftag <- paste("_Filtre_",AS,"_",sep="")
+      ftag <- paste("_Filtre-",AS,"_",sep="")
       top10tag <- ifelse(sum(grepl("G_Sp",ff))==1,paste("top10_",top10year,"_",sep=""),"")
       taxotag <- taxotagFunk()
       if(spttcampagnes) top10tag <- ifelse(sum(grepl("G_Sp",ff))==1,
@@ -245,15 +269,14 @@ inv.dens.geom <- function(AS="A", save=FALSE, aj.impact=FALSE,
   # ... et pour les 10 espèces les plus abondantes en 2006
   tbl.list.sp.2 <- lapply(ff.list.sp, function(x) aggr.funk(x, top10year="1ere"))
   names(tbl.list.sp.2) <- c("Groupe","S_Groupe")
-  # ... et pour les 10 espèces les plus abondantes en 2011
+  # ... et pour les 10 espèces les plus abondantes en 201X (dernière année)
   tbl.list.sp.3 <- lapply(ff.list.sp, function(x) aggr.funk(x, top10year="derniere"))
   names(tbl.list.sp.3) <- c("Groupe","S_Groupe")
 
   ########################################################
   ########################################################
   return(list("allsp"=tbl.list, "top10all"=tbl.list.sp.1,
-              "top102006"=tbl.list.sp.2,"top102011"=tbl.list.sp.3))
-
+              "top102006"=tbl.list.sp.2,"top10201X"=tbl.list.sp.3))
   }
 
 top10sp <- function(AS="A", wyear="all", wff="Groupe", grtax="G_Sp",

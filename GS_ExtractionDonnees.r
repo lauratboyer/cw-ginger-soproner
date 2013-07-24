@@ -1,12 +1,12 @@
-## Analyses des données KNS (Ginger/Soproner)
+## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-22 16:31:49 Laura>
+# Time-stamp: <2013-07-23 17:19:18 Laura>
 
-# Sujet: Formattage des tableaux de données brutes pré-analyse,
-# création de tableaux annexes + fonctions de base pour l'analyse
+# Sujet: Formattage des tableaux de donnees brutes pre-analyse,
+# creation de tableaux annexes + fonctions de base pour l'analyse
 
-# Put this elsewhere:
-# Définition lien fichiers pour sauvegarder graphiques/tableaux
+message("Put this elsewhere:")
+# Definition lien fichiers pour sauvegarder graphiques/tableaux
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
@@ -48,6 +48,10 @@ prep.analyse <- function() {
       }
       return(x) }
 
+  # Ensuite, creation tableau global avec toutes les possibilites d'accents
+  accent.encode <- data.frame("lettre"=c("e","e","e","e","e","e","i","i",""),
+                              "code"=c("\216","\217","\351","\350","<e9>","<e8>",
+                              "\357","\225","\312"))
   # standard error
   stand.err <<- function(x) sd(x)/sqrt(length(x))
 

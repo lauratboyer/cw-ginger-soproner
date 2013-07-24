@@ -50,10 +50,13 @@ commencez par créer deux dossiers à l'emplacement de votre choix:
     synchronisé avec DropBox)
      \end{enumerate}
 
-     Une fois ces dossiers créés, placez dans le fichier \texttt{dossier.R}  le contenu du dossier
-\texttt{GS\_KNS\_Code-R} (disponible sous
-\texttt{DropBox/KNS\_GINGER-SOPRONER}). \\
-
+     Une fois ces dossiers créés, placez dans le fichier
+     \texttt{dossier.R} tous les fichiers .r contenus dans le dossier
+     \texttt{cw-ginger-soproner}, disponible en format ZIP à l'adresse
+     suivante:
+%     \url{https://github.com/lauratboyer/cw-ginger-soproner/archive/master.zip}. Ce
+     site contient les dernières versions du code ainsi qu'une
+     historique de toutes les modifications effectuées depuis Janvier 2013.
 
 Ouvrez le fichier \texttt{GS\_MotherCode.r} \footnote{Un fichier .r
   peut être modifié sous NotePad ou l'éditeur
@@ -169,6 +172,7 @@ pour modifier les requêtes lancées par défaut.
 \subsection{Invertébrés}
 
 \begin{itemize}
+
   \item[] \bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE):} \\
     \emph{Inv\_IndexBiodivPar + qunit + filtre station + filtre taxo} \\
   \textbf{Tableau} des indices de biodiversité (moyenne et écart type)
@@ -190,11 +194,10 @@ pour modifier les requêtes lancées par défaut.
     d'espèces observées par campagne/géomorphologie.
 
   \item[] \bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", save=FALSE):}\\
-    \emph{Inv\_NumEspeceParAggrTaxon + groupe taxo + filtre station +
-      filtre taxo} \\
-    \textbf{Tableau} de la richesse spécifique (nombre d'espèces) pour
-    chaque membre du l'aggrégation taxonomique choisie
-    (\texttt{grtax}). Par exemple si \texttt{grtax = "S_Groupe"}, le
+    \emph{Inv\_NumEspeceParAggrTaxon + groupe taxo + filtre station + filtre taxo} \\
+    \textbf{Tableau} de la richesse spécifique (nombre d'espèces) pour
+ chaque membre du l'aggrégation taxonomique choisie
+    (\texttt{grtax}). Par exemple si \texttt{grtax = "S\_Groupe"}, le
     tableau contiendra pour chaque station le nombre d'espèce pour
     chacun des sous-groupes taxonomiques observés sur les stations
     contenues dans le filtre.
@@ -208,8 +211,25 @@ pour modifier les requêtes lancées par défaut.
     (ET) de la RS par géomorphologie (\texttt{aggr="geom"}) et zone
     d'impact (\texttt{aj.impact = TRUE}).
 
-    inv.dens.tbl
-  inv.dens.geom
+   \item[] \hypertarget{i6}{\bigtt{inv.dens.tbl(AS="A", grtax="G\_Sp",
+      wZeroAll=FALSE, save=FALSE)}:}\\
+\emph{Inv\_DensiteParST\_ + filtre station + groupe taxo + filtre taxo}\\
+\textbf{Tableau} des densités moyennes (et SD) par station pour une
+une unité taxonomique donnée (\texttt{grtax}), avec l'option de
+rajouter dans le tableau final les densités nulles sur les
+stations/campagne non-occupées (\texttt{wZeroAll}).
+
+\item[] \hypertarget{i7}{\bigtt{inv.dens.geom(AS="A", aj.impact=FALSE,
+      spttcampagnes=FALSE, save=FALSE)}:}\\
+  \emph{...}\\
+  \textbf{Tableaux} des densités moyennes (et SD) par espèce, par
+  sous-groupe et par groupe, pour chaque géomorphologie (et zone
+  d'impact si \texttt{aj.impact = TRUE}). Les 10 espèces les plus
+  abondantes durant la première, la
+  dernière, et toutes les années de la série temporelle sont
+  sélectionnées. Cette sélection est faite par groupe et par-sous
+  groupe.
+
   inv.dens.tbl.parT
   inv.graph.TS()
   inv.graph.TS.top10

@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-22 17:35:40 Laura>
+# Time-stamp: <2013-07-22 17:41:19 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -88,7 +88,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   dmm <- sapply(1:length(obj.names),function(x) {
       objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""), encoding="UTF-8");
       objnow <- objnow[!apply(objnow,1,is.empty),]; # oter les rangees vides
-      assign(obj.names[x], objnow, .GlobalEnv)} # creer l'objet dans l'envir global
+      assign(obj.names[x], objnow, .GlobalEnv)}) # creer l'objet dans l'envir global
 
   print("Tableaux importés:")
   print(DBinf.now[obj.names %in% ls(.GlobalEnv)])
