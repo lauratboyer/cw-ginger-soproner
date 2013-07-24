@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-23 17:19:18 Laura>
+# Time-stamp: <2013-07-24 15:14:39 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -62,21 +62,21 @@ prep.analyse <- function() {
   info.transect <- data.info.transect # extraire tableau brut
   info.transect$cpus <- info.transect$Prod_ha # nouvelle colonne pour le cpus
 
-  # Nettoyer accents noms gÃ©omÃ©trie
+  # Nettoyer accents noms géométrie
   geom.key <- data.frame("Geom"=unique(info.transect$Geom),
                          "Geomorpho"=c("Recif barriere externe","Recif barriere interne",
                            "Recif reticule","Recif frangeant","Passe","Herbiers"))
   print("make geom.key robust to unique order of info.transect$Geom")
   info.transect <- merge(info.transect, geom.key, by="Geom")
 
-  ########### DonnÃ©es LIT ############
+  ########### Données LIT ############
   ####################################
-  # data.LIT: donnÃ©es brutes LIT
+  # data.LIT: données brutes LIT
   # index.LIT: info complementaires LIT
 
-  # ote rangÃ©es sans stations
+  # ote rangées sans stations
   data.LIT <- data.LIT[data.LIT$St != "",]
-  # dÃ©fini noms de colonnes pour index.LIT:
+  # défini noms de colonnes pour index.LIT:
   names(index.LIT) <- c("Code_LIT","CODE_DET","S_Corail_Acro","S_Corail_Forme",
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
   # oter accents
@@ -94,15 +94,15 @@ prep.analyse <- function() {
                      "Corail digite"))
 
 
-  ###### Information biologie/Ã©cologie poissons #######
+  ###### Information biologie/écologie poissons #######
   #####################################################
-  # bioeco.all: info complÃ©mentaires sur les poissons
+  # bioeco.all: info complémentaires sur les poissons
   bioeco.all <- data.bioeco[,c("Code_Sp","famille","genre","espece","taille_moy","commercial_2",
                         "cible_VKP","a","b","groupe_troph1","mobilite")]
   names(bioeco.all) <- c("Code_SP","Famille","Genre","Espece","Taille","Peche","Cible",
                        "Coeff_a","Coeff_b","Groupe_Trophique","Mobilite")
 
-  # Clarifier Ã©tiquettes
+  # Clarifier étiquettes
   # Peche commerciale:
   bioeco.all[bioeco.all$Peche=="c","Peche"] <- "Comm"
   bioeco.all[bioeco.all$Peche=="nc","Peche"] <- "Non.Comm"
@@ -119,41 +119,41 @@ prep.analyse <- function() {
                        "GTlabel"=c("Pisc","Carn","Planct","Herb"))
   bioeco.all <- merge(bioeco.all,GT.label,by="Groupe_Trophique")
 
-  # Rajouter info mobilitÃ©:
+  # Rajouter info mobilité:
   mob.label <- data.frame("Mobilite"=0:4,"moblabel"=c("Mob.0","Terr","Sed","Mob","TrMob"))
   bioeco.all <- merge(bioeco.all,mob.label,by="Mobilite",all.x=TRUE)
 
-  # Ajuster si besoin le format pour les noms d'espÃ¨ces:
+  # Ajuster si besoin le format pour les noms d'espèces:
   bioeco.all[,c("Famille","Genre","Espece")] <-
       sapply(bioeco.all[,c("Famille","Genre","Espece")], capitalize)
 
   # Tableau bioeco, info a + b seulement
   bioeco <- data.bioeco[,c("Code_Sp","a","b")]
-  names(bioeco) <- c("Code_SP","a","b") # compatibilitÃ© avec data.poissons
+  names(bioeco) <- c("Code_SP","a","b") # compatibilité avec data.poissons
 
-  # VÃ©rifier s'il y a des espÃ¨ces de poissons sans valeurs a ou b:
+  # Vérifier s'il y a des espèces de poissons sans valeurs a ou b:
   print(paste(length(unique(bioeco[bioeco$a=="inconnu" | bioeco$b=="inconnnu","Code_SP"])),"especes sans valeur a ou b otees de l'analyse"))
   bioeco <- bioeco[bioeco$a!="inconnu" & bioeco$b!="inconnu",]
   bioeco$a <- as.numeric(bioeco$a); bioeco$b <- as.numeric(bioeco$b)
 
-  ###### DonnÃ©es de comptage Poissons ######
+  ###### Données de comptage Poissons ######
   ##########################################
-  # data.poissons: donnÃ©es de comptage brutes sur les poissons
+  # data.poissons: données de comptage brutes sur les poissons
   names(data.poissons) <- c("Campagne","Date","St","Obs","Vis","Courant","Code_SP",
                           "Famille","Genre","Espece","G_Sp","N","L","D1","D2",
                           "Secteur","Categorie","Note")
 
-  # rajout annÃ©e de la campagne
+  # rajout année de la campagne
   data.poissons$An <- getmatch(data.poissons$Campagne,"[0-9]+")
 
   ########################
   # Nettoyage du tableau:
 
-  # Garder seulement les valeurs de N & L dÃ©clarÃ©es numÃ©riques
+  # Garder seulement les valeurs de N & L déclarées numériques
   data.poissons$N <- as.numeric(data.poissons$N)
   data.poissons$L <- as.numeric(data.poissons$L)
 
-  # Ajuster si besoin le format pour les noms d'espÃ¨ces:
+  # Ajuster si besoin le format pour les noms d'espèces:
   data.poissons[,c("Famille","Genre","Espece","G_Sp")] <-
       sapply(data.poissons[,c("Famille","Genre","Espece","G_Sp")], capitalize)
 
@@ -161,7 +161,7 @@ prep.analyse <- function() {
   data.poissons$St <- toupper(data.poissons$St)
 
   # Nettoyage du tableau: colonne D1/D2/N/L
-  # EspÃ¨ces sans Code_SP dÃ©fini Ã´tÃ©es
+  # Espèces sans Code_SP défini ôtées
   # Imprimer avertissements
   print(paste(nrow(data.poissons[data.poissons$Code_SP  %in% c("","#N/A"),]),"rangees sans Code_SP"))
   print(paste(nrow(data.poissons[is.na(data.poissons$D1),]),"valeurs D1 -> 0"))
@@ -169,7 +169,7 @@ prep.analyse <- function() {
   print(paste(nrow(data.poissons[is.na(data.poissons$N),]),"valeurs N -> 0"))
   print(paste(sum(is.na(data.poissons$L)),"rangees sans valeur L"))
 
-  # Ã”ter rangÃ©es:
+  # Ôter rangées:
   data.poissons <- data.poissons[!(data.poissons$Code_SP %in% c("","#N/A")),]
   data.poissons$D1[is.na(data.poissons$D1)] <- 0
   data.poissons$D2[is.na(data.poissons$D2)] <- 0
@@ -177,8 +177,8 @@ prep.analyse <- function() {
   data.poissons <- data.poissons[!(is.na(data.poissons$L)),] # Taille
 
   # Expansion du data frame pour inclure toutes les combinaisons Campagne/St/Code_SP:
-  # ... donc pour les poissons les densitÃ©s sont nulles sur toutes Campagnes/St oÃ¹
-  # ... l'espÃ¨ce est non-observÃ©e
+  # ... donc pour les poissons les densités sont nulles sur toutes Campagnes/St où
+  # ... l'espèce est non-observée
   all.comb.poissons <- expand.grid("Campagne"=unique(data.poissons$Campagne),
                                    "St"=unique(data.poissons$St),
                                    "Code_SP"=unique(data.poissons$Code_SP),
@@ -186,16 +186,16 @@ prep.analyse <- function() {
   St.by.year <- unique(data.poissons[,c("Campagne","St")]) # year/station samples
   all.comb.poissons <- merge(all.comb.poissons, St.by.year, by=c("Campagne","St"))
 
-  # ... reunion avec donnÃ©es poissons pour rajouter les densitÃ© nulles
+  # ... reunion avec données poissons pour rajouter les densité nulles
   data.poissons2 <- merge(all.comb.poissons,
                           data.poissons,by=c("Campagne","St","Code_SP"),all.x=TRUE)
-  data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance Ã  zero si non-observÃ©e
+  data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
   data.poissons <- data.poissons2
 
   ##########################################
-  #### DonnÃ©es de comptage InvertÃ©brÃ©s #####
+  #### Données de comptage Invertébrés #####
   ##########################################
-  # data.inv: donnÃ©es de comptage brutes pour invertÃ©brÃ©s
+  # data.inv: données de comptage brutes pour invertébrés
 
   dbio <- data.inv[,c("Campagne","St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans")]
   dbio$St <- toupper(data.inv$St)
@@ -203,52 +203,52 @@ prep.analyse <- function() {
 
   ############################
   # nettoyage:
-  # garde seulement les rangÃ©es avec transects A, B, C
+  # garde seulement les rangées avec transects A, B, C
   nTnd <- nrow(dbio[!(dbio$T %in% c("A","B","C")),])
   dbio <- dbio[dbio$T %in% c("A","B","C"),]; print(paste("Approx",nTnd,"rangees otees vu transect non-def"))
 
   ############################
   # abondances nulles:
-  # commencer par oter les rangÃ©es N=0 pour eliminer les stations oÃ¹ l'espÃ¨ce n'est observÃ©e sur aucun T
+  # commencer par oter les rangées N=0 pour eliminer les stations où l'espèce n'est observée sur aucun T
   dbio <- dbio[dbio$N > 0,]
 
-  # rajouter les transects N=0 *seulement* lorsque l'espÃ¨ce est observÃ©e sur la ST mais pas tous les transects
-  # crÃ©er identifiant unique pour chaque combinaison campagne/st/espÃ¨ce observÃ©e
+  # rajouter les transects N=0 *seulement* lorsque l'espèce est observée sur la ST mais pas tous les transects
+  # créer identifiant unique pour chaque combinaison campagne/st/espèce observée
   dbio$uID <- paste(dbio$Campagne,dbio$St,dbio$G_Sp,sep="_")
   index.dbio <- unique(dbio[,c("uID","Campagne","St","Groupe","S_Groupe",
                                "Famille","Genre","G_Sp","D","Ltrans")])
   dbio.allT <- expand.grid("T"=c("A","B","C"),"uID"=unique(dbio$uID),
                            stringsAsFactors=FALSE)
   dbio.tmp <- merge(dbio[,c("uID","T","N")],dbio.allT,by=c("uID","T"),all.y=TRUE)
-  dbio.tmp$N[is.na(dbio.tmp$N)] <- 0 # valeurs NA remplacÃ©es par 0 pour remplir les transects manquants
+  dbio.tmp$N[is.na(dbio.tmp$N)] <- 0 # valeurs NA remplacées par 0 pour remplir les transects manquants
   dbio <- merge(dbio.tmp, index.dbio)
 
   ################
-  # Oter les accents des noms des invertÃ©brÃ©s pour Ã©viter les erreurs
-  # dÃ»es Ã  l'encodage
+  # Oter les accents des noms des invertébrés pour éviter les erreurs
+  # dûes à l'encodage
   # Si l'encodage UTF-8 est bien lu par l'ordi
   # (les accents apparaissent correctement)
-  dbio$Groupe <- gsub("Ã©","e",capitalize(tolower(trim(dbio$Groupe))))
-  dbio$S_Groupe <- gsub("Ã©","e",dbio$S_Groupe)
-  dbio$S_Groupe <- gsub("Ã¨","e",dbio$S_Groupe)
-  dbio$S_Groupe <- gsub("Ã¯","i",dbio$S_Groupe)
+  dbio$Groupe <- gsub("é","e",capitalize(tolower(trim(dbio$Groupe))))
+  dbio$S_Groupe <- gsub("é","e",dbio$S_Groupe)
+  dbio$S_Groupe <- gsub("è","e",dbio$S_Groupe)
+  dbio$S_Groupe <- gsub("ï","i",dbio$S_Groupe)
   dbio$S_Groupe <- capitalize(tolower(trim(dbio$S_Groupe)))
 
-  # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire Ã  <U+00E9>)
-  # Conversion Ã  encodage latin1 qui permet de substituer les charactÃ¨res
+  # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire à <U+00E9>)
+  # Conversion à encodage latin1 qui permet de substituer les charactères
   if("UTF-8" %in% unique(Encoding(dbio$Groupe))) {
     dbio$Groupe <- tradfunk(dbio$Groupe)
     dbio$S_Groupe <- tradfunk(dbio$S_Groupe)
     dbio$Famille <- tradfunk(dbio$Famille)
   }
 
-  # PremiÃ¨re lettre en majuscule, le reste en minuscules
+  # Première lettre en majuscule, le reste en minuscules
   dbio$G_Sp <- capitalize(tolower(dbio$G_Sp))
   dbio$Famille <- capitalize(tolower(dbio$Famille))
   dbio$Genre <- capitalize(tolower(dbio$Genre))
 
-  # Correction d'erreur dans la base de donnÃ©es (temporaire)
-  # tableau index espÃ¨ce/sous-groupe/groupe
+  # Correction d'erreur dans la base de données (temporaire)
+  # tableau index espèce/sous-groupe/groupe
   dbio[dbio$G_Sp %in% c("Paguritta sp.", "Ciliopagurus strigatus"),"S_Groupe"] <- "Decapodes"
   dbio[dbio$G_Sp == "Drupa sp.","Famille"] <- "Muricidae"
   dbio[dbio$G_Sp == "Aplysia sp.","Famille"] <- "Aplysiidae"
@@ -261,55 +261,55 @@ prep.analyse <- function() {
   dbio <- dbio[,!(names(dbio)=="Ltrans")]
   names(dbio)[names(dbio)=="Ltrans.new"] <- "Ltrans"
 
-  # rassembler en 1 rangÃ©e les observations de la mÃªme espÃ¨ce sur le transect
+  # rassembler en 1 rangée les observations de la même espèce sur le transect
   dbio <- aggregate(list("N"=dbio$N), as.list(dbio[,c("Campagne","St","T","Groupe","S_Groupe",
                            "Famille","Genre","G_Sp","Ltrans")]), sum)
 
-  # Calculer la densitÃ© en hectares
-  # longueur du transect est de 50 mÃ¨tres, largeur est dÃ©finie sous Ltrans
+  # Calculer la densité en hectares
+  # longueur du transect est de 50 mètres, largeur est définie sous Ltrans
   dbio$D <- dbio$N/(50*dbio$Ltrans) * 10000
 
   ########################
   ### Tableaux annexes ###
 
-  # clÃ©s noms des invertÃ©brÃ©s
+  # clés noms des invertébrés
   InvGr.Key <- c("Algues","Ascidies","Cnidaires","Crustac?s","Echinodermes",
                  "Eponges","Mollusques","Phan?rogame","Vers")
 
-  # tableau index pour la taxonomie de toutes les espÃ¨ces observÃ©e:
+  # tableau index pour la taxonomie de toutes les espèces observée:
   index.invSp <- unique(dbio[,c("G_Sp","Genre","Famille","S_Groupe","Groupe")])
 
   ################
-  # infos sur station/mission/annÃ©e
+  # infos sur station/mission/année
   info.transect.INV <- unique(data.inv[,c("Annee","Mois","Mission","Campagne","St")])
   info.transect.INV <- merge(info.transect.INV, info.transect,
                              by="St")[,c("Annee","Mois","Mission","Campagne","St",
                                "Geomorpho","N_Impact")]
   info.transect.INV.geo <- aggregate(info.transect.INV[,c("Mois", "Annee")],as.list(info.transect.INV[,c("Mission","Campagne","Geomorpho")]), last)
-  print("si un transect/Campagne Ã©chantillonÃ© dans 2 mois diffÃ©rents, garde 1 mois/annÃ©e seulement dans le tableau")
+  print("si un transect/Campagne échantilloné dans 2 mois différents, garde 1 mois/année seulement dans le tableau")
 
 
   ####################################
-  ###### PÃ©riodes BACIP Campagnes ####
+  ###### Périodes BACIP Campagnes ####
   ####################################
-  # pr.Bacip: catÃ©gorie avant/pendant/aprÃ©s pour les annÃ©es
+  # pr.Bacip: catégorie avant/pendant/aprés pour les années
   names(pr.Bacip) <- c("Campagne","Annee","Periode_3","Periode_2")
 
   #######################################################
   ###### Filtres campagnes annuelles/semestrielles ######
   #######################################################
-  # filtre.Camp: tableau des campagnes Ã  utiliser pour analyses temporelles
-  # modif aprÃ¨s discussion avec Antoine 12 Octobre 2012:
-  # re-crÃ©er tableau filtre Ã  partir des annÃ©es dÃ©sirÃ©es pour l'analyse
+  # filtre.Camp: tableau des campagnes à utiliser pour analyses temporelles
+  # modif après discussion avec Antoine 12 Octobre 2012:
+  # re-créer tableau filtre à partir des années désirées pour l'analyse
 
   creerFiltre <- function(qAnnees) {
 
-    if(length(qAnnees)==1) stop("Attention: spÃ©cifier 2 annÃ©es ou plus")
+    if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
     tb <- unique(dbio[,c("St","Campagne")])
     tb$echtl <- 1
     tb2 <- cast(tb, St ~ Campagne, value="echtl")
 
-    # sÃ©lectionner les colonnes avec les annÃ©es dÃ©sirÃ©es pour le filtre
+    # sélectionner les colonnes avec les années désirées pour le filtre
     # campagnes semestrielles
     keySmstrl <- c(paste("A_",qAnnees,sep=""),paste("S_",qAnnees,sep=""))
     tb3 <- tb2[,unlist(sapply(keySmstrl,function(x) grep(x,names(tb2))))]
@@ -330,16 +330,17 @@ prep.analyse <- function() {
   filtre.Camp <<- creerFiltre(filtre.annees)
 
   ###################################################
-  ######## Fonctions gÃ©nÃ©riques #####################
-  # DÃ©finition de fonctions qui seront utilisÃ©es couramment dans le code
+  ######## Fonctions génériques #####################
+  # Définition de fonctions qui seront utilisées couramment dans le code
 
-  # 1. Applique le filtre spÃ©cifiÃ© au tableau donnÃ© en argument
+  # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <<- function(wtable, wfiltre) {
-    if(wfiltre %in% c("T_A_inv","T_S_inv")) { # appliquer le filtre si spÃ©cifiÃ©
+    if(wfiltre %in% c("T_A_inv","T_S_inv")) { # appliquer le filtre si spécifié
     message(paste("Stations filtrees par",wfiltre))
     wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
     dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
                      wtable,by="key", drop.x="key")
+    dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
   } else {
     CmpTag <- paste(filtre.annees,collapse="|")
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
@@ -347,7 +348,7 @@ prep.analyse <- function() {
     }
   }
 
-  # 2. Converti les noms de campagne en annÃ©e (charactÃ¨re -> numÃ©rique)
+  # 2. Converti les noms de campagne en année (charactère -> numérique)
   as.year <<- function(x) as.numeric(sub("[AS]_","",x))
 
   # 3. Dessine les barres d'erreurs
@@ -360,14 +361,14 @@ prep.analyse <- function() {
                                                   mat[i,1],mat[i,2],code=3,lty=typel,
                                                   col=couleur,angle=90,length=0.1)) }
 
-  # 4. Calcul du nombre de stations Ã©chantillonÃ©es par groupement spatial, selon le filtre
-  # Groupement spatial: gÃ©omorphologie, ou gÃ©omorphologie/impact
-  # dÃ©fini pour les invertÃ©brÃ©s mais pourrait Ãªtre appliquÃ© aux poisssons
+  # 4. Calcul du nombre de stations échantillonées par groupement spatial, selon le filtre
+  # Groupement spatial: géomorphologie, ou géomorphologie/impact
+  # défini pour les invertébrés mais pourrait être appliqué aux poisssons
   # (Retourne aussi le nom des stations)
   nst.par.gs <<- function(AS="A",impact=FALSE, allyr=FALSE) {
-    # lorsque allyr=TRUE, calcule le nombre de campagnes effectuÃ©es sur chaque
-    # gÃ©omorphologie +/- impact
-    # sinon, calcule le nombre de stations *par campagne* sur chaque gÃ©omorpho +/- impact
+    # lorsque allyr=TRUE, calcule le nombre de campagnes effectuées sur chaque
+    # géomorphologie +/- impact
+    # sinon, calcule le nombre de stations *par campagne* sur chaque géomorpho +/- impact
 
     if(AS %in% c("A","S")) { dd <- filtreTable(dbio, wfiltre=paste("T",AS,"inv",sep="_"))
                              } else {
@@ -375,7 +376,7 @@ prep.analyse <- function() {
                                               paste("S_",filtre.annees,sep=""))
                                dd <- dbio[dbio$Campagne %in% keySmstrl,] }
     ff <- c("Campagne","Geomorpho","N_Impact","St")
-    # conserver seulement les facteurs spÃ©cifiÃ©s en arguments
+    # conserver seulement les facteurs spécifiés en arguments
     ff <- ff[c(1, 2, impact*3, (!allyr)*4)]
     dd2 <- merge(dd, info.transect, by="St")
     dd.St <- unique(dd2[,ff])
@@ -407,8 +408,8 @@ prep.analyse <- function() {
     return(wtable)
   }
 
-  # Fonction interactive utilisÃ©e pour dÃ©finir les variables du filtre sur les espÃ¨ces
-  # "inclure" ou "exclure" / unitÃ© taxonomique / nom
+  # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
+  # "inclure" ou "exclure" / unité taxonomique / nom
   filtre.especes <<- function(aF="tous") {
 
     if(aF == "tous") {
@@ -419,7 +420,7 @@ prep.analyse <- function() {
        print("Definition des filtres taxonomiques:")
     cat("Inclure ou exclure? ")
     taxoF.incl <<- tolower(readLines(file("stdin"),1))
-    cat("UnitÃ© taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) ")
+    cat("Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) ")
     taxoF.utaxo <<- capitalize(tolower(readLines(file("stdin"),1)))
        if(taxoF.utaxo == "Groupe") taxoF.utaxo <<- "Groupe"
        if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Groupe"
@@ -430,7 +431,7 @@ prep.analyse <- function() {
     closeAllConnections()
   }
 
-  # Cette fonction retourne une version abbrÃ©gÃ©e des noms des groupes taxonomiques
+  # Cette fonction retourne une version abbrégée des noms des groupes taxonomiques
   # inclus (ou exclus) au besoin
   taxotagFunk <<- function() {
     if(taxoF.incl=="inclure" & taxoF.utaxo == "Groupe" & any(taxoF.nom %in% "Tous")) {
@@ -440,7 +441,7 @@ prep.analyse <- function() {
       return(taxotag) }
   }
 
-  # Ces fonctions sont utilisÃ©es pour indiquer le dÃ©part et la fin
+  # Ces fonctions sont utilisées pour indiquer le départ et la fin
   # des codes compris dans une fonction
   departFunk <<- function() {
       sc <- sys.calls()
@@ -455,9 +456,9 @@ prep.analyse <- function() {
       fname <- as.character(sc[[length(sc)-2]])[1] # extrait le nom de la fonction parent
       packageStartupMessage(sprintf("---> fin %s().",fname)) }
 
-  ## Si erreur dans une fonction, indiquer la fonction oÃ¹ l'erreur se produit
-  ## EM() est donnÃ©e en argument a la fonction on.exit() qui tourne automatiquement
-  ## l'argument spÃ©cifiÃ© quand une fonction se termine, naturellement ou avec
+  ## Si erreur dans une fonction, indiquer la fonction où l'erreur se produit
+  ## EM() est donnée en argument a la fonction on.exit() qui tourne automatiquement
+  ## l'argument spécifié quand une fonction se termine, naturellement ou avec
   ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
   ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
   EM <<- function() {
@@ -469,7 +470,7 @@ prep.analyse <- function() {
           } else { finFunk()} }
   ###################################################
   ###################################################
-  # DÃ©finir objets Ã  mettre dans l'environnement global pour utilisation subsÃ©quente:
+  # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
   info.transect <<- info.transect
   info.transect.INV <<- info.transect.INV
   info.transect.INV.geo <<- info.transect.INV.geo

@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des données LIT
-# Time-stamp: <2013-07-22 16:40:33 Laura>
+# Time-stamp: <2013-07-24 14:51:45 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
@@ -89,10 +89,12 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
 # formerly LIT.ts1()
 LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
   # set AS to "A" or "S" based on campagne type
-  dl <- LIT.brut[LIT.brut$Campagne %in% paste(AS,yy,sep="_"),]
 
-  # Groupes de coraux
-  gC <- coraux.fig[[ff]]
+    if(!exists("LIT.brut")) LIT.brut <<- LIT.tableau.brut(AS=AS)
+    dl <- LIT.brut[LIT.brut$Campagne %in% paste(AS,yy,sep="_"),]
+
+    # Groupes de coraux
+    gC <- coraux.fig[[ff]]
 
   # Moyenne/SE par type corail par géomorphologie
   fc.list <- list("Geomorpho"=dl$Geomorpho)
