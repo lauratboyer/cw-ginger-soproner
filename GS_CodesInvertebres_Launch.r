@@ -1,7 +1,7 @@
 ## Ginger/Soproner: Produits/Analyses invertébrés
 # ** Code central pour lancer analyses densité/abondance/diversité
 # *et* spécifier groupes taxonomiques à analyser
-# Time-stamp: <2013-07-22 16:11:32 Laura>
+# Time-stamp: <2013-07-25 09:18:17 Laura>
 
 ########################################################
 ########################################################
@@ -32,12 +32,12 @@ Run.INV.densite <- function(tabl.seulement = TRUE) {
   # Densité par transect:
   dd <- sapply(c("Genre","G_Sp"),
                function(tt) sapply(c("A","S","Absent"), function(ff)
-                                   inv.dens.tbl.parT(grtax=tt, save=TRUE, AS=ff)))
+                                   inv.dens.tbl(grtax=tt, smpl.unit="T", save=TRUE, AS=ff)))
 
   # Densité par transect, incluant les densité nulles, avec filtre A et S seulement:
   dd <- sapply(c("Genre","G_Sp"),
                function(tt) sapply(c("A","S","Absent"), function(ff)
-                                   inv.dens.tbl.parT(grtax=tt, save=TRUE, AS=ff, wZeroAll=TRUE)))
+                                   inv.dens.tbl.parT(grtax=tt, smpl.unit="T", save=TRUE, AS=ff, wZeroAll=TRUE)))
 
   # Densité par station:
   dd <- sapply(c("Groupe","S_Groupe","Famille","Genre","G_Sp"),

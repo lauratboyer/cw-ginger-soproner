@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-24 15:14:39 Laura>
+# Time-stamp: <2013-07-25 11:02:15 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -35,18 +35,7 @@ prep.analyse <- function() {
   if(!exists("trim")) { #clumsy regexp
       trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
 
-  # traduit les codes d'accent selon le type d'encodage
-  # right now assuming latin1
-  tradfunk <<- function(x) {
-      enc <- unique(Encoding(x))
-      enc <- enc[enc!="unknown"]
-      if(length(enc)>0) {
-          x <- iconv(x,enc,"latin1") # convert to latin1
-          x <- gsub("<e9>|<e8>","e",x) # remplace e accent aigu/grave
-          x <- gsub("<ef>","i",x) # remplace i accent trema
-          x <- gsub("<a0>","",x) # mystery character removed
-      }
-      return(x) }
+
 
   # Ensuite, creation tableau global avec toutes les possibilites d'accents
   accent.encode <- data.frame("lettre"=c("e","e","e","e","e","e","i","i",""),
@@ -79,10 +68,8 @@ prep.analyse <- function() {
   # défini noms de colonnes pour index.LIT:
   names(index.LIT) <- c("Code_LIT","CODE_DET","S_Corail_Acro","S_Corail_Forme",
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
-  # oter accents
-  index.LIT <- sapply(index.LIT, tradfunk)
 
-  # creer categories de substrat pour tableaux syntheses
+ # creer categories de substrat pour tableaux syntheses
   coraux.fig <- list("Coraux_Gen"=c("Coraux","Coraux morts","Coraux mous",
                      "Algues","Abiotique","Autre faune"),
                    "Coraux_Acro"=c("Acroporidae","Non-acroporidae"),

@@ -1,8 +1,8 @@
 # Analyses des donn√©es KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-22 17:41:19 Laura>
+# Time-stamp: <2013-07-25 11:00:52 Laura>
 
-# Sujet: Ce code v√©rifie que les tableaux utilis√©s pour les analyses sont √† jour
+# Sujet: Ce code vÈrifie que les tableaux utilis√©s pour les analyses sont √† jour
 # ... et dans le cas √©ch√©ant modifie la base de donn√©es en cons√©quence
 
 ###############################################################
@@ -69,31 +69,55 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
     save(DBinf,file=paste(dossier.donnees,"FichiersDropBox_DatesModif.Rdata",sep=""))
     print(paste("Nouvelle version pour les fichers", type.tbl[memeVersion])) }
 
-  # Imprimer avertissement au sujet des guillements: s'il y a des guillements non-ferm√©s dans les
+  # Imprimer avertissement au sujet des guillements: s'il y a des guillements non-fermÈs dans les
   # fichiers excels l'import du tableau ne sera pas correct -- e.g. "pomme" est ok, mais pas pomme"
-  print("Attention: s'assurer que tous les guillements sont ferm√©s dans les fichiers Excel")
+  print("Attention: s'assurer que tous les guillements sont fermÈs dans les fichiers Excel")
 
   ############################################################
   ############################################################
-  # Tous les tableaux sont maintenant √† jour -> chargement sous R pour d√©buter les analyses
-  # Importer feuilles Excel et nommer les objets comme d√©fini dans "obj.names"
-  # (objets import√©s dans l'environnment global .GlobalEnv pour qu'ils soient accessibles partout
-  check.o <- obj.names %in% ls() # verifier s'il y a des tableaux deja charg√©s
+  # Tous les tableaux sont maintenant ‡ jour -> chargement sous R pour dÈbuter les analyses
+  # Importer feuilles Excel et nommer les objets comme dÈfini dans "obj.names"
+  # (objets importÈs dans l'environnment global .GlobalEnv pour qu'ils soient accessibles partout
+  check.o <- obj.names %in% ls() # verifier s'il y a des tableaux deja chargÈs
   if(sum(check.o)>0) rm(list=obj.names[check.o]) # oter les objets au besoin
 
   # fonction pour tester si les rangees sont vides:
   is.empty <- function(x) all(c(is.na(x) | is.null(x) | x == ""))
 
+  # traduire les codes d'accent selon le type d'encodage
+  # assume encodage est "latin1", spÈcifiÈ en consÈquence durant l'import
+  # avec read.csv()
+  tradfunk <<- function(x) {
+      if(class(x) == "character") {
+      enc <- unique(Encoding(x)); print(enc)
+      if(length(enc) > 1 & (!("latin1" %in% enc))) {
+          warning("Attention encodage non-dÈclarÈ latin1") }
+
+      # remplacement des charactËres (sur Mac)
+      x <- gsub("<e9>|<e8>|(\303\251)|(\303\250)","e",x) # remplace e accent aigu/grave
+      x <- gsub("<ef>|(\303\257)","i",x) # remplace i accent trema
+      x <- gsub("<a0>","",x) # mystery character removed
+      # conversion ‡ iso-8859-5 pour Ùter les accents (sur PC)
+      x <- iconv(x, "latin1","iso-8859-5")
+  } else {x}}
+
   # extraire des fichiers csv et assigner aux noms d'objets (voir obj.names)
   dmm <- sapply(1:length(obj.names),function(x) {
-      objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""), encoding="UTF-8");
+      # vÈrifier sÈparateur
+      cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),"character")
+      seprt <- ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";")
+
+      objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""), sep=seprt)
       objnow <- objnow[!apply(objnow,1,is.empty),]; # oter les rangees vides
+
+      objnow <- data.frame(lapply(objnow, tradfunk))
+
       assign(obj.names[x], objnow, .GlobalEnv)}) # creer l'objet dans l'envir global
 
-  print("Tableaux import√©s:")
+  print("Tableaux importÈs:")
   print(DBinf.now[obj.names %in% ls(.GlobalEnv)])
 
   ############################################################
   ############################################################
-  if(prep.tbl) prep.analyse() # lance preparation donnees + cr√©ation tableaux annexes
+  if(prep.tbl) prep.analyse() # lance prÈparation donnÈes + crÈation tableaux annexes
 }

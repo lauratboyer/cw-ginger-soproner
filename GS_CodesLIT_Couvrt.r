@@ -1,7 +1,7 @@
 # Ginger/Soproner
-# Code pour analyses des données LIT
-# Time-stamp: <2013-07-24 14:51:45 Laura>
-
+# Code pour analyses des donnees LIT
+# Time-stamp: <2013-07-24 15:47:07 Laura>
+�
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
     print("Commencez par charger le fichier GS_KNS_MotherCode.r
@@ -9,14 +9,14 @@ if(class(try.wd)=="try-error") {
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
- # Extraction tableaux des bases de données
+ # Extraction tableaux des bases de donnees
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 # formerly TB.lit
 LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
 
     print("Depart: Fonction LIT.tableau.brut")
-    # Créer tableau données brutes pour analyses subséquentes
+    # Cre�©er tableau donne�©es brutes pour analyses subse�©quentes
     # Appliquer filtres (ref: LIT.doc)
     # 1. AQCQ == NON
     DL <- data.LIT[data.LIT$AQCQ == "NON",]
@@ -59,7 +59,7 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
     dd.i <- merge(dd.i, dd[[5]], by=c("Campagne","St", "T"))
 
     # 4. Rajouter colonnes infos additionelles
-    # Géomorphologies
+    # Geomorphologies
     dd.i2 <- merge(info.transect[,c("St","Geomorpho","N_Impact")],dd.i,by="St")
     dd.i2 <- merge(LIT.transect.info, dd.i2, by=c("Campagne","St","T"))
 
@@ -84,8 +84,8 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
     invisible(dd.i2) }
 
 
-# Tableau moyenne/SE suivant catégories dans "S_Corail_All",
-# par géomorphologie, en 2011
+# Tableau moyenne/SE suivant categories dans "S_Corail_All",
+# par geomorphologie, en 2011
 # formerly LIT.ts1()
 LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
   # set AS to "A" or "S" based on campagne type
@@ -96,7 +96,7 @@ LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
     # Groupes de coraux
     gC <- coraux.fig[[ff]]
 
-  # Moyenne/SE par type corail par géomorphologie
+  # Moyenne/SE par type corail par geomorphologie
   fc.list <- list("Geomorpho"=dl$Geomorpho)
   dmean <- aggregate(list("Moy"=dl[,gC]),fc.list,mean)
   dse <- aggregate(list("SE"=dl[,gC]),fc.list,stand.err)
@@ -155,8 +155,8 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
   cnow <- coraux.fig$TS_All # categorie a utiliser
 
-  # Stations échantillonées depuis 2006, à part pour "Récif barrière externe"
-  # (distinction déjà pris en compte dans le tableau filtre)
+  # Stations echantillonees depuis 2006, e� part pour "Recif barrie�re externe"
+  # (distinction deje� pris en compte dans le tableau filtre)
   wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
   dd.filt <- filtreTable(LIT.brut, wf)
 
@@ -167,18 +167,18 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
                       dd.filt[,c("Campagne","Geomorpho","N_Impact")],stand.err)
   val.all <- merge(val.mean, val.se, by=c("Campagne","Geomorpho","N_Impact"))
 
-  # Calcul de la différence de couverture par Campagne/Géomorpho
-  # s'assurer qu'il y a une rangée pour toutes les combinaisons Geomorpho/Impact
+  # Calcul de la difference de couverture par Campagne/Geomorpho
+  # s'assurer qu'il y a une rangee pour toutes les combinaisons Geomorpho/Impact
   tmpl <- expand.grid("Campagne"=unique(val.all$Campagne),
                       "Geomorpho"=unique(val.all$Geomorpho),
                       "N_Impact"=unique(val.all$N_Impact))
   val.all2 <- merge(val.all, tmpl, by=c("Campagne","Geomorpho", "N_Impact"), all.y=TRUE)
 
-  # et aussi que les rangées sont dans l'ordre impact 1, impact 0
+  # et aussi que les rangees sont dans l'ordre impact 1, impact 0
   val.all2 <- val.all2[order(val.all2$Campagne, val.all2$Geomorpho,
                                  -val.all2$N_Impact),]
 
-  # Calculer la différence par stratum
+  # Calculer la difference par stratum
   val.impact <- aggregate(list("Diff"=val.all2[,make.names(paste("Moy",cnow))]),
                           by=list("Campagne"=val.all2$Campagne,
                             "Geomorpho"=val.all2$Geomorpho), diff)
@@ -255,8 +255,8 @@ LIT.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
     check.dev.size(8.5, 7) # ouvrir une fenetre graphique de la bonne grandeur au besoin
     cnow <- coraux.fig$TS_All
 
-    # Stations échantillonées depuis 2006, à part pour "Récif barrière externe"
-    # (distinction déjà pris en compte dans le tableau filtre)
+    # Stations echantillonees depuis 2006, e� part pour "Recif barriere externe"
+    # (distinction deja pris en compte dans le tableau filtre)
     wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
     dd.filt <- filtreTable(LIT.brut, wf)
 
