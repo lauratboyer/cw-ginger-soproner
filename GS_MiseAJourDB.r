@@ -1,6 +1,6 @@
 # Analyses des donn√©es KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 14:53:24 Laura>
+# Time-stamp: <2013-07-29 16:55:58 Laura>
 
 # Sujet: Ce code vÈrifie que les tableaux utilis√©s pour les analyses sont √† jour
 # ... et dans le cas √©ch√©ant modifie la base de donn√©es en cons√©quence
@@ -123,6 +123,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   print("Tableaux importÈs:")
   print(DBinf.now[obj.names %in% ls(.GlobalEnv)])
 
+  message("\n\nBases de donnÈes importÈes avec succËs. Lancement du formattage des tableaux...\n\n")
   ############################################################
   ############################################################
   if(prep.tbl) prep.analyse() # lance prÈparation donnÈes + crÈation tableaux annexes
