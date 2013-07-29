@@ -1,7 +1,7 @@
 # Ginger/Soproner
 # Code pour analyses des donnees LIT
-# Time-stamp: <2013-07-24 15:47:07 Laura>
-Ã
+# Time-stamp: <2013-07-25 11:26:24 Laura>
+
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
     print("Commencez par charger le fichier GS_KNS_MotherCode.r

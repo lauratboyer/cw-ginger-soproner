@@ -1,6 +1,6 @@
 # Analyses des donn√©es KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-25 11:00:52 Laura>
+# Time-stamp: <2013-07-29 10:14:41 Laura>
 
 # Sujet: Ce code vÈrifie que les tableaux utilis√©s pour les analyses sont √† jour
 # ... et dans le cas √©ch√©ant modifie la base de donn√©es en cons√©quence
@@ -43,7 +43,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
                     file.info(paste(dossier.DB,obj.files[x],sep=""))$mtime)
   names(DBinf.now) <- type.tbl
 
-  # Chargement des dates de modifications pr√©c√©dentes
+  # Chargement des dates de modifications pr√©c√©dentes (objet DBinf)
   if(!(file.exists(paste(dossier.donnees,"FichiersDropBox_DatesModif.Rdata",sep="")))) {
     memeVersion <- rep(TRUE,length(type.tbl)) # importer tous les fichiers de DB
   } else {
@@ -89,14 +89,15 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   # avec read.csv()
   tradfunk <<- function(x) {
       if(class(x) == "character") {
-      enc <- unique(Encoding(x)); print(enc)
+      enc <- unique(Encoding(x))
       if(length(enc) > 1 & (!("latin1" %in% enc))) {
           warning("Attention encodage non-dÈclarÈ latin1") }
 
       # remplacement des charactËres (sur Mac)
-      x <- gsub("<e9>|<e8>|(\303\251)|(\303\250)","e",x) # remplace e accent aigu/grave
-      x <- gsub("<ef>|(\303\257)","i",x) # remplace i accent trema
-      x <- gsub("<a0>","",x) # mystery character removed
+      ecodes <- "<e9>|<e8>|(\303\251)|(\303\250)|\216|\217|\351|\350"
+      x <- gsub(ecodes,"e",x) # remplace e accent aigu/grave
+      x <- gsub("<ef>|(\303\257)|\357|\225","i",x) # remplace i accent trema
+      x <- gsub("<a0>|\312","",x) # mystery character removed
       # conversion ‡ iso-8859-5 pour Ùter les accents (sur PC)
       x <- iconv(x, "latin1","iso-8859-5")
   } else {x}}
@@ -107,7 +108,8 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),"character")
       seprt <- ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";")
 
-      objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""), sep=seprt)
+      objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""),
+                         sep=seprt, dec=",") # point decimal ","
       objnow <- objnow[!apply(objnow,1,is.empty),]; # oter les rangees vides
 
       objnow <- data.frame(lapply(objnow, tradfunk))

@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-25 11:02:15 Laura>
+# Time-stamp: <2013-07-25 12:28:56 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -35,12 +35,17 @@ prep.analyse <- function() {
   if(!exists("trim")) { #clumsy regexp
       trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
 
+# Vérifie que la graphic device a la bonne grandeur, sinon en ouvrir une nouvelle
+check.dev.size <<- function(ww,hh) {
 
+    if(dev.cur()==1){ dev.new(width=ww,height=hh)
+                  } else {
+    ds <- dev.size()
+    if(round(ds[1],2)!=round(ww,2)
+       | round(ds[2],2)!=round(hh,2)) {
+        dev.off(); dev.new(width=ww,height=hh)} }
+}
 
-  # Ensuite, creation tableau global avec toutes les possibilites d'accents
-  accent.encode <- data.frame("lettre"=c("e","e","e","e","e","e","i","i",""),
-                              "code"=c("\216","\217","\351","\350","<e9>","<e8>",
-                              "\357","\225","\312"))
   # standard error
   stand.err <<- function(x) sd(x)/sqrt(length(x))
 

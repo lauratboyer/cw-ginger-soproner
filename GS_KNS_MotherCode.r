@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-22 16:45:59 Laura>
+# Time-stamp: <2013-07-29 10:40:03 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -12,10 +12,10 @@ usernow <- "Laura"
 # Définition des variables principales pour l'analyse:
 
 ### Filtre sur ANNEES ### à completer
-filtre.annees <- 2006:2012 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
+filtre.annees <- 2006:2013 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
                            # exemples de format: c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
 ### Filtre sur ESPECES ###
-filtre.sur.especes <- TRUE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
+filtre.sur.especes <- FALSE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
 
        taxoF.incl <- "inclure"
