@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des donnees LIT
-# Time-stamp: <2013-07-25 11:26:24 Laura>
+# Time-stamp: <2013-07-29 14:26:47 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
@@ -241,7 +241,7 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
                 sapply(cnow,function(cc) fig.funk(wgeo=gg, wmorph=cc)))
 
   # sauvegarde tableaux
-  write.csv(val.all, paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_",Sys.Date(),"csv",sep=""),
+  write.csv(val.all, paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_",Sys.Date(),".csv",sep=""),
             row.names=FALSE)
   write.csv(val.impact,
             paste(tabl.dir,"GS_LIT_SerieTempTable_",AS,"_GeoMorphImpact_DiffCouv_",Sys.Date(),".csv",sep=""),

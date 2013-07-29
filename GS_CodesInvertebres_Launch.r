@@ -1,7 +1,7 @@
 ## Ginger/Soproner: Produits/Analyses invertébrés
 # ** Code central pour lancer analyses densité/abondance/diversité
 # *et* spécifier groupes taxonomiques à analyser
-# Time-stamp: <2013-07-25 12:36:28 Laura>
+# Time-stamp: <2013-07-29 15:22:06 Laura>
 
 ########################################################
 ########################################################
@@ -52,7 +52,7 @@ Run.INV.densite <- function(tabl.seulement = TRUE) {
   dd <- sapply(c(FALSE, TRUE), function(ii)
                sapply(c("A","S"), function(ff)
                       sapply(c(FALSE, TRUE), function(ss)
-                             inv.dens.geom(AS=ff, aj.impact=ii, spttcampagnes=ss))))
+                             inv.dens.geom(AS=ff, aj.impact=ii, spttcampagnes=ss, save=TRUE))))
 
   #############################
   ######## Graphiques #########

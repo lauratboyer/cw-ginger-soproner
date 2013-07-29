@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-25 12:28:56 Laura>
+# Time-stamp: <2013-07-29 15:13:01 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -17,7 +17,6 @@ prep.analyse <- function() {
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
-
   ### Fonctions utiles pour formattage
   if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
   capitalize <<- function(x) {
@@ -45,7 +44,6 @@ check.dev.size <<- function(ww,hh) {
        | round(ds[2],2)!=round(hh,2)) {
         dev.off(); dev.new(width=ww,height=hh)} }
 }
-
   # standard error
   stand.err <<- function(x) sd(x)/sqrt(length(x))
 
@@ -386,11 +384,11 @@ check.dev.size <<- function(ww,hh) {
 
       if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "Tous")) {
       # Pas de filtre
-      print("Pas de filtre sur especes applique")
+      message("Pas de filtre sur especes applique")
           } else {
       # On filtre les rangees selon les especes/groupes taxo specifie
-      print(paste(c("Filtre sur especes",capitalize(action),taxtype,
-                    paste(taxnom,collapse=", ")),collapse=" :: "))
+      message(paste(c("Filtre sur especes",capitalize(action),taxtype,
+                    paste(sort(taxnom),collapse=", ")),collapse=" :: "))
 
       if(action == "inclure") { # inclusion des groupes X
       wtable <- wtable[wtable[,taxtype] %in% taxnom,]
@@ -423,14 +421,28 @@ check.dev.size <<- function(ww,hh) {
     closeAllConnections()
   }
 
+  # Fonction qui montre la valeur présente des filtres taxonomiques
+  # Tapez "voir.filtre()" dans la console
+  voir.filtre <<- function() {
+      fltre.now <- list(taxoF.incl, taxoF.utaxo, sort(taxoF.nom))
+      names(fltre.now) <- c("taxoF.incl","taxoF.utaxo","taxoF.nom")
+      print(fltre.now) }
+
   # Cette fonction retourne une version abbrégée des noms des groupes taxonomiques
   # inclus (ou exclus) au besoin
   taxotagFunk <<- function() {
+
     if(taxoF.incl=="inclure" & taxoF.utaxo == "Groupe" & any(taxoF.nom %in% "Tous")) {
       return("") # si tous les groupes sont inclus, ne pas modifier le nom de fichiers
     } else {
-      taxotag <- paste(paste(abbreviate(c(capitalize(taxoF.incl), taxoF.nom)), collapse="-"),"_",sep="")
-      return(taxotag) }
+        if(length(taxoF.nom) <= 5) {
+            taxotag <- paste("_",paste(c(capitalize(taxoF.utaxo),abbreviate(c(capitalize(taxoF.incl),
+                                                                          sort(taxoF.nom)))), collapse="-"),"_",sep="")
+        } else {taxotag <- paste("_",paste(c(capitalize(taxoF.utaxo),
+                                         abbreviate(c(capitalize(taxoF.incl),
+                                                      sort(taxoF.nom)[1:5], "etc",
+                                                      paste("N=",length(taxoF.nom),sep="")))), collapse="-"),"_",sep="")}
+        return(taxotag) }
   }
 
   # Ces fonctions sont utilisées pour indiquer le départ et la fin

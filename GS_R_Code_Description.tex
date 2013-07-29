@@ -7,6 +7,8 @@
 \usepackage{color}
 \usepackage{hyperref}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
 \definecolor{darkblue}{rgb}{0,0,0.5}
 
 \begin{document}
@@ -18,6 +20,59 @@
   données d'échantillonage}
 
 \tableofcontents
+
+% Define block styles
+\tikzstyle{decision} = [diamond, draw,
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw,
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,node distance=3cm,minimum height=2em]
+
+
+\newpage
+
+\begin{centering}
+\begin{tikzpicture}[node distance = 2cm, auto]
+    % Place nodes
+    \node [block] (init) {Premier lancement du code?};
+    \node [cloud, left of=init] (expert) {expert};
+    \node [block, right of=init, node distance = 4cm] (1ere) {Voir section \ref{reglages1}};
+    \node [block, below of=init, node distance = 3cm] (newdata) {Nouvelles données à importer?};
+    \node [block, right of=newdata, node distance = 4cm] (newdatasec) {Voir section \ref{nouvdb}};
+
+    \node [block, below of=newdata, node distance = 4cm] (filtre) {Filtre sur espèces ou
+      filtre sur années à rajouter?};
+    \node [decision, below of=filtre, node distance=4cm] (lancement)
+    {Lancement des routines};
+        \node [block, left of=lancement, node distance=4cm] (manu)
+    {Dans mothercode, spécifiez \texttt{sorties.INV = FALSE},
+    \texttt{sorties.poissons=FALSE}, \texttt{sorties.INV=FALSE}\\lala};
+        \node [block, right of=lancement, node distance=4cm] (auto)
+    {Dans mothercode, spécifiez \texttt{sorties.INV = TRUE},
+    \texttt{sorties.poissons=TRUE}, \texttt{sorties.INV=TRUE}};
+%    \node [block, below of=evaluate] (decide) {Dans mother\_code,
+%      options FALSE, source(mother\_bcode), dans la console lancez
+%      manuellement les fonctions désirées, voir section X};
+%    \node [block, below of=decide, node distance=3cm] (stop) {Dans
+%      mother\_code, options TRUE, source(mother\_code)}
+
+    % Draw edges
+    \path [line] (init) -- node {non} (newdata);
+    \path [line] (newdata) -- node {non} (filtre);
+%    \path [line] (evaluate) -- (decide);
+%    \path [line] (decide) -| node [near start] {yes} (update);
+%    \path [line] (filtre) -| (update);
+%    \path [line] (decide) -- node {no}(stop);
+    \path [line,dashed] (expert) -- (init);
+    \path [line] (init) -- node {oui} (1ere) ;
+    \path [line] (newdata) -- node {oui} (newdatasec) ;
+    \path [line] (filtre) -- node {non} (lancement) ;
+%    \path [line,dashed] (newdata) -- (1ere) ;
+
+\end{tikzpicture}
+\end{centering}
+
 \section{Accès rapide aux descriptions des fonctions R}
 \subsection{Invertébrés}
 
@@ -39,6 +94,7 @@
 \section{Survol}
 
 \subsection*{Réglages initiaux}
+\label{reglages1}
 Pour lancer le code et produire tous les tableaux/graphiques,
 commencez par créer deux dossiers à l'emplacement de votre choix:
 \begin{enumerate}
@@ -82,6 +138,16 @@ par R.\\
 automatiquement les trois dossiers
 suivants dans le \texttt{dossier.R}: \emph{Tableaux},
 \emph{Graphiques} and \emph{Data}. \\
+
+
+\subsection*{Incorporation de nouvelles versions des bases de données}
+\label{nouvdb}
+Les fichiers sont lus par R en format .csv car c'est plus rapide et
+moins compliqué. Pour sauver les tableaux dans le format approprié,
+ouvrir le tableau à sauver, aller dans ``Enregistrer sous... ``,
+sélectionner dans le menu déroulant CSV (le premier CSV) -- attention
+de sélectionner la première option et non CSV - MAC. Si l'ordinateur
+est un MAC, utiliser l'option CSV - DOS.
 
    \subsection*{Routine de lancement des sorties de base}
 
@@ -162,6 +228,8 @@ active lors de la prochaine session. \\
 \\
 \texttt{\#if(!filtre.sur.especes)\{filtre.especes()\}else\{filtre.especes("oui")\}}
 
+Pour voir la valeur des filtres présentement enregistrée, tapez
+\texttt{voir.filtre()} dans la console R.
 
 \subsection*{Modifier les requêtes lancées par défaut}
 Le fichier \texttt{GS\_CodesInvertebres\_Launch.r} doit être édité

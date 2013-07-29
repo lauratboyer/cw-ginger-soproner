@@ -1,6 +1,6 @@
 # Analyses des donn√©es KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 10:14:41 Laura>
+# Time-stamp: <2013-07-29 14:53:24 Laura>
 
 # Sujet: Ce code vÈrifie que les tableaux utilis√©s pour les analyses sont √† jour
 # ... et dans le cas √©ch√©ant modifie la base de donn√©es en cons√©quence
@@ -88,7 +88,11 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   # assume encodage est "latin1", spÈcifiÈ en consÈquence durant l'import
   # avec read.csv()
   tradfunk <<- function(x) {
-      if(class(x) == "character") {
+
+      # conversion au cas o˘ mal fait sous .csv (d˚ au dec = ",")
+      if(class(x) == "character") x <- type.convert(x, as.is=TRUE, dec=",")
+
+      if(class(x) == "character") { # ... et on continu si x reste un charactËre
       enc <- unique(Encoding(x))
       if(length(enc) > 1 & (!("latin1" %in% enc))) {
           warning("Attention encodage non-dÈclarÈ latin1") }
@@ -109,7 +113,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       seprt <- ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";")
 
       objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""),
-                         sep=seprt, dec=",") # point decimal ","
+                         sep=seprt, dec=".") # point decimal "." (voir aussi tradfunk())
       objnow <- objnow[!apply(objnow,1,is.empty),]; # oter les rangees vides
 
       objnow <- data.frame(lapply(objnow, tradfunk))
