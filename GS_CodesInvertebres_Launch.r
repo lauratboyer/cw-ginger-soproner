@@ -1,28 +1,25 @@
 ## Ginger/Soproner: Produits/Analyses invertébrés
 # ** Code central pour lancer analyses densité/abondance/diversité
 # *et* spécifier groupes taxonomiques à analyser
-# Time-stamp: <2013-07-29 15:22:06 Laura>
+# Time-stamp: <2013-07-29 16:29:59 Laura>
 
 ########################################################
 ########################################################
-Run.INV.biodiv <- function() {
+Run.INV.biodiv <- function(wfiltre=c("A","S")) {
 
   source("GS_CodesInvertebres_Biodiv.r")
   all.bio <- inv.biodiv(save=TRUE)
   all.bio.T <- inv.biodiv(qunit="T",save=TRUE)
-  all.bio.geom <- inv.biodiv.geom(AS="A",save=TRUE)
-  all.bio.geom <- inv.biodiv.geom(AS="S",save=TRUE)
-  invsr.A <- inv.sprich.tbl(AS="A",save=TRUE)
-  invsr.S <- inv.sprich.tbl(AS="S",save=TRUE)
+  dmm <- sapply(wfiltre, function(fltre) inv.biodiv.geom(AS=fltre,save=TRUE))
+  dmm <- sapply(wfiltre, function(fltre) inv.sprich.tbl(AS=fltre,save=TRUE))
 
   # Richesse spécifique par transect et aggrégation taxonomique:
-  dd <- sapply(c("Groupe","S_Groupe","Famille"), function(gt)
-               sprich.by.aggrtaxo(AS="A", grtax=gt, save=TRUE))
-  dd <- sapply(c("Groupe","S_Groupe","Famille"), function(gt)
-               sprich.by.aggrtaxo(AS="S", grtax=gt, save=TRUE))
+  dd <- sapply(wfiltre, function(fltre)
+               sapply(c("Groupe","S_Groupe","Famille"), function(gt)
+               sprich.by.aggrtaxo(AS=fltre, grtax=gt, save=TRUE)))
 }
 
-Run.INV.densite <- function(tabl.seulement = TRUE) {
+Run.INV.densite <- function(wfiltre=c("A","S","Absent"), tabl.seulement = TRUE) {
 
   source("GS_CodesInvertebres_Densite.r")
   ###########################
@@ -31,17 +28,17 @@ Run.INV.densite <- function(tabl.seulement = TRUE) {
   # Boucle par niveaux taxonomiques et filtres (incluant filtre absent)
   # Densité par transect:
   dd <- sapply(c("Genre","G_Sp"),
-               function(tt) sapply(c("A","S","Absent"), function(ff)
+               function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, smpl.unit="T", save=TRUE, AS=ff)))
 
   # Densité par transect, incluant les densité nulles, avec filtre A et S seulement:
   dd <- sapply(c("Genre","G_Sp"),
-               function(tt) sapply(c("A","S","Absent"), function(ff)
+               function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, smpl.unit="T", save=TRUE, AS=ff, wZeroAll=TRUE)))
 
   # Densité par station:
   dd <- sapply(c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
-               function(tt) sapply(c("A","S","Absent"), function(ff)
+               function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, save=TRUE, AS=ff)))
 
   # Densité moyenne par géomorphologie (et impact) et groupe/sous-groupe,
@@ -50,7 +47,7 @@ Run.INV.densite <- function(tabl.seulement = TRUE) {
   # spttcampagnes -> utilise seulement les espèces observées sur toutes les campagnes
   # lors du calcul des top10 abondance
   dd <- sapply(c(FALSE, TRUE), function(ii)
-               sapply(c("A","S"), function(ff)
+               sapply(wfiltre, function(ff)
                       sapply(c(FALSE, TRUE), function(ss)
                              inv.dens.geom(AS=ff, aj.impact=ii, spttcampagnes=ss, save=TRUE))))
 

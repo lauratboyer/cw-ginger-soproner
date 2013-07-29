@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 15:13:01 Laura>
+# Time-stamp: <2013-07-29 16:51:29 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -300,11 +300,11 @@ check.dev.size <<- function(ww,hh) {
     tb2 <- cast(tb, St ~ Campagne, value="echtl")
 
     # sélectionner les colonnes avec les années désirées pour le filtre
-    # campagnes semestrielles
+    # campagnes annuelles et semestrielles
     keySmstrl <- c(paste("A_",qAnnees,sep=""),paste("S_",qAnnees,sep=""))
     tb3 <- tb2[,unlist(sapply(keySmstrl,function(x) grep(x,names(tb2))))]
     wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
-    T_S_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
+    T_AeS_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
 
     # campagnes annuelles
     keyAnnuel <- paste("A_",qAnnees,sep="")
@@ -314,7 +314,15 @@ check.dev.size <<- function(ww,hh) {
                                      wStat <- tb2$St[which(na.omit(tb3==1))]}
     T_A_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
 
-    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv))
+    # campagnes semestrielles
+    keyAnnuel <- paste("S_",qAnnees,sep="")
+    tb3 <- tb2[,unlist(sapply(keyAnnuel,function(x) grep(x,names(tb2))))]
+    if("data.frame" %in% class(tb3)) { wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
+                                   }else{
+                                     wStat <- tb2$St[which(na.omit(tb3==1))]}
+    T_S_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
+
+    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T <- T_AeS_inv))
   }
 
   filtre.Camp <<- creerFiltre(filtre.annees)
@@ -422,8 +430,8 @@ check.dev.size <<- function(ww,hh) {
   }
 
   # Fonction qui montre la valeur présente des filtres taxonomiques
-  # Tapez "voir.filtre()" dans la console
-  voir.filtre <<- function() {
+  # Tapez "voir.filtre.taxo()" dans la console
+  voir.filtre.taxo <<- function() {
       fltre.now <- list(taxoF.incl, taxoF.utaxo, sort(taxoF.nom))
       names(fltre.now) <- c("taxoF.incl","taxoF.utaxo","taxoF.nom")
       print(fltre.now) }
@@ -492,4 +500,8 @@ check.dev.size <<- function(ww,hh) {
   data.read <<- TRUE
   wd.now <- dossier.R
   setwd(wd.now)
+
+  message("\n\nFonction prep.analyse() complétée. Tableaux formattés et analyses prêtes à lancer.
+Pour lancer les analyses manuellement utiliser les fonctions:\n
+Invertébrés: Run.INV.biodiv(), Run.INV.densite() \nLIT: Run.LIT.all() \nPoissons: Run.poissons.all()")
 }

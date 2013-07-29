@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 10:40:03 Laura>
+# Time-stamp: <2013-07-29 16:46:09 Laura>
 
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura"
@@ -22,7 +22,7 @@ if(filtre.sur.especes) {
        taxoF.utaxo <- "Groupe"
        taxoF.nom <- c("Crustaces","Mollusques","Echinodermes")
        }else{
-         taxoF.incl <- "inclure"; taxoF.utaxo <- "Groupe"; taxoF.nom <- "tous" }
+         taxoF.incl <- "inclure"; taxoF.utaxo <- "Groupe"; taxoF.nom <- "Tous" }
 
 ### Sorties à produire ###
 sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
