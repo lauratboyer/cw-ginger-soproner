@@ -26,6 +26,8 @@
     text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
 \tikzstyle{block} = [rectangle, draw,
     text width=5em, text centered, rounded corners, minimum height=4em]
+    \tikzstyle{blockwide} = [rectangle, draw,
+    text width=15em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{line} = [draw, -latex']
 \tikzstyle{cloud} = [draw, ellipse,node distance=3cm,minimum height=2em]
 
@@ -45,12 +47,12 @@
       filtre sur années à rajouter?};
     \node [decision, below of=filtre, node distance=4cm] (lancement)
     {Lancement des routines};
-        \node [block, left of=lancement, node distance=4cm] (manu)
-    {Dans mothercode, spécifiez \texttt{sorties.INV = FALSE},
-    \texttt{sorties.poissons=FALSE}, \texttt{sorties.INV=FALSE}\\lala};
-        \node [block, right of=lancement, node distance=4cm] (auto)
-    {Dans mothercode, spécifiez \texttt{sorties.INV = TRUE},
-    \texttt{sorties.poissons=TRUE}, \texttt{sorties.INV=TRUE}};
+        \node [blockwide, left of=lancement, node distance=4cm] (manu)
+    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = FALSE}\\
+    \texttt{sorties.poissons = FALSE}\\ \texttt{sorties.INV = FALSE}};
+        \node [blockwide, right of=lancement, node distance=4cm] (auto)
+    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = TRUE}\\
+    \texttt{sorties.poissons = TRUE}\\ \texttt{sorties.INV = TRUE}};
 %    \node [block, below of=evaluate] (decide) {Dans mother\_code,
 %      options FALSE, source(mother\_bcode), dans la console lancez
 %      manuellement les fonctions désirées, voir section X};
@@ -72,22 +74,55 @@
 
 \end{tikzpicture}
 \end{centering}
-
+\newpage
 \section{Accès rapide aux descriptions des fonctions R}
 \subsection{Invertébrés}
+Indices de biodiversité: Shannon, Piélou et Margalef, richesse
+spécifique: \\
+
+\noindent  \hyperlink{i1}{\bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE)}} \\
+  \hyperlink{i2}{\bigtt{inv.biodiv.geom(AS="A",save=FALSE)}}\\
+  \hyperlink{i3}{\bigtt{inv.sprich.tbl(AS="A",grtax="Groupe",save=FALSE)}}\\
+  \hyperlink{i4}{\bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", save=FALSE)}}\\
+  \hyperlink{i5}{\bigtt{inv.RichSpecifique(AS="A", aj.impact=FALSE, aggr="St")}}\\
+
+\noindent Densité moyenne sur divers facteurs (transect/station/géomorphologie),
+avec l'option de conserver les 10 espèces les plus abondantes
+seulement (tableaux et graphiques):\\
+\hyperlink{i6}{\bigtt{inv.dens.tbl(AS="A", grtax="G\_Sp", smpl.unit="St",
+      wZeroAll=FALSE, save=FALSE)}}\\
+  \hyperlink{i7}{\bigtt{inv.dens.geom(AS="A", aj.impact=FALSE, spttcampagnes=FALSE, save=FALSE)}}\\
+ \hyperlink{i8}{\bigtt{inv.graph.TS(AS="A", wtype="allsp",
+      wff="Groupe", top10year="", save=TRUE)}}\\
+ \hyperlink{i9}{\bigtt{inv.graph.TS.top10(AS="A",
+          wff="Groupe", top10year="all", save=TRUE)}}\\
 
 \subsection{Poissons}
+\noindent Données brutes reformattées:\\
 \hyperlink{p1} {\bigtt{poissons.tableau.brut(save=FALSE)}}\\
 \hyperlink{p2} {\bigtt{BioDens.sp.poissons()}}\\
+
+\noindent Densité, biomasse, richesse spécifique, etc. par catégorie d'espèce:\\
 \hyperlink{p3} {\bigtt{poissons.ts1(AS="A",save=FALSE)}}\\
+
+\noindent Densité moyenne (par station, année, toutes stations, toutes années):\\
 \hyperlink{p4} {\bigtt{poissons.ts2(AS="A",save=FALSE)}}\\
+
+\noindent Graphiques de séries temporelles biomasse, densité, etc.\\
 \hyperlink{p5} {\bigtt{poissons.p3(quel.graph="all",save=FALSE)}}
+
 \subsection{LIT}
+\noindent Données brutes reformattées, couvertures moyennes, etc.:\\
 \hyperlink{l1} {\bigtt{LIT.tableau.brut(save=FALSE, AS="pas de filtre")}}\\
 \hyperlink{l2} {\bigtt{LIT.resume(yy=2011, ff="Coraux\_Gen", AS="A",
     save=FALSE)}}\\
+
+\noindent Couverture moyenne par facteurs divers, différence de
+couvertures entre zones impactées et non-impactées:\\
 \hyperlink{l3} {\bigtt{LIT.ts1(AS="A")}}\\
 \hyperlink{l4} {\bigtt{LIT.ts2(AS="A")}}\\
+
+\noindent Graphiques en barres des couvertures moyennes par substrat:\\
 \hyperlink{l5} {\bigtt{LIT.bp1(yy=2011, ff2="Coraux\_Gen", AS="A")}}
 
 \clearpage
@@ -241,19 +276,19 @@ pour modifier les requêtes lancées par défaut.
 
 \begin{itemize}
 
-  \item[] \bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE):} \\
+  \item[] \hypertarget{i1}{\bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE)}:} \\
     \emph{Inv\_IndexBiodivPar + qunit + filtre station + filtre taxo} \\
   \textbf{Tableau} des indices de biodiversité (moyenne et écart type)
   et richesse spécifique (via \bigtt{inv.RichSpecifique()}) par station (valeur par défaut, peut être
   changée en modifiant l'argument \bigtt{qunit}). Le tableau produit
   est utilisé par d'autres fonctions, entre autres \texttt{inv.biodiv.geom()}.
 
-  \item[] \bigtt{inv.biodiv.geom(AS="A",save=FALSE):}\\
+  \item[] \hypertarget{i2}{\bigtt{inv.biodiv.geom(AS="A",save=FALSE)}:}\\
     \emph{Inv\_IndexBiodiv + géomorphologie/impact + filtre station + filtre taxo}\\
     \textbf{Tableau} résumé des moyennes (et ET) sur station par
     géomorphologie, et par géomorphologie/type d'impact.
 
-  \item[] \bigtt{inv.sprich.tbl(AS="A",grtax="Groupe",save=FALSE):}
+  \item[] \hypertarget{i3}{\bigtt{inv.sprich.tbl(AS="A",grtax="Groupe",save=FALSE)}:}
     \emph{Inv\_NumEspeceParGeomorph + groupe taxo + filtre station +
       filtre taxo} \\
     \textbf{Tableau} du nombre d'espèces pour chacun des membres de
@@ -261,7 +296,7 @@ pour modifier les requêtes lancées par défaut.
     des espèces contenues dans chaque membre, et nombre total
     d'espèces observées par campagne/géomorphologie.
 
-  \item[] \bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", save=FALSE):}\\
+  \item[] \hypertarget{i4}{\bigtt{sprich.by.aggrtaxo(AS="A", grtax="Groupe", save=FALSE)}:}\\
     \emph{Inv\_NumEspeceParAggrTaxon + groupe taxo + filtre station + filtre taxo} \\
     \textbf{Tableau} de la richesse spécifique (nombre d'espèces) pour
  chaque membre du l'aggrégation taxonomique choisie
@@ -270,7 +305,8 @@ pour modifier les requêtes lancées par défaut.
     chacun des sous-groupes taxonomiques observés sur les stations
     contenues dans le filtre.
 
-  \item[] \bigtt{inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St"):}\\
+  \item[]  \hypertarget{i5}{\bigtt{inv.RichSpecifique(AS="A", aj.impact=FALSE, aggr="St")}:}\\
+    \emph{Non sauvegardé individuellement}
     \textbf{Tableau} interne non sauvegardé mais utilisé en
     information complémentaire pour d'autres tableaux
     (\texttt{inv.biodiv()}, \texttt{inv.biodiv.geom()}). Richesse
@@ -279,17 +315,19 @@ pour modifier les requêtes lancées par défaut.
     (ET) de la RS par géomorphologie (\texttt{aggr="geom"}) et zone
     d'impact (\texttt{aj.impact = TRUE}).
 
-   \item[] \hypertarget{i6}{\bigtt{inv.dens.tbl(AS="A", grtax="G\_Sp",
+   \item[] \hypertarget{i6}{\bigtt{inv.dens.tbl(AS="A", smpl.unit="St", grtax="G\_Sp",
       wZeroAll=FALSE, save=FALSE)}:}\\
-\emph{Inv\_DensiteParST\_ + filtre station + groupe taxo + filtre taxo}\\
-\textbf{Tableau} des densités moyennes (et SD) par station pour une
+\emph{Inv\_DensitePar\_ + smpl.unit + filtre station + groupe taxo + filtre taxo}\\
+\textbf{Tableau} des densités moyennes (et SD) par station (ou
+transect, si \texttt{smpl.unit = 'T'}) pour une
 une unité taxonomique donnée (\texttt{grtax}), avec l'option de
 rajouter dans le tableau final les densités nulles sur les
 stations/campagne non-occupées (\texttt{wZeroAll}).
 
 \item[] \hypertarget{i7}{\bigtt{inv.dens.geom(AS="A", aj.impact=FALSE,
       spttcampagnes=FALSE, save=FALSE)}:}\\
-  \emph{...}\\
+  \emph{Inv\_DensityTS\_Geomorpho + (Impact) + unité taxonomique +
+    filtre stations + filtre taxonomique + type de top10}\\
   \textbf{Tableaux} des densités moyennes (et SD) par espèce, par
   sous-groupe et par groupe, pour chaque géomorphologie (et zone
   d'impact si \texttt{aj.impact = TRUE}). Les 10 espèces les plus
@@ -298,9 +336,30 @@ stations/campagne non-occupées (\texttt{wZeroAll}).
   sélectionnées. Cette sélection est faite par groupe et par-sous
   groupe.
 
-  inv.dens.tbl.parT
-  inv.graph.TS()
-  inv.graph.TS.top10
+\item[] \hypertarget{i8}{\bigtt{inv.graph.TS(AS="A", wtype="allsp",
+      wff="Groupe", top10year="", save=TRUE)}:}\\
+  \emph{InvDensMoyTS\_ + filtre stations + type calcul top10 + année
+    top 10 + niveau taxonomique + géomorpho} \\
+  \textbf{Graphiques} des séries temporelles de densité (et SD) par
+  unité taxonomique (\texttt{wff}) (un graphique par géomorphologie),
+  avec option d'utiliser toutes les espèces (\texttt{wtype = 'allsp'})
+  ou les dix espèces les plus abondantes en 2006 ou sur toute la série
+  temporelle (\texttt{wtype = 'top10', top10year = 2006} ou
+  \texttt{wtype = 'top10', top10year = 'all'}).
+
+
+\item[] \hypertarget{i9}{\bigtt{inv.graph.TS.top10(AS="A",
+          wff="Groupe", top10year="all", save=TRUE)}:}\\
+        \emph{InvDensMoyTS\_ + filtre stations + top10 + top10year +
+          niveau taxo + géomorpho + nom membre niveau taxo} \\
+
+\textbf{Graphiques} des séries temporelles de densité (et SD) des 10
+espèces les plus abondantes pour chaque membre de l'unité taxonomique
+(\texttt{wff}) (un graphique par géomorphologie et
+  membre de l'unité taxonomique). L'option \texttt{top10year} contrôle
+  la selection des dix espèces les plus abondantes (en 20XX,
+  \texttt{top10year = 20XX}) ou sur toute la série temporelle
+  (\texttt{top10year = all}).
 
 \end{itemize}
 
@@ -399,7 +458,7 @@ d'impact.
 \end{itemize}
 
 Note: les catégories de substrats sont définies dans l'objet
-\texttt{coraux.fig}, créer par la fonction \texttt{prep.analyse()}.
+\texttt{coraux.fig}, créé par la fonction \texttt{prep.analyse()}.
 
 \section{Concepts utiles sous R}
 \subsection * {Fonctions}

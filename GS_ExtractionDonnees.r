@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 16:51:29 Laura>
+# Time-stamp: <2013-07-30 10:43:53 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -333,8 +333,10 @@ check.dev.size <<- function(ww,hh) {
 
   # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <<- function(wtable, wfiltre) {
-    if(wfiltre %in% c("T_A_inv","T_S_inv")) { # appliquer le filtre si spécifié
+    if(wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv")) { # appliquer le filtre si spécifié
     message(paste("Stations filtrees par",wfiltre))
+    filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
+
     wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
     dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
                      wtable,by="key", drop.x="key")
@@ -342,9 +344,13 @@ check.dev.size <<- function(ww,hh) {
   } else {
     CmpTag <- paste(filtre.annees,collapse="|")
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-    wtable <- wtable[wtable$Campagne %in% wCampKeep,]
+    dd.filt <- wtable[wtable$Campagne %in% wCampKeep,]
     }
-  }
+
+    if(nrow(dd.filt)==0) warning(
+           sprintf("Attention!! \n\nAucune des données ne sont sélectionnées par le filtre sur stations:
+\nFiltre %s, années %s\n", wfiltre, paste(filtre.annees,collapse=", ")))
+    return(dd.filt)  }
 
   # 2. Converti les noms de campagne en année (charactère -> numérique)
   as.year <<- function(x) as.numeric(sub("[AS]_","",x))
@@ -358,6 +364,7 @@ check.dev.size <<- function(ww,hh) {
   dmm <- sapply(1:nrow(mat),function(i) arrows(mat[i,1],mat[i,3],
                                                   mat[i,1],mat[i,2],code=3,lty=typel,
                                                   col=couleur,angle=90,length=0.1)) }
+
 
   # 4. Calcul du nombre de stations échantillonées par groupement spatial, selon le filtre
   # Groupement spatial: géomorphologie, ou géomorphologie/impact
@@ -474,7 +481,7 @@ check.dev.size <<- function(ww,hh) {
   ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
   ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
   EM <<- function() {
-      tb <- get(".Traceback",envir=baseenv()) # extraire messages d'erreur
+      tb <- try(get(".Traceback",envir=baseenv())) # extraire messages d'erreur
       if(identical(paste(last(tb)), paste(sys.calls()[1]))) {
           message(sprintf("Erreur dans la fonction %s()",
                       paste(sys.calls()[[1]][1])))

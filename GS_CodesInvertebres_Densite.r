@@ -1,7 +1,7 @@
 # Ginger/Soproner: Produits/Analyses invertebres
 ## ** Tableaux/graphiques de densite ** ##
 
-# Time-stamp: <2013-07-29 11:43:40 Laura>
+# Time-stamp: <2013-07-30 10:49:06 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -358,8 +358,7 @@ inv.graph.TS <- function(AS="A", wtype="allsp", wff="Groupe", top10year="", save
   # Fonction figure:
   graphfunk <- function(i) {
 
-    rds <- round(dev.size(),2)
-    if(rds[1] != 8 | rds[2] != 6.5) quartz(width=8, height=6.5)
+    check.dev.size(ww=8, hh=6.5)
     par(family="serif",mai=c(0.8,0.1,0.5,0.1), omi=c(0,0.75,0,0.4))
     layout(cbind(1,1,1,1,1,2,2))
 
