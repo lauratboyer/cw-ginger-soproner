@@ -1,7 +1,7 @@
 # Ginger/Soproner: Produits/Analyses invertebres
 ## ** Tableaux/graphiques de densite ** ##
 
-# Time-stamp: <2013-07-30 10:49:06 Laura>
+# Time-stamp: <2013-07-31 09:45:03 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -338,8 +338,10 @@ top10sp.recc <- function(AS="A", grtax="G_Sp", filtre=FALSE, impact=FALSE) {
   d5 <- d5[,c(ff,ni)]
 }
 
-inv.graph.TS <- function(AS="A", wtype="allsp", wff="Groupe", top10year="", save=TRUE) {
-  # option "wtype" peut-être "allsp" ou "top10" (pour les 10 espèces les plus abondantes)
+inv.graph.TS <- function(AS="A", wtype="allsp", wff="Groupe",
+                         top10year="", save=TRUE) {
+  # option "wtype" peut-être "allsp" ou "top10"
+  # (pour les 10 espèces les plus abondantes)
 
     departFunk() # message de depart
     on.exit(EM())
