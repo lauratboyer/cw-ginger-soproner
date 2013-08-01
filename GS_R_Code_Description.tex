@@ -15,6 +15,9 @@
 \newcommand{\mcode} {\texttt{GS\_MotherCode.r}}
 \newcommand{\bigtt}[1] {\textcolor{darkblue}{{\large {\texttt{#1}}}}}
 \renewcommand{\tablename}{Tableau}
+\makeatletter
+ \newcommand{\nop}[1]{\Hy@raisedlink{\hypertarget{#1}{}}}
+\makeatother
 
 \noindent {\Large \bfseries Description: Code R pour l'analyse des
   données d'échantillonage}
@@ -26,61 +29,81 @@
     text width=5em, text badly centered, node distance=3cm, inner sep=3pt]
 \tikzstyle{block} = [rectangle, draw,
     text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{blockmed} = [rectangle, draw,
+    text width=12em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{blockmedred} = [rectangle, draw, draw=red, very thick,
+   text width=12em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{blockwide} = [rectangle, draw,
     text width=15em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{blockred} = [rectangle, draw, very thick,
+    text width=15em, text centered, rounded corners, minimum
+    height=4em, draw=red]
 \tikzstyle{line} = [draw, -latex']
-\tikzstyle{cloud} = [draw, ellipse,node distance=3cm,minimum height=2em]
 
 
 \newpage
-\hyperlink{reglages 1}{Créez les dossiers \texttt{dossier.R} et
-        \texttt{dossier.DB}; migrez les codes \texttt{.r} dans le
-        \texttt{dossier.R}}\\
+\thispagestyle{empty}
+
 \begin{centering}
 \begin{tikzpicture}[node distance = 2cm, auto]
     % Place nodes
     \node [block] (init) {Premier lancement du code?};
     \node [blockwide, right of=init, node distance = 5.5cm] (1ere)
-    {\hyperlink{reglages 1}{Créez les dossiers \texttt{dossier.R} et
+    {\hyperref[reglages1]{Créez les dossiers \texttt{dossier.R} et
         \texttt{dossier.DB}; migrez les codes \texttt{.r} dans le
         \texttt{dossier.R}}};
 
     \node [block, below of=init, node distance = 3cm] (newdata)
     {Nouvelles données à importer?};
     \node [blockwide, right of=newdata, node distance = 5.5cm] (newdatasec)
-    {\hyperlink{nouvdb} {Sauvegarder la nouvelle version du tableau en
-        .csv et mettez là dans \texttt{dossier.DB}}};
+    {\hyperref[nouvdb]{Sauvegarder la nouvelle version du tableau en
+        .csv et mettez-la dans \texttt{dossier.DB}}};
 
     \node [block, below of=newdata, node distance = 4cm] (filtrean)
-    {Filtre sur années à rajouter?};
+    {\hyperref[filtre::an]{ Filtre sur années à rajouter?}};
     \node [blockwide, right of=filtrean, node distance = 5.5cm] (filtreansec)
    {Dans \mcode, modifiez la variable \texttt{filtre.sur.annees}};
 
     \node [block, below of=filtrean, node distance = 4cm] (filtresp) {Filtre sur espèces à rajouter?};
-    \node [blockwide, right of=filtresp, node distance = 5.5cm] (filtrespsec)
-    {Dans \mcode, mettre \texttt{filtre.sur.especes = TRUE} et
+    \node [block, right of=filtresp, node distance = 5.5cm, yshift=1cm] (filtresp2)
+    {Liste des groupes contenues dans un fichier?};
+    \node [blockwide, below of=filtresp2, node distance = 3cm] (filtrespsec)
+    {\hyperref[filtre::sp]{Dans \mcode, avec \texttt{filtre.sur.especes = TRUE},
       modifiez la valeur des variables \texttt{taxoF.action},
-      \texttt{taxoF.utaxo}, \texttt{taxoF.nom} \hyperlink{filtre::sp}{(voir section \ref{filtre::sp})}};
+      \texttt{taxoF.utaxo}, \texttt{taxoF.nom}}};
 
+
+  %lancement:
     \node [decision, below of=filtresp, node distance=4cm] (lancement)
     {Lancement des routines};
-        \node [blockwide, left of=lancement, node distance=5.5cm, yshift=-2cm] (manu)
-    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = FALSE}\\
-    \texttt{sorties.poissons = FALSE}\\ \texttt{sorties.INV = FALSE}};
-        \node [blockwide, right of=lancement, node distance=5.5cm, yshift=-2cm] (auto)
-    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = TRUE}\\
-    \texttt{sorties.poissons = TRUE}\\ \texttt{sorties.INV = TRUE}};
-%  \node[block, below of=auto, node distance = 3cm, yshift=5cm](autoinfo)
-%  {\hyperlink{filtre::sp}{ben la kessé}};
-%    \node [block, below of=evaluate] (decide) {Dans mother\_code,
-%      options FALSE, source(mother\_bcode), dans la console lancez
-%      manuellement les fonctions désirées, voir section X};
-%    \node [block, below of=decide, node distance=3cm] (stop) {Dans
-%      mother\_code, options TRUE, source(mother\_code)}
 
-  % Draw edges
+  % automatique
+ \node [blockmedred, left of=lancement, node distance=4.5cm, yshift=-4cm] (auto)
+ {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = TRUE}\\
+    \texttt{sorties.poissons = TRUE}\\ \texttt{sorties.INV = TRUE}\\
+  Glissez le fichier \mcode{ }dans R};
+
+% manuel
+        \node [blockmed, right of=lancement, node distance=6cm, yshift=-2cm] (manu)
+    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = FALSE}\\
+    \texttt{sorties.poissons = FALSE}\\ \texttt{sorties.INV = FALSE}\\
+  Glissez le fichier \mcode{ }dans R};
+
+% filtre espèces manuel
+      \node [blockmed, below of=manu, node distance=3cm, xshift=3.5cm] (fspmanu)
+    {Importez les espèces à filtrer avec la fonction \texttt{import.filtre.taxo()}};
+
+% lancement routine manuel
+    \node [blockred, below of=manu, node distance=5cm, xshift=-4cm] (lancemanu)
+    {Lancez sous R les fonctions désirées, voir: \\
+    \texttt{Run.INV.densite()}
+    \texttt{Run.INV.biodiv()}
+    \texttt{Run.poissons.all()}
+    \texttt{Run.LIT.all()}};
+
+  % Draw connecting arrows
   %    \path [line] (decide) -| node [near start] {yes} (update);
-  %    \path [line] (filtre) -| (update);
+
     \path [line] (init) -- node {non} (newdata);
     \path [line] (init) -- node {oui} (1ere) ;
     \path [line,dashed] (1ere) -- (newdata) ;
@@ -91,27 +114,22 @@
     \path [line] (filtrean) -- node {oui} (filtreansec) ;
     \path [line,dashed] (filtreansec) -- (filtresp) ;
     \path [line] (filtresp) -- node {non} (lancement) ;
-    \path [line] (filtresp) -- node {oui} (filtrespsec) ;
-    \path [line,dashed] (filtrespsec) -- (lancement) ;
-    \path [line] (lancement) -- node {Manuel} (manu) ;
-    \path [line] (lancement) -- node {Automatique} (auto) ;
+    \path [line] (filtresp) -- node[sloped] {oui} (filtresp2) ;
+    \path [line] (filtresp2) -- node {non} (filtrespsec) ;
 
+    \path [line,dashed] (filtrespsec) -- (lancement) ;
+    \path [line] (lancement) -- node [sloped,pos=0.2,red] {Manuel} (manu) ;
+    \path [line] (lancement) -- node [above,sloped,red] {Automatique} (auto) ;
+    \path [line,dashed] (fspmanu) -- (lancemanu) ;
+    \path [line,dashed] (manu) -- (lancemanu) ;
 
     \path [line] (filtrean) -- node {non} (filtresp);
-%\draw[->,thick,draw=red!50] (filtresp) to [out=270,in=90] (auto);
-%    \path [line,dashed] (expert) -- (init);
-
-
-
-%    \path [line] (newdata) -- (filtre.an);
-%    \path [line] (filtre.sp) -- node {non} (lancement) ;
-%    \path [line] (filtre.an) -- node {non} (filtre.sp) ;
-%        \path [line] (filtre.sp) -- node {non} (lancement) ;
-
+    \path [->] (filtresp2) edge [out = 0, in=90] node {oui} (fspmanu);
+%    \draw[->,thick] (filtresp2) to [out=270,in=90] (manu);
 
 \end{tikzpicture}
 \end{centering}
-\newpage
+
 \section{Accès rapide aux descriptions des fonctions R}
 \subsection{Invertébrés}
 Indices de biodiversité: Shannon, Piélou et Margalef, richesse
@@ -166,10 +184,10 @@ couvertures entre zones impactées et non-impactées:\\
 \section{Survol}
 
 \subsection{Réglages initiaux}
-
+\label{reglages1}
 Pour lancer le code et produire tous les tableaux/graphiques,
 commencez par créer deux dossiers à l'emplacement de votre choix:
-\hypertarget{reglages1}{lala}
+
 \begin{enumerate}
       \item un dossier où les analyses R sont faites
       [\texttt{dossier.R}], et qui contiendra les fichiers R requis par
@@ -215,7 +233,7 @@ suivants dans le \texttt{dossier.R}: \emph{Tableaux},
 Les fichiers sont lus par R en format .csv car c'est plus rapide et
 ne néccessite pas l'installation de librairies additionelles sous
 R. Pour sauvegarder les tableaux dans le format approprié:
-%\begin{comment}
+
 \begin{enumerate}
   \item ouvrir le tableau dans Excel, aller dans ``Enregistrer sous...''
   \item sélectionner dans le menu déroulant l'option CSV -- attention
@@ -226,16 +244,15 @@ R. Pour sauvegarder les tableaux dans le format approprié:
    \item mettre la nouvelle version du tableau (en .csv) dans le
     fichier \texttt{dossier.DB} défini ci-haut (et ôter la vieille
     version)
+  \end{enumerate}
 
-    \end{enumerate}
-%\end{comment}
 \emph{Note 1:} Pour s'assurer que la nouvelle version du tableau a bien
 été incluse lorsque les codes sont lancés, vérifiez que la date
 imprimée dans la console aprés ``Tableaux importés:'' correspond bien à la
 date de création du nouveau fichier pour le tableau .csv en
 question. Par exemple si une nouvelle version de \texttt{Bioeco.csv}
 est chargée, la date imprimée aura le format suivant: \\
-\\
+
 \texttt{[1] "Tableaux importés"}\\
 \texttt{\$bioeco} \\
 \texttt{[1] "2013-08-01 01:00:00 PST"}\\
@@ -265,7 +282,7 @@ si le fichier .csv avait initialement était crée le 1er août 2013 à 1 heure.
 \\
 \texttt{> import.tableaux()}\\
 
-   \subsection*{Routine de lancement des sorties de base}
+   \subsection{Routine de lancement des sorties de base}
 
    Dans le fichier \mcode, s'assurez que les variables sont bien définies dans
    la première section. Notamment, les variables
@@ -310,7 +327,19 @@ une fois en début de session, car ce fichier installe toutes les fonctions néc
 sorties et défini plusieurs
 variables utilisées dans l'analyse.
 
-\subsection*{Rajouter un filtre sur les espèces}
+\subsection{Rajouter un filtre sur les années}
+\label{filtre::an}
+Le filtre sur les années est contenu dans l'objet
+\texttt{filtre.sur.annees} défini dans \mcode. Pour modifer ce filtre,
+modifier la valeur de l'objet directement dans \mcode avant de lancer
+\mcode sous R. Alternativement vous pouvez définir la valeur de
+\texttt{filtre.sur.annees} directement dans la console pour faire des
+changements manuellement. Attention si \mcode est re-sourcé, la
+valeur de \texttt{filtre.sur.annees} présente dans le fichier prendra
+précédence. A tout moment vous pouvez tapez
+\texttt{filtre.sur.annees} dans la console pour voir sa valeur.
+
+\subsection{Rajouter un filtre sur les espèces}
 \label{filtre::sp}
 Si vous désirez inclure ou exclure de l'analyse certains groupes
 taxonomiques, mettez l'option \texttt{filtre.sur.especes =
@@ -348,14 +377,17 @@ active lors de la prochaine session. \\
 Pour voir la valeur des filtres présentement enregistrée, tapez
 \texttt{voir.filtre.taxo()} dans la console R.
 
-\subsection*{Modifier les requêtes lancées par défaut}
+\subsection{Modifier les requêtes lancées par défaut}
 Le fichier \texttt{GS\_CodesInvertebres\_Launch.r} doit être édité
-pour modifier les requêtes lancées par défaut.
+pour modifier les requêtes lancées par défaut. Par exemple les
+arguments des fonctions spécifiées pourraient être changés selon les
+requêtes voulues.
+
 
 
 \section{Description des fonctions pour invertébrés, poissons et LIT}
 \subsection{Invertébrés}
-
+\label{test}
 \begin{itemize}
 
   \item[] \hypertarget{i1}{\bigtt{inv.biodiv(AS="pas de filtre",qunit="St",wC="all",save=FALSE)}:} \\
@@ -543,7 +575,7 @@ Note: les catégories de substrats sont définies dans l'objet
 \texttt{coraux.fig}, créé par la fonction \texttt{prep.analyse()}.
 
 \section{Concepts utiles sous R}
-\subsection * {Fonctions}
+\subsection*{Fonctions}
 Le terme \emph{fonction} sous R dénomme un objet contenant une ou plusieurs
 lignes de codes qui performent une tâche spécifiée par le programmeur
 (sous Excel on appellerait ça une macro). Une fonction
@@ -602,8 +634,6 @@ faire attention, donc: lorsque vous lancez des fonctions manuellement
 il faut s'assurer que les valeurs définies correspondent bien à ce que vous
 voulez produire.
 
-
-\begin{comment}
 \section{Visualiser un tableau sous R}
 
 De plus, pour visualiser un des tableaux produits directement sous R,
@@ -628,6 +658,5 @@ Les opérateurs logiques sous R sont:
 != n'est pas égal à
 x \& y les deux conditions doivent être respectées
 x | y l'une ou l'autre des conditions doivent être respectées
-\end{comment}
 
 \end{document}
