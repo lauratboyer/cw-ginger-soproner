@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-30 10:43:53 Laura>
+# Time-stamp: <2013-08-01 15:38:43 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -415,26 +415,42 @@ check.dev.size <<- function(ww,hh) {
 
   # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
   # "inclure" ou "exclure" / unité taxonomique / nom
-  filtre.especes <<- function(aF="tous") {
+  def.filtre.especes <<- function(aF="tous") {
 
     if(aF == "tous") {
        taxoF.incl <<- "inclure"
        taxoF.utaxo <<- "Groupe"
        taxoF.nom <<- "Tous"
      } else {
-       print("Definition des filtres taxonomiques:")
-    cat("Inclure ou exclure? ")
-    taxoF.incl <<- tolower(readLines(file("stdin"),1))
-    cat("Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) ")
-    taxoF.utaxo <<- capitalize(tolower(readLines(file("stdin"),1)))
-       if(taxoF.utaxo == "Groupe") taxoF.utaxo <<- "Groupe"
+       message("Definition des filtres taxonomiques:")
+    taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
+    mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
+    taxoF.utaxo <<- capitalize(tolower(readline(mm)))
        if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Groupe"
        if(taxoF.utaxo == "Espece") taxoF.utaxo <<- "G_Sp"
-    cat("Nom? ")
-    taxoF.nom <<- readLines(file("stdin"),1) }
+    taxoF.nom <<- readline("Nom? ")
     taxoF.nom <<- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
-    closeAllConnections()
   }
+
+  # Fonction qui permet de sélectionner un fichier .csv pour importer
+  # sous R une liste de noms d'espèces/genre/famille
+  # à utiliser dans le filtre taxonomique
+  # argument "action" défini taxoF.incl
+  # argument "niveau" défini le niveau taxonique, taxoF.utaxo
+  # argument "titre" défini si la première rangée est le nom de la colonne dans le
+  # ... fichier .csv (si non, spécifier titre = FALSE)
+  import.filtre.taxo() <<- function(action="inclure",niveau="Famille",titre=TRUE) {
+
+      lnoms <- read.csv(file.choose(),header=titre) # sélectionner le fichier dans l'ordi
+      if(class(lnoms)=="data.frame") lnoms <- lnoms[,1]
+      lnoms <- capitalize(tolower(trim(lnoms))) # nettoyer format des noms
+      taxoF.incl <<- action
+      taxoF.utaxo <<- niveau
+      taxoF.nom <<- lnoms
+
+      voir.filtre.taxo()
+  }
+
 
   # Fonction qui montre la valeur présente des filtres taxonomiques
   # Tapez "voir.filtre.taxo()" dans la console
@@ -487,6 +503,7 @@ check.dev.size <<- function(ww,hh) {
                       paste(sys.calls()[[1]][1])))
           assign(".Traceback"[[1]],999,envir=baseenv())
           } else { finFunk()} }
+
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:

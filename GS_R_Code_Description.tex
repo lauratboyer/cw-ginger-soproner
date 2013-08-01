@@ -341,17 +341,41 @@ précédence. A tout moment vous pouvez tapez
 
 \subsection{Rajouter un filtre sur les espèces}
 \label{filtre::sp}
-Si vous désirez inclure ou exclure de l'analyse certains groupes
-taxonomiques, mettez l'option \texttt{filtre.sur.especes =
-  TRUE}. Lorsque \mcode {} est lancé, R vous
-demandera automatiquement de spécifier les valeurs du filtre sur
-espèces (voir exemple ci-bas). Pour changer ces valeurs manuellement,
-vous pouvez également lancez
-vous même la fonction:
+Le filtre sur espèces est défini par trois objets:
 
+\begin{enumerate}
+  \item \texttt{taxoF.incl} spécifie si les noms donnés devraient être
+    exclus (\texttt{`exclure'}) ou inclus (\texttt{`inclure'}) dans
+    l'analyse.
+  \item \texttt{taxoF.utaxo} contient le niveau taxonomique à laquelle
+    l'inclusion (ou l'exclusion) est faite, e.g. G\_Sp, Genre,
+    Famille, S\_Groupe ou Groupe.
+   \item \texttt{taxoF.nom} contient la liste des noms des membres du
+     niveau \texttt{taxoF.utaxo} sur laquelle l'action
+     \texttt{taxoF.incl} sera portée.
+\end{enumerate}
+
+Vous avez plusieurs options pour appliquer un filtre taxonomique:
+\begin{itemize}
+\item[--] Pour un lancement des codes complètement automatiques, mettez dans
+\mcode l'option \texttt{filtre.sur.especes =  TRUE} et modifiez
+directement les valeurs des objets
+\texttt{taxoF.incl}, \texttt{taxoF.utaxo} et \texttt{taxoF.nom}. Ces
+valeurs peuvent aussi être modifiée manuellement dans la console R une
+fois que \mcode{} est lancé.
+\item[--] Si vous avez une liste de noms à importer
+d'un fichier .csv, utilisez la fonction \texttt{import.filtre.taxo()}
+et spécifiez en argument \texttt{niveau='...'} pour le niveau
+taxonomique désiré et \texttt{action='exclure'} si cette action est
+désirée (par défaut la fonction spécifie
+\texttt{taxoF.incl='inclure'}.
+\item[--] Finalement vous pouvez aussi utiliser
+la fonction \texttt{def.filtre.especes()} pour définir intéractivement
+sous R les valeurs du filtre, comme suit:
+\end{itemize}
 \begin{Schunk}
 \begin{Sinput}
-> filtre.especes("oui")
+> def.filtre.especes.def("oui")
 \end{Sinput}
 \end{Schunk}
 
@@ -382,8 +406,6 @@ Le fichier \texttt{GS\_CodesInvertebres\_Launch.r} doit être édité
 pour modifier les requêtes lancées par défaut. Par exemple les
 arguments des fonctions spécifiées pourraient être changés selon les
 requêtes voulues.
-
-
 
 \section{Description des fonctions pour invertébrés, poissons et LIT}
 \subsection{Invertébrés}
@@ -429,8 +451,8 @@ requêtes voulues.
     (ET) de la RS par géomorphologie (\texttt{aggr="geom"}) et zone
     d'impact (\texttt{aj.impact = TRUE}).
 
-   \item[] \hypertarget{i6}{\bigtt{inv.dens.tbl(AS="A", smpl.unit="St", grtax="G\_Sp",
-      wZeroAll=FALSE, save=FALSE)}:}\\
+   \item[] \hypertarget{i6}{}\bigtt{inv.dens.tbl(AS="A",
+       smpl.unit="St", grtax="G\_Sp", wZeroAll=FALSE, \\save=FALSE)}:\\
 \emph{Inv\_DensitePar\_ + smpl.unit + filtre station + groupe taxo + filtre taxo}\\
 \textbf{Tableau} des densités moyennes (et SD) par station (ou
 transect, si \texttt{smpl.unit = 'T'}) pour une
