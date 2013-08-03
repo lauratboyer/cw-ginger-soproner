@@ -1,6 +1,6 @@
 ## Analyses des donnees KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-01 15:38:43 Laura>
+# Time-stamp: <2013-08-02 17:34:07 Laura>
 
 # Sujet: Formattage des tableaux de donnees brutes pre-analyse,
 # creation de tableaux annexes + fonctions de base pour l'analyse
@@ -87,9 +87,9 @@ check.dev.size <<- function(ww,hh) {
   ###### Information biologie/écologie poissons #######
   #####################################################
   # bioeco.all: info complémentaires sur les poissons
-  bioeco.all <- data.bioeco[,c("Code_Sp","famille","genre","espece","taille_moy","commercial_2",
+  bioeco.all <- data.bioeco[,c("Code_Sp","famille","genre","espece","nom_total","taille_moy","commercial_2",
                         "cible_VKP","a","b","groupe_troph1","mobilite")]
-  names(bioeco.all) <- c("Code_SP","Famille","Genre","Espece","Taille","Peche","Cible",
+  names(bioeco.all) <- c("Code_SP","Famille","Genre","Espece","G_Sp","Taille","Peche","Cible",
                        "Coeff_a","Coeff_b","Groupe_Trophique","Mobilite")
 
   # Clarifier étiquettes
@@ -114,8 +114,8 @@ check.dev.size <<- function(ww,hh) {
   bioeco.all <- merge(bioeco.all,mob.label,by="Mobilite",all.x=TRUE)
 
   # Ajuster si besoin le format pour les noms d'espèces:
-  bioeco.all[,c("Famille","Genre","Espece")] <-
-      sapply(bioeco.all[,c("Famille","Genre","Espece")], capitalize)
+  bioeco.all[,c("Famille","Genre","Espece","G_Sp")] <-
+      sapply(bioeco.all[,c("Famille","Genre","Espece","G_Sp")], capitalize)
 
   # Tableau bioeco, info a + b seulement
   bioeco <- data.bioeco[,c("Code_Sp","a","b")]
@@ -214,23 +214,6 @@ check.dev.size <<- function(ww,hh) {
   dbio <- merge(dbio.tmp, index.dbio)
 
   ################
-  # Oter les accents des noms des invertébrés pour éviter les erreurs
-  # dûes à l'encodage
-  # Si l'encodage UTF-8 est bien lu par l'ordi
-  # (les accents apparaissent correctement)
-  dbio$Groupe <- gsub("é","e",capitalize(tolower(trim(dbio$Groupe))))
-  dbio$S_Groupe <- gsub("é","e",dbio$S_Groupe)
-  dbio$S_Groupe <- gsub("è","e",dbio$S_Groupe)
-  dbio$S_Groupe <- gsub("ï","i",dbio$S_Groupe)
-  dbio$S_Groupe <- capitalize(tolower(trim(dbio$S_Groupe)))
-
-  # Si l'encodage UTF-8 n'est pas lu par l'ordi (les accents suivent un format similaire à <U+00E9>)
-  # Conversion à encodage latin1 qui permet de substituer les charactères
-  if("UTF-8" %in% unique(Encoding(dbio$Groupe))) {
-    dbio$Groupe <- tradfunk(dbio$Groupe)
-    dbio$S_Groupe <- tradfunk(dbio$S_Groupe)
-    dbio$Famille <- tradfunk(dbio$Famille)
-  }
 
   # Première lettre en majuscule, le reste en minuscules
   dbio$G_Sp <- capitalize(tolower(dbio$G_Sp))
@@ -284,6 +267,15 @@ check.dev.size <<- function(ww,hh) {
   ####################################
   # pr.Bacip: catégorie avant/pendant/aprés pour les années
   names(pr.Bacip) <- c("Campagne","Annee","Periode_3","Periode_2")
+
+  ####################################
+  #### Tableau espèces universels ####
+  ####################################
+  index.Poissons <- unique(dpoissons[,c("G_Sp", "Genre", "Famille")])
+  index.Poissons$Groupe <- index.Poissons$S_Groupe <- NA
+  index.Poissons$type <- "Poissons"
+  index.invSp$type <- "Inv"
+  index.tt.especes <- rbind(index.invSp, index.Poissons)
 
   #######################################################
   ###### Filtres campagnes annuelles/semestrielles ######
@@ -397,18 +389,34 @@ check.dev.size <<- function(ww,hh) {
   filtreTaxo <<- function(wtable,action="inclure",
                           taxtype="Groupe",taxnom="Tous") {
 
+
       if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "Tous")) {
       # Pas de filtre
       message("Pas de filtre sur especes applique")
           } else {
+
+      # Extraction du type d'espèces analysées maintenant
+      sc <<- sys.calls() # fonctions en cours
+
+      # Extraction de la catégorie d'espèces présente dans le filtre
+      # E.g. si toutes les espèces filtrées sont des invertébrés, le filtre
+      # taxonomique n'est pas appliqué aux poissons
+      qtype <- unique(index.tt.especes[index.tt.especes[,taxoF.utaxo]
+                                       %in% taxoF.nom,"type"])
+
+      # Appliquer le filtre si la categorie d'espèce mentionnée dans le filtre
+      # correspond aux analyses présentes (e.g. pas de filtre poissons sur les
+      # invertébrés)
+      if(any(grepl(tolower(qtype),tolower(sc)))) {
+
       # On filtre les rangees selon les especes/groupes taxo specifie
-      message(paste(c("Filtre sur especes",capitalize(action),taxtype,
+      message(paste(c("Filtre sur especes",capitalize(action),qtype,taxtype,
                     paste(sort(taxnom),collapse=", ")),collapse=" :: "))
 
-      if(action == "inclure") { # inclusion des groupes X
+      if(tolower(action) == "inclure") { # inclusion des groupes X
       wtable <- wtable[wtable[,taxtype] %in% taxnom,]
       } else { # exclusion des groupes X
-      wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}
+      wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}}
 
     return(wtable)
   }
@@ -422,7 +430,7 @@ check.dev.size <<- function(ww,hh) {
        taxoF.utaxo <<- "Groupe"
        taxoF.nom <<- "Tous"
      } else {
-       message("Definition des filtres taxonomiques:")
+       message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
     taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
     mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
     taxoF.utaxo <<- capitalize(tolower(readline(mm)))
@@ -431,7 +439,7 @@ check.dev.size <<- function(ww,hh) {
     taxoF.nom <<- readline("Nom? ")
     taxoF.nom <<- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
   }
-
+}
   # Fonction qui permet de sélectionner un fichier .csv pour importer
   # sous R une liste de noms d'espèces/genre/famille
   # à utiliser dans le filtre taxonomique
@@ -439,7 +447,7 @@ check.dev.size <<- function(ww,hh) {
   # argument "niveau" défini le niveau taxonique, taxoF.utaxo
   # argument "titre" défini si la première rangée est le nom de la colonne dans le
   # ... fichier .csv (si non, spécifier titre = FALSE)
-  import.filtre.taxo() <<- function(action="inclure",niveau="Famille",titre=TRUE) {
+  import.filtre.taxo <<- function(niveau="Famille",action="inclure",titre=TRUE) {
 
       lnoms <- read.csv(file.choose(),header=titre) # sélectionner le fichier dans l'ordi
       if(class(lnoms)=="data.frame") lnoms <- lnoms[,1]
@@ -450,7 +458,6 @@ check.dev.size <<- function(ww,hh) {
 
       voir.filtre.taxo()
   }
-
 
   # Fonction qui montre la valeur présente des filtres taxonomiques
   # Tapez "voir.filtre.taxo()" dans la console
@@ -482,7 +489,8 @@ check.dev.size <<- function(ww,hh) {
       sc <- sys.calls()
       fname <- as.character(sc[[length(sc)-1]])[1] # extrait le nom de la fonction parent
       packageStartupMessage(sprintf("\nDepart %s()...",fname))
-      print(unlist(mget(names(formals(fname)), envir=sys.frame(-1))))
+      try(print(unlist(mget(names(formals(fname)), envir=sys.frame(-1)))),
+          silent=TRUE)
       message("#################\n")
       }
   finFunk <<- function() {
@@ -519,6 +527,7 @@ check.dev.size <<- function(ww,hh) {
   index.LIT <<- index.LIT
   coraux.fig <<- coraux.fig
   pr.Bacip <<- pr.Bacip
+  index.tt.especes <<- index.tt.especes
 
   # Tag TRUE when data read with no bugs
   data.read <<- TRUE

@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-07-29 16:55:58 Laura>
+# Time-stamp: <2013-08-02 15:49:40 Laura>
 
 # Sujet: Ce code v�rifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -109,7 +109,8 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
   # extraire des fichiers csv et assigner aux noms d'objets (voir obj.names)
   dmm <- sapply(1:length(obj.names),function(x) {
       # v�rifier s�parateur
-      cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),"character")
+      cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),
+                 "character",quiet=TRUE)
       seprt <- ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";")
 
       objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""),

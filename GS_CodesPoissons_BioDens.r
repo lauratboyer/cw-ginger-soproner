@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-07-15 15:38:56 Laura>
+# Time-stamp: <2013-08-02 17:35:35 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -16,6 +16,11 @@ if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 # reformattage du tableau des données de comptage initial
 poissons.tableau.brut <- function(save=FALSE) {
+
+  ################################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
 
   # Calcul de densité et de biomasse par observation/espèce/transect/campagne
   # Formule de distance sampling ajustée pour les observations individuelles
@@ -60,7 +65,7 @@ poissons.tableau.brut <- function(save=FALSE) {
 
   # + Charactéristiques de l'espèce: code_espèce/famille/genre/espèce/...
   # ... état commercial/groupe trophique
-  tb.2 <- merge(tb.1, bioeco.all[,c("Code_SP","Famille","Genre","Espece",
+  tb.2 <- merge(tb.1, bioeco.all[,c("Code_SP","Famille","Genre","Espece","G_Sp",
                                     "Peche","Cible","GTlabel","moblabel")],
                 by="Code_SP",sort=FALSE)
 
@@ -72,7 +77,7 @@ poissons.tableau.brut <- function(save=FALSE) {
   # selectionner colonnes a conserver
   tb.2 <- tb.2[,c("An","Camp","Campagne","St","Obs","N_Impact","Geomorpho",
                   "cpus","Effort_ha","Tx.Sed","Z",
-                  "Donnees.LIT","Code_SP","Famille","Genre","Espece",
+                  "Donnees.LIT","Code_SP","Famille","Genre","Espece","G_Sp",
                   "N","L","D1","D2",
                   "Peche","Cible","a","b","dens.obs","bio.obs",
                   "GTlabel","moblabel")]
@@ -80,7 +85,7 @@ poissons.tableau.brut <- function(save=FALSE) {
   # renommer colonnes
   names(tb.2) <- c("An","Campagne.Type","Campagne","St","Plongeur","Zone.Impact","Geomorpho",
                   "CPUS","Effort","Tx.Sed","Profondeur",
-                  "Donnees.LIT","Code_SP","Famille","Genre","Espece","N","L","D1","D2",
+                  "Donnees.LIT","Code_SP","Famille","Genre","Espece","G_Sp","N","L","D1","D2",
                   "Peche","Cible","Coeff.a","Coeff.b","dens.obs","bio.obs",
                    "Groupe.Trophique","Groupe.Mobil")
 
@@ -88,13 +93,13 @@ poissons.tableau.brut <- function(save=FALSE) {
   # garde seulement observations N>0 pour réduire la taille du fichier .csv
 
   # Filtrer les espèces au besoin
-#  dbn <- filtreTaxo(tb.2s0, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+  dbn <- filtreTaxo(tb.2s0, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   if(save) {
-  write.csv(tb.2s0,file=paste(tabl.dir,
+  write.csv(dbn,file=paste(tabl.dir,
   "GS_Poissons_TableauDonneesBrutes_",Sys.Date(),".csv",sep=""),
   row.names=FALSE) }
-  return(tb.2)}
+  return(dbn)}
 
 
 ##################################################
@@ -106,11 +111,16 @@ poissons.tableau.brut <- function(save=FALSE) {
 
 BioDens.sp.poissons <- function() { # formerly BD.by.sp()
 
+  ################################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
+
   # Calcul densite/biomasse par espece/transect/campagne
   fc <- c("Campagne","St","Code_SP")
   LT <- 50 # Longueur du transect
 
-  if(!exists("poissons.brut")) poissons.brut <<- BioDens.sp.poissons()
+  if(!exists("poissons.brut")) poissons.brut <<- poissons.tableau.brut()
   ds.calc <- poissons.brut # transfer a l'objet ds.calc
   ds.calc$dm.int <- ds.calc$N * (0.5*(ds.calc$D1+ds.calc$D2)+0.5)
   ds.list <- list("Campagne"=ds.calc$Campagne, "St"=ds.calc$St,
@@ -143,7 +153,7 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
                 "Peche","Groupe.Trophique","Groupe.Mobil","Cible")
   ttble <- unique(ds.calc[,c("Campagne",facteurs)])
   BDtable.i <- merge(ds.df,ttble,c("Campagne","St","Code_SP"))
-  BDtable <- merge(BDtable.i,bioeco.all[,c("Code_SP","Famille","Genre","fmlabel")],
+  BDtable <- merge(BDtable.i,bioeco.all[,c("Code_SP","Famille","Genre","G_Sp","fmlabel")],
                    by="Code_SP")
 
   return(BDtable)
@@ -161,6 +171,11 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
 # cible pêche nouvelle-calédonie, ou non
 
 poissons.ts1 <- function(AS="A",save=FALSE) {
+
+  ################################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
 
   if(!exists("BDtable")) BDtable <<- BioDens.sp.poissons()
   dfh <- BDtable # produit par BioDens.sp.poissons()
@@ -239,6 +254,11 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
 
 poissons.ts2 <- function(AS="A",save=FALSE) {
 
+  ################################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
+
   if(!exists("BDtable")) BDtable <<- BioDens.sp.poissons()
   ds.df <- BDtable # produit par BioDens.sp.poissons()
 
@@ -290,6 +310,10 @@ poissons.ts2 <- function(AS="A",save=FALSE) {
 
 poissons.p3 <- function(quel.graph="all",AS="A",save=FALSE) {
 
+    ################################
+    departFunk() # message de depart
+    on.exit(EM())
+    ################################
     stop("Attention cette fonction a un bug elle ne tourne pas pour le moment")
 
     # produire tableau de données à partir de la fonction poissons.ts1()
@@ -396,7 +420,11 @@ poissons.p3 <- function(quel.graph="all",AS="A",save=FALSE) {
 
 poissons.cible.graph <- function(save=FALSE) {
 
-  if(dev.size()[1] != 9 | round(dev.size()[2],1) != 5.3) quartz(width=9, height=5.3)
+  ###############################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
+  check.dev.size(ww=9, hh=5.3) # taille fenêtre
 
   # Pour chaque geomorphologie, faire une série de temps (+ filtrées)
   # démontrant biomasse/densité/richesse moyenne avec espèces ciblées/non-ciblées

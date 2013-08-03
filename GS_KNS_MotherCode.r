@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-01 12:19:02 Laura>
+# Time-stamp: <2013-08-01 16:08:38 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -20,7 +20,6 @@ usernow <- "Laura" # ou "Antoine", ou modifiez directement
 ############################
 ### 1. Filtre sur ANNEES ###
 ############################
-
 filtre.annees <- 2006:2013 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
                            # exemples de format:
                            # c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
@@ -55,8 +54,8 @@ if(filtre.sur.especes) {
 #############################
 
 sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
-sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
-sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
+sorties.LIT <- TRUE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
+sorties.poissons <- TRUE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 #############################
 ## 4. Définition DOSSIERS ###

@@ -1,11 +1,11 @@
 # Ginger/Soproner
 # Code pour analyses des donnees LIT
-# Time-stamp: <2013-07-29 14:26:47 Laura>
+# Time-stamp: <2013-08-01 16:11:56 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {
-    print("Commencez par charger le fichier GS_KNS_MotherCode.r
- pour que dossier.R soit defini") }
+    message("\nCommencez par charger le fichier GS_KNS_MotherCode.r
+ pour que dossier.R soit defini \n") }
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
@@ -15,8 +15,10 @@ if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 # formerly TB.lit
 LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
 
-    print("Depart: Fonction LIT.tableau.brut")
-    # CreƒÂ©er tableau donneƒÂ©es brutes pour analyses subseƒÂ©quentes
+    departFunk() # message de depart
+    on.exit(EM())
+
+    # Creer tableau donnees brutes pour analyses subsequentes
     # Appliquer filtres (ref: LIT.doc)
     # 1. AQCQ == NON
     DL <- data.LIT[data.LIT$AQCQ == "NON",]
@@ -90,6 +92,11 @@ LIT.tableau.brut <- function(save=FALSE,AS="pas de filtre") {
 LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
   # set AS to "A" or "S" based on campagne type
 
+    ################################
+    departFunk() # message de depart
+    on.exit(EM())
+    ################################
+
     if(!exists("LIT.brut")) LIT.brut <<- LIT.tableau.brut(AS=AS)
     dl <- LIT.brut[LIT.brut$Campagne %in% paste(AS,yy,sep="_"),]
 
@@ -112,9 +119,12 @@ LIT.resume <- function(yy=2011, ff="Coraux_Gen", AS="A", save=FALSE) {
 
 LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
 
-  tb1.lit <- LIT.resume(yy=yy, ff=ff2, AS=AS)
-
-  hist.funk <- function(cat) {
+    ################################
+    departFunk() # message de depart
+    on.exit(EM())
+    ################################
+    tb1.lit <- LIT.resume(yy=yy, ff=ff2, AS=AS)
+    hist.funk <- function(cat) {
 
     par(family="serif",omi=c(0.25,0,0,0))
 
@@ -153,10 +163,15 @@ LIT.bp1 <- function(yy=2011, ff2="Coraux_Gen", AS="A") {
 
 LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
+  ################################
+  departFunk() # message de depart
+  on.exit(EM())
+  ################################
+
   cnow <- coraux.fig$TS_All # categorie a utiliser
 
-  # Stations echantillonees depuis 2006, e  part pour "Recif barrie¨re externe"
-  # (distinction deje  pris en compte dans le tableau filtre)
+  # Stations echantillonees depuis 2006, a part pour "Recif barriere externe"
+  # (distinction deja prise en compte dans le tableau filtre)
   wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
   dd.filt <- filtreTable(LIT.brut, wf)
 
@@ -252,10 +267,15 @@ LIT.ts1 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
 LIT.ts2 <- function(AS="A") { # AS = "A" pour annuelles, "S" pour semestrielles
 
+    ################################
+    departFunk() # message de depart
+    on.exit(EM())
+    ################################
+
     check.dev.size(8.5, 7) # ouvrir une fenetre graphique de la bonne grandeur au besoin
     cnow <- coraux.fig$TS_All
 
-    # Stations echantillonees depuis 2006, e  part pour "Recif barriere externe"
+    # Stations echantillonees depuis 2006, a part pour "Recif barriere externe"
     # (distinction deja pris en compte dans le tableau filtre)
     wf <- paste("T",AS,"LIT",sep="_") # colonne du filtre
     dd.filt <- filtreTable(LIT.brut, wf)

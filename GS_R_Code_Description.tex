@@ -9,10 +9,20 @@
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
+
+% define new color to use in hyperlinks
+\definecolor{darkgreen}{rgb}{0,0.5,0}
 \definecolor{darkblue}{rgb}{0,0,0.5}
+\definecolor{darkred}{rgb}{0.75,0,0}
+% tell package hyperref to use these when linking
+\hypersetup{ colorlinks,
+linkcolor=darkgreen,
+filecolor=darkgreen,
+urlcolor=darkblue,
+citecolor=darkblue}
 
 \begin{document}
-\newcommand{\mcode} {\texttt{GS\_MotherCode.r}}
+\newcommand{\mcode} {\texttt{GS\_MotherCode.r}{ }}
 \newcommand{\bigtt}[1] {\textcolor{darkblue}{{\large {\texttt{#1}}}}}
 \renewcommand{\tablename}{Tableau}
 \makeatletter
@@ -31,19 +41,21 @@
     text width=5em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{blockmed} = [rectangle, draw,
     text width=12em, text centered, rounded corners, minimum height=4em]
-\tikzstyle{blockmedred} = [rectangle, draw, draw=red, very thick,
+\tikzstyle{blockmedred} = [rectangle, draw, draw=darkred, very thick,
    text width=12em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{blockwide} = [rectangle, draw,
     text width=15em, text centered, rounded corners, minimum height=4em]
 \tikzstyle{blockred} = [rectangle, draw, very thick,
     text width=15em, text centered, rounded corners, minimum
-    height=4em, draw=red]
+    height=4em, draw=darkred]
+\tikzstyle{blockwhite} = [rectangle, draw, very thick,
+    text width=15em, text centered, rounded corners, minimum
+    height=4em, draw=white]
 \tikzstyle{line} = [draw, -latex']
 
 
 \newpage
 \thispagestyle{empty}
-
 \begin{centering}
 \begin{tikzpicture}[node distance = 2cm, auto]
     % Place nodes
@@ -58,11 +70,18 @@
     \node [blockwide, right of=newdata, node distance = 5.5cm] (newdatasec)
     {\hyperref[nouvdb]{Sauvegarder la nouvelle version du tableau en
         .csv et mettez-la dans \texttt{dossier.DB}}};
+ \node [blockmed, left of=init, node distance = 4cm] (dwnld) {
+   \href{https://github.com/lauratboyer/cw-ginger-soproner/archive/master.zip}
+   {Cliquez ici pour télécharger les dernières versions du code}};
+
+ \node [blockwhite, left of=newdata, node distance = 4cm] (lien) {
+\emph{Vous pouvez cliquez sur les liens \textcolor{darkgreen}{en vert} pour aller directement à la
+section qui documente l'étape concernée.}};
 
     \node [block, below of=newdata, node distance = 4cm] (filtrean)
-    {\hyperref[filtre::an]{ Filtre sur années à rajouter?}};
+    {Filtre sur années à rajouter?};
     \node [blockwide, right of=filtrean, node distance = 5.5cm] (filtreansec)
-   {Dans \mcode, modifiez la variable \texttt{filtre.sur.annees}};
+   {\hyperref[filtre::an]{Dans \mcode, modifiez la variable \texttt{filtre.sur.annees}}};
 
     \node [block, below of=filtrean, node distance = 4cm] (filtresp) {Filtre sur espèces à rajouter?};
     \node [block, right of=filtresp, node distance = 5.5cm, yshift=1cm] (filtresp2)
@@ -81,17 +100,17 @@
  \node [blockmedred, left of=lancement, node distance=4.5cm, yshift=-4cm] (auto)
  {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = TRUE}\\
     \texttt{sorties.poissons = TRUE}\\ \texttt{sorties.INV = TRUE}\\
-  Glissez le fichier \mcode{ }dans R};
+  Glissez le fichier \mcode dans R};
 
 % manuel
         \node [blockmed, right of=lancement, node distance=6cm, yshift=-2cm] (manu)
-    {Dans \mcode, spécifiez:\\ \texttt{sorties.INV = FALSE}\\
+    {Dans \mcode spécifiez:\\ \texttt{sorties.INV = FALSE}\\
     \texttt{sorties.poissons = FALSE}\\ \texttt{sorties.INV = FALSE}\\
-  Glissez le fichier \mcode{ }dans R};
+  Glissez le fichier \mcode dans R};
 
 % filtre espèces manuel
       \node [blockmed, below of=manu, node distance=3cm, xshift=3.5cm] (fspmanu)
-    {Importez les espèces à filtrer avec la fonction \texttt{import.filtre.taxo()}};
+    {\hyperref[impFtaxo]{Importez les espèces à filtrer avec la fonction \texttt{import.filtre.taxo()}}};
 
 % lancement routine manuel
     \node [blockred, below of=manu, node distance=5cm, xshift=-4cm] (lancemanu)
@@ -118,8 +137,8 @@
     \path [line] (filtresp2) -- node {non} (filtrespsec) ;
 
     \path [line,dashed] (filtrespsec) -- (lancement) ;
-    \path [line] (lancement) -- node [sloped,pos=0.2,red] {Manuel} (manu) ;
-    \path [line] (lancement) -- node [above,sloped,red] {Automatique} (auto) ;
+    \path [line] (lancement) -- node [sloped,pos=0.2,darkred] {Manuel} (manu) ;
+    \path [line] (lancement) -- node [above,sloped,darkred] {Automatique} (auto) ;
     \path [line,dashed] (fspmanu) -- (lancemanu) ;
     \path [line,dashed] (manu) -- (lancemanu) ;
 
@@ -363,7 +382,7 @@ directement les valeurs des objets
 \texttt{taxoF.incl}, \texttt{taxoF.utaxo} et \texttt{taxoF.nom}. Ces
 valeurs peuvent aussi être modifiée manuellement dans la console R une
 fois que \mcode{} est lancé.
-\item[--] Si vous avez une liste de noms à importer
+\item[--] \label{impFtaxo}Si vous avez une liste de noms à importer
 d'un fichier .csv, utilisez la fonction \texttt{import.filtre.taxo()}
 et spécifiez en argument \texttt{niveau='...'} pour le niveau
 taxonomique désiré et \texttt{action='exclure'} si cette action est
@@ -382,21 +401,21 @@ sous R les valeurs du filtre, comme suit:
 \texttt{\color{MidnightBlue} Inclure ou exclure? } \\
 \indent \indent \texttt{Inclure } \\
 \\
-\indent \texttt{\color{MidnightBlue} Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece)} \\
+\indent \texttt{\color{MidnightBlue} Unité taxonomique? (Groupe/Sous-Groupe/Famille/Genre/Espece)} \\
 \indent \indent \texttt{Grp2}\\
 \\
 \indent \texttt{\color{MidnightBlue} Nom?} \\
 \indent \indent \texttt{Crustaces, Mollusques, Echinodermes}\\
 \\
 
-\noindent Attention: lorsque \texttt{filtre.sur.especes =
-  FALSE}, lancer \texttt{GS\_KNS\_MotherCode.r} ôtera automatiquement
-le filtre enregistré au préalable. Pour ôter \emph{temporairement} ce comportement,
-vous pouvez rajoutez un \# devant la ligne qui exécute cette fonction,
-en prenant bien soin de l'ôter avant de quitter R pour qu'elle soit
-active lors de la prochaine session. \\
-\\
-\texttt{\#if(!filtre.sur.especes)\{filtre.especes()\}else\{filtre.especes("oui")\}}
+%\noindent Attention: lorsque \texttt{filtre.sur.especes =
+%  FALSE}, lancer \texttt{GS\_KNS\_MotherCode.r} ôtera automatiquement
+%le filtre enregistré au préalable. Pour ôter \emph{temporairement} ce comportement,
+%vous pouvez rajoutez un \# devant la ligne qui exécute cette fonction,
+%en prenant bien soin de l'ôter avant de quitter R pour qu'elle soit
+%active lors de la prochaine session. \\
+%\\
+%\texttt{\#if(!filtre.sur.especes)\{filtre.especes()\}else\{filtre.especes("oui")\}}
 
 Pour voir la valeur des filtres présentement enregistrée, tapez
 \texttt{voir.filtre.taxo()} dans la console R.
