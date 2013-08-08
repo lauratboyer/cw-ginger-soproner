@@ -1,16 +1,16 @@
-# Ginger/Soproner: Produits/Analyses invertÃ©brÃ©s
-# ** Indices de biodiversitÃ© **
-# Time-stamp: <2013-07-22 16:06:56 Laura>
+# Ginger/Soproner: Produits/Analyses invertébrés
+# ** Indices de biodiversité **
+# Time-stamp: <2013-08-06 17:26:10 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
- # Extraction tableaux des bases de donnÃ©es
+ # Extraction tableaux des bases de données
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 #################################################
-## Tableau Indices de BiodiversitÃ© par station ##
+## Tableau Indices de Biodiversité par station ##
 #################################################
 
 inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
@@ -18,21 +18,21 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
     on.exit(EM())
 
     mf <- c("Campagne","St","T") # calcul des valeurs par transect
-    # Ã´te les abondances = 0
+    # ôte les abondances = 0
     dbn <- dbio[dbio$N > 0,]
 
     # Filtre sur les stations
     wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
     dbn <- filtreTable(dbn, wf)
 
-  # Filtre sur les espÃ¨ces au besoin
+  # Filtre sur les espèces au besoin
   dbn <- filtreTaxo(dbn, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Indice de Shannon #
-  # nombre d'individus observÃ©s sur le transect
+  # nombre d'individus observés sur le transect
   N.St <- aggregate(dbn$N, as.list(dbn[,mf]),sum)
   names(N.St) <- c(mf,"N.Tot")
-  # nombre d'individus *par espÃ¨ce* observÃ©s sur le transect
+  # nombre d'individus *par espèce* observés sur le transect
   N.taxon <- aggregate(dbn$N, as.list(dbn[,c(mf,"G_Sp")]),sum)
   names(N.taxon) <- c(mf,"G_Sp","N.Tax")
 
@@ -44,10 +44,10 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
   shannon.final <- aggregate(list("H"=shannon.df$NratioMult), as.list(shannon.df[,mf]),sum)
   shannon.final$H <- -shannon.final$H # Final value Shannon Index by Campagne/Station
 
-  # nombre d'espÃ¨ces uniques observÃ©es sur le transect
+  # nombre d'espèces uniques observées sur le transect
   bio.St.i <- aggregate(dbn$G_Sp, as.list(dbn[,mf]), unique)
   bio.St.i$bd <- sapply(bio.St.i$x, length)
-  bio.St <- bio.St.i[,c(mf,"bd")] # bio.St$bd = richesse spÃ©cifique sur le transect
+  bio.St <- bio.St.i[,c(mf,"bd")] # bio.St$bd = richesse spécifique sur le transect
 
   # Assemblage des tableaux:
   all.bio <- merge(bio.St,N.St,by=mf)
@@ -59,7 +59,7 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
   # Calcul de l'index *d*
   all.bio$d <- (all.bio$bd-1)/log(all.bio$N.Tot)
 
-  # lorsque diversitÃ© = 0, J+D -> infini
+  # lorsque diversité = 0, J+D -> infini
   val.inf <- sum(!is.finite(all.bio$J)) + sum(!is.finite(all.bio$d))
   all.bio[!is.finite(all.bio$J),"J"] <- NA
   all.bio[!is.finite(all.bio$d),"d"] <- NA
@@ -67,7 +67,7 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
     print("attention certaines valeurs NA ne sont pas causees par N=1 ou S=1 sur un transect")}
 
   if(qunit=="St") {
-  # Moyenne et Ã©cart type des indices par station/Campagne:
+  # Moyenne et écart type des indices par station/Campagne:
   all.bio.mean <- aggregate(list("Moy"=all.bio[,c("H","J","d")]),
                             as.list(all.bio[,c("Campagne","St")]), mean, na.rm=TRUE)
   all.bio.sd <- aggregate(list("ET"=all.bio[,c("H","J","d")]),
@@ -104,7 +104,7 @@ inv.biodiv <- function(AS="pas de filtre",qunit="St",wC="all",save=FALSE) {
 }
 
 ########################################################
-## Tableau Indices de BiodiversitÃ© par GÃ©omorphologie ##
+## Tableau Indices de Biodiversité par Géomorphologie ##
 ########################################################
 
 inv.biodiv.geom <- function(AS="A", save=FALSE) {
@@ -121,7 +121,7 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
   dd.filt <- filtreTable(all.bio, wf)
 
   ### 2. #################################
-  ### DÃ©finir fonction d'aggrÃ©gation #####
+  ### Définir fonction d'aggrégation #####
 
   aggr.funk <- function(ff) {
     print("Pour le moment les valeurs J et d -> inf sont ignorees")
@@ -144,7 +144,7 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
     dd.geo.both <- dd.geo.both[,c("Annee","Mission","Mois",ff,
                                   "Moy.H","ET.H","Moy.J","ET.J","Moy.d","ET.d")]
 
-    # Rajouter info richesse spÃ©cifique
+    # Rajouter info richesse spécifique
     if(length(ff)==2) {
       rsdf <- inv.RichSpecifique(aggr="geom", AS=AS)
       dd.geo.both <- merge(dd.geo.both, rsdf, by=c("Campagne","Geomorpho"))
@@ -170,14 +170,14 @@ inv.biodiv.geom <- function(AS="A", save=FALSE) {
   }
 
   ### 3. ########################################################
-  ### Lancer la fonction par gÃ©omorphologie & gÃ©om+n.impact #####
+  ### Lancer la fonction par géomorphologie & géom+n.impact #####
   dd <- aggr.funk(c("Campagne","Geomorpho"))
   dd <- aggr.funk(c("Campagne","Geomorpho","N_Impact"))
 
 }
 
 ###################################################
-## Tableau: Richesse spÃ©cifique ###################
+## Tableau: Richesse spécifique ###################
 ###################################################
 
 inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
@@ -188,33 +188,33 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
     ### 1. #############################
     ### Appliquer filtres ##############
     ta.raw <- merge(dbio, info.transect[,c("St","Geomorpho","N_Impact")])
-    # Ã´ter les observations N=0
+    # ôter les observations N=0
     ta.raw <- ta.raw[ta.raw$N > 0,]
 
     wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
     ta.raw <- filtreTable(ta.raw, wf)
 
-  # Filtre les espÃ¨ces au besoin
+  # Filtre les espèces au besoin
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   ### 2. ######################################################################
-  ### Nombre d'espÃ¨ces par Campagne/GÃ©omorphologieOuSite/Groupe_Taxonomique ###
-  e1 <- new.env() # crÃ©er environnment pour assembler les tableaux au fur et Ã  mesure
+  ### Nombre d'espèces par Campagne/GéomorphologieOuSite/Groupe_Taxonomique ###
+  e1 <- new.env() # créer environnment pour assembler les tableaux au fur et à mesure
 
   rsfunk <- function(grtax) {
-    # Richesse spÃ©cifique par St/T sur Geomorpho/Impact:
+    # Richesse spécifique par St/T sur Geomorpho/Impact:
     ff <- c("Campagne","Geomorpho","St")
     if(aj.impact) ff[3:4] <- c("N_Impact","St")
-    if(aggr=="T") ff <- c(ff,"T") # Rajouter le transect aux facteurs si spÃ©cifiÃ©
+    if(aggr=="T") ff <- c(ff,"T") # Rajouter le transect aux facteurs si spécifié
 
     tb.1 <- aggregate(list("unique.tax"=ta.raw[,grtax]),
                       as.list(ta.raw[,ff]), unique)
     tb.1$St.RS <- sapply(tb.1$unique.tax,length)
     tb.1 <- tb.1[,-(grep("unique.tax",names(tb.1)))]
 
-    # **Moyenne** de la richesse spÃ©cifique par GÃ©omorphologie
+    # **Moyenne** de la richesse spécifique par Géomorphologie
     if(aggr == "geom") {
-      ff <- ff[!(ff %in% c("T","St"))] # conserver aggrÃ©gration >Â St/Transect
+      ff <- ff[!(ff %in% c("T","St"))] # conserver aggrégration > St/Transect
       tb.2 <- aggregate(list("Moy.RS"=tb.1$St.RS),
                         as.list(tb.1[,ff]), mean)
       tb.2.sd <- aggregate(list("ET.RS"=tb.1$St.RS),
@@ -236,7 +236,7 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
 }
 
 ########################################
-## Tableau synthÃ¨se: Nombre d'espÃ¨ces ##
+## Tableau synthèse: Nombre d'espèces ##
 ########################################
 
 inv.sprich.tbl <- function(AS="pas de filtre",grtax="Groupe",save=FALSE) {
@@ -250,12 +250,12 @@ inv.sprich.tbl <- function(AS="pas de filtre",grtax="Groupe",save=FALSE) {
     wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
     ta.raw <- filtreTable(ta.raw, wf)
 
-    # Filtre les espÃ¨ces au besoin
+    # Filtre les espèces au besoin
     ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl,
                          taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
     ### 2. ###########################################################
-    ### Nombre d'espÃ¨ces par Campagne/GÃ©omorphologieOuSite/Groupe_Taxonomique ###
+    ### Nombre d'espèces par Campagne/GéomorphologieOuSite/Groupe_Taxonomique ###
     ff <- c("Campagne","Geomorpho","St")
     tb.1 <- aggregate(list("unique.sp"=ta.raw[,"G_Sp"]),
                   as.list(ta.raw[,c("Campagne","Geomorpho",grtax)]), unique)
@@ -272,7 +272,7 @@ inv.sprich.tbl <- function(AS="pas de filtre",grtax="Groupe",save=FALSE) {
   if(save) {
     # rajouter colonnes
     tb.all <- merge(info.transect.INV.geo, tb.all, by=c("Campagne","Geomorpho"), sort=FALSE)
-    # dÃ©finir info filtre pour nom de fichier
+    # définir info filtre pour nom de fichier
     ftag <- ifelse(AS=="pas de filtre", "_Filtre-Absent_",paste("_Filtre_",AS,"_",sep=""))
     taxotag <- taxotagFunk()
     write.csv(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParGeomorph_",grtax, ftag,taxotag,
@@ -290,17 +290,17 @@ sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", save=FALSE) {
     wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
     ta.raw <- filtreTable(dbio, wf)
 
-  # Filtre les espÃ¨ces au besoin
+  # Filtre les espèces au besoin
   ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-  # CrÃ©er colonnes de prÃ©sence
+  # Créer colonnes de présence
   ta.raw$presence <- ifelse(ta.raw$N == 0, 0, 1)
 
 
   ta.raw$aggrTax <- ta.raw[,grtax]
 
   ### 2. ###########################################################
-  ### Nombre d'espÃ¨ces par Campagne/Transect/Groupe_Taxonomique ###
+  ### Nombre d'espèces par Campagne/Transect/Groupe_Taxonomique ###
   ff <- c("Campagne","St","T")
 
   tb.1 <- aggregate(list("unique.sp"=ta.raw$presence),
@@ -309,7 +309,7 @@ sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", save=FALSE) {
   tb.all <- cast(tb.1, Campagne*St*T ~ aggrTax, value="unique.sp", fun=sum)
 
   if(save) {
-    # dÃ©finir info filtre pour nom de fichier
+    # définir info filtre pour nom de fichier
     ftag <- paste("_Filtre-",ifelse(AS=="pas de filtre","Absent",AS),"_",sep="")
     taxotag <- taxotagFunk()
     write.csv(tb.all,file=paste(tabl.dir,"Inv_NumEspeceParAggrTaxon",grtax, ftag,taxotag,

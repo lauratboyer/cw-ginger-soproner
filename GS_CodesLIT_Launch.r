@@ -1,8 +1,9 @@
 ## Ginger/Soproner: Produits/Analyses poissons
-# ** Code central pour lancer analyses couvertures LIT moy/SE
-# Time-stamp: <2013-07-22 16:33:37 Laura>
+# ** Code central pour lancer les analyses couvertures LIT moy/SE
+# Time-stamp: <2013-08-06 17:21:44 Laura>
 
-########################################################
+#####################
+###################################
 ########################################################
 
 Run.LIT.all <- function() {
@@ -12,10 +13,10 @@ Run.LIT.all <- function() {
     # Tableaux seulement:
     ####################
 
-    # Tableau brut formattÃ© des donnÃ©es par transect:
+    # Tableau brut formatté des données par transect:
     dmm <- LIT.tableau.brut(save=TRUE)
 
-    # DonnÃ©es par transect, avec filtre annuel et semestriel
+    # Données par transect, avec filtre annuel et semestriel
     dmm <- LIT.tableau.brut(save=TRUE, AS="A")
     dmm <- LIT.tableau.brut(save=TRUE, AS="S")
 

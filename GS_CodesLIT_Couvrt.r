@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour analyses des donnees LIT
-# Time-stamp: <2013-08-01 16:11:56 Laura>
+# Time-stamp: <2013-08-08 09:15:08 Laura>
 
 try.wd <- try(setwd(dossier.R),silent=TRUE)
 if(class(try.wd)=="try-error") {

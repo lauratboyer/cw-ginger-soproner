@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2013-08-02 17:35:35 Laura>
+# Time-stamp: <2013-08-06 15:00:26 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -185,7 +185,7 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
   dfh <- filtreTable(dfh, wf)
 
   ### Appliquer filtre sur espèces
-#  dfh <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+  dfh <- filtreTaxo(dfh, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
   # Formatter
   dfh$Seen <- 0 + dfh$allN>0 # colonne pour présence/absence
@@ -200,7 +200,6 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
     flist <- list("Campagne"=dfh[,"Campagne"],"St"=dfh[,"St"])
     # rajoute facteur explicatif si specifie
     if(facteur!="total") flist[[facteur]] <- dfh[,facteur]
-
 
     # aggrégation par facteur
     if(wm=="richness") { frez <- aggregate(list("sp.rich"=dfh[,"Seen"]), flist, sum)
@@ -235,6 +234,10 @@ poissons.ts1 <- function(AS="A",save=FALSE) {
   vtype <- c("mean","sd","richness") # différencie richness vu qu'il n'y pas de moyenne/ET à calculer
   # Définir les facteurs d'aggrégation des espèces
   vcat <- c("total","Peche","Groupe.Trophique","Groupe.Mobil","fmlabel", "Cible")
+  # Conserver seulement les cat�gories qui ont des repr�sentants (e.g. oter fmlabel si le filtre taxo exclu tous les Pom et Chaet
+  vcat <- vcat[c(TRUE,!sapply(vcat[2:length(vcat)], function(x) all(is.na(dfh[,x]))))]
+
+  # Lancement:
   mean.all <- do.call(data.frame,lapply(vcat, function(i) aggr.funk(facteur=i)))
   sd.all <- do.call(data.frame,lapply(vcat, function(i) aggr.funk(wm="sd",facteur=i)))
   richness.all <- do.call(data.frame,lapply(vcat, function(i) aggr.funk(wm="richness",facteur=i)))

@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-01 16:08:38 Laura>
+# Time-stamp: <2013-08-06 13:44:19 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####

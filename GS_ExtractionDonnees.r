@@ -1,14 +1,16 @@
-## Analyses des donnees KNS (Ginger/Soproner)
+## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-02 17:34:07 Laura>
+# Time-stamp: <2013-08-08 14:17:33 Laura>
 
-# Sujet: Formattage des tableaux de donnees brutes pre-analyse,
-# creation de tableaux annexes + fonctions de base pour l'analyse
+# Sujet: Formattage des tableaux de données brutes pré-analyse,
+# création de tableaux annexes + fonctions de base pour l'analyse
 
-message("Put this elsewhere:")
-# Definition lien fichiers pour sauvegarder graphiques/tableaux
+if(!exists("dossier.R")) {print("Faire \nsource(GS_KNS_MotherCode.r)\n
+pour définir l'emplacement des codes et des dossiers")
+                      }else{
+# Définition lien fichiers pour sauvegarder graphiques/tableaux
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
-tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
+tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')}
 
 prep.analyse <- function() {
 
@@ -34,8 +36,8 @@ prep.analyse <- function() {
   if(!exists("trim")) { #clumsy regexp
       trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
 
-# Vérifie que la graphic device a la bonne grandeur, sinon en ouvrir une nouvelle
-check.dev.size <<- function(ww,hh) {
+  # Vérifie que la graphic device a la bonne grandeur, sinon en ouvrir une nouvelle
+  check.dev.size <<- function(ww,hh) {
 
     if(dev.cur()==1){ dev.new(width=ww,height=hh)
                   } else {
@@ -72,7 +74,7 @@ check.dev.size <<- function(ww,hh) {
   names(index.LIT) <- c("Code_LIT","CODE_DET","S_Corail_Acro","S_Corail_Forme",
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
 
- # creer categories de substrat pour tableaux syntheses
+ # créer catégories de substrat pour tableaux synthèses
   coraux.fig <- list("Coraux_Gen"=c("Coraux","Coraux morts","Coraux mous",
                      "Algues","Abiotique","Autre faune"),
                    "Coraux_Acro"=c("Acroporidae","Non-acroporidae"),
@@ -114,8 +116,9 @@ check.dev.size <<- function(ww,hh) {
   bioeco.all <- merge(bioeco.all,mob.label,by="Mobilite",all.x=TRUE)
 
   # Ajuster si besoin le format pour les noms d'espèces:
+  tl.cap <- function(x) capitalize(tolower(x))
   bioeco.all[,c("Famille","Genre","Espece","G_Sp")] <-
-      sapply(bioeco.all[,c("Famille","Genre","Espece","G_Sp")], capitalize)
+      sapply(bioeco.all[,c("Famille","Genre","Espece","G_Sp")], tl.cap)
 
   # Tableau bioeco, info a + b seulement
   bioeco <- data.bioeco[,c("Code_Sp","a","b")]
@@ -132,7 +135,6 @@ check.dev.size <<- function(ww,hh) {
   names(data.poissons) <- c("Campagne","Date","St","Obs","Vis","Courant","Code_SP",
                           "Famille","Genre","Espece","G_Sp","N","L","D1","D2",
                           "Secteur","Categorie","Note")
-
   # rajout année de la campagne
   data.poissons$An <- getmatch(data.poissons$Campagne,"[0-9]+")
 
@@ -145,7 +147,7 @@ check.dev.size <<- function(ww,hh) {
 
   # Ajuster si besoin le format pour les noms d'espèces:
   data.poissons[,c("Famille","Genre","Espece","G_Sp")] <-
-      sapply(data.poissons[,c("Famille","Genre","Espece","G_Sp")], capitalize)
+      sapply(data.poissons[,c("Famille","Genre","Espece","G_Sp")], tl.cap)
 
   # Toutes les stations en majuscules
   data.poissons$St <- toupper(data.poissons$St)
@@ -271,7 +273,7 @@ check.dev.size <<- function(ww,hh) {
   ####################################
   #### Tableau espèces universels ####
   ####################################
-  index.Poissons <- unique(dpoissons[,c("G_Sp", "Genre", "Famille")])
+  index.Poissons <- unique(data.poissons[,c("G_Sp", "Genre", "Famille")])
   index.Poissons$Groupe <- index.Poissons$S_Groupe <- NA
   index.Poissons$type <- "Poissons"
   index.invSp$type <- "Inv"

@@ -1,7 +1,7 @@
-## Ginger/Soproner: Produits/Analyses invertÃ©brÃ©s
-# ** Code central pour lancer analyses densitÃ©/abondance/diversitÃ©
-# *et* spÃ©cifier groupes taxonomiques Ã  analyser
-# Time-stamp: <2013-07-29 16:29:59 Laura>
+## Ginger/Soproner: Produits/Analyses invertébrés
+# ** Code central pour lancer analyses densité/abondance/diversité
+# *et* spécifier groupes taxonomiques à analyser
+# Time-stamp: <2013-08-06 17:24:08 Laura>
 
 ########################################################
 ########################################################
@@ -13,7 +13,7 @@ Run.INV.biodiv <- function(wfiltre=c("A","S")) {
   dmm <- sapply(wfiltre, function(fltre) inv.biodiv.geom(AS=fltre,save=TRUE))
   dmm <- sapply(wfiltre, function(fltre) inv.sprich.tbl(AS=fltre,save=TRUE))
 
-  # Richesse spÃ©cifique par transect et aggrÃ©gation taxonomique:
+  # Richesse spécifique par transect et aggrégation taxonomique:
   dd <- sapply(wfiltre, function(fltre)
                sapply(c("Groupe","S_Groupe","Famille"), function(gt)
                sprich.by.aggrtaxo(AS=fltre, grtax=gt, save=TRUE)))
@@ -26,25 +26,25 @@ Run.INV.densite <- function(wfiltre=c("A","S","Absent"), tabl.seulement = TRUE) 
   ######## Tableaux #########
 
   # Boucle par niveaux taxonomiques et filtres (incluant filtre absent)
-  # DensitÃ© par transect:
+  # Densité par transect:
   dd <- sapply(c("Genre","G_Sp"),
                function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, smpl.unit="T", save=TRUE, AS=ff)))
 
-  # DensitÃ© par transect, incluant les densitÃ© nulles, avec filtre A et S seulement:
+  # Densité par transect, incluant les densité nulles, avec filtre A et S seulement:
   dd <- sapply(c("Genre","G_Sp"),
                function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, smpl.unit="T", save=TRUE, AS=ff, wZeroAll=TRUE)))
 
-  # DensitÃ© par station:
+  # Densité par station:
   dd <- sapply(c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
                function(tt) sapply(wfiltre, function(ff)
                                    inv.dens.tbl(grtax=tt, save=TRUE, AS=ff)))
 
-  # DensitÃ© moyenne par gÃ©omorphologie (et impact) et groupe/sous-groupe,
-  # toutes espÃ¨ces et pour les 10 espÃ¨ces les plus abondantes en (1) 2006 et (2) 2006-2011
+  # Densité moyenne par géomorphologie (et impact) et groupe/sous-groupe,
+  # toutes espèces et pour les 10 espèces les plus abondantes en (1) 2006 et (2) 2006-2011
   # Tourner avec spttcampagnes FALSE et TRUE
-  # spttcampagnes -> utilise seulement les espÃ¨ces observÃ©es sur toutes les campagnes
+  # spttcampagnes -> utilise seulement les espèces observées sur toutes les campagnes
   # lors du calcul des top10 abondance
   dd <- sapply(c(FALSE, TRUE), function(ii)
                sapply(wfiltre, function(ff)
@@ -55,12 +55,12 @@ Run.INV.densite <- function(wfiltre=c("A","S","Absent"), tabl.seulement = TRUE) 
   ######## Graphiques #########
 
   if(!tabl.seulement) {
-    # Graphs de sÃ©ries temporelles: densitÃ© moyenne par gÃ©omorphologie/groupe
+    # Graphs de séries temporelles: densité moyenne par géomorphologie/groupe
     inv.graph.TS()
     inv.graph.TS(wff="S_Groupe")
 
-    # Graphs de sÃ©ries temporelles: densitÃ© moyenne des 10 espÃ¨ces les
-    # plus abondantes par gÃ©omorphologie/groupe
+    # Graphs de séries temporelles: densité moyenne des 10 espèces les
+    # plus abondantes par géomorphologie/groupe
     inv.graph.TS.top10()
     inv.graph.TS.top10(wff="S_Groupe")
     inv.graph.TS.top10(top10year=2006)
