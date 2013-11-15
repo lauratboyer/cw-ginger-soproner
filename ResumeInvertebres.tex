@@ -1,0 +1,229 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{fullpage}
+\usepackage{pdflscape}
+\usepackage{verbatim}
+\title{Programmation sous R de graphiques et tableaux de routine
+  pour Ginger/SOPRONER}
+\author{Laura Tremblay-Boyer}
+
+\begin{document}
+
+%\maketitle
+
+\noindent {\Huge Invertébrés}
+
+\section{Métriques de biodiversité}
+\subsection{Richesse spécifique calculée à l'unité de la
+  \emph{station}}
+Nombre d'espèces, genres, familles, sous-groupes ou groupes  \emph{uniques} 
+observés sur une même station, tous transects confondus. Les espèces
+identifiées au niveau du genre (\emph{X. sp}) sont traitées comme une
+espèce unique.
+
+\subsection{Indices de Shannon ($H'$), Piélou ($J$) et Margalef
+  ($d$)}
+
+{\large Ces indices sont calculés à l'unité du transect:}
+
+\subsubsection{Index de Shannon \emph{H}}
+
+$ \displaystyle H' = \sum_i \left( \frac{N_i}{N} \right)
+\ln \left( \frac{N_i}{N} \right) $ \\
+\\
+N est le nombre d'individus d'une espèce observés sur le transect (et
+non la station), donc les observations nulles ($N_i=0$) sont
+ignorées vu que $\ln(0)=-\infty$.\\
+
+
+\subsubsection{Index d'équitabilté $J$}
+$\displaystyle J=\frac{H'}{\ln S}$ \\
+\\
+$S$ est la richesse spécifique observée sur un transect. Lorsque
+$S=1$, l'indice $J$ est égal à $\infty$. Les transects concernés sont
+ignorés dans le calcul du $J$ moyen par station. 
+
+\subsubsection{Index de Margalef $d$}
+$\displaystyle d = \frac{S-1}{\ln N} $ \\
+\\
+Cet index n'existe que lorsque $N>1$, et les transects
+ne satisfaisant pas cette condition sont ignorés lors du calcul de $d$
+sur la station. 
+
+\subsection{Assemblage par facteur}
+
+Moyenne et écart-type par station: \\
+$H', J, d$ pour une station sont la moyenne des valeurs correspondantes
+sur les transects de la station. Dans les cas exceptionnels où certains transects sont vides
+($N=0$), ces transects sont ignorés dans le calcul. 
+\\
+Moyenne et écart-type par impact et/ou géomorphologie: \\
+$H', J, d$ par facteur groupant est calculé comme la moyenne des $H',
+J, d$ moyens des stations du groupe. 
+
+\subsection{Nombre d'espèce par géomorphologie ventilée par groupe}
+Nombre d'espèces uniques observées sur une géomorphologie, toutes
+stations confondues. 
+
+% Insérer tableau: sorties demandées, méthode utilisée, nom des
+% fonctions R utilisées, nom de
+% fichier, vérification faite + date
+
+
+\newpage
+
+\section{Mesures de densité}
+\subsection{Densité d'une espèce sur un transect $t$: }
+$\displaystyle Dt = \sum_i N_i / (Ltrans_t * 50)$ \\
+n est le nombre d'observations indépendantes de l'espèce sur le
+transect\\
+$Ltrans$ est la largeur du transect, la longueur est 50 mètres par
+défaut. \\
+
+\noindent Fonction: \texttt{inv.dens.sp( )} définie sous \texttt{GS\_CodesInvertebres\_Densite.r}
+
+\subsection{Densité d'une espèce sur une station $s$:}
+
+$\displaystyle D_s = 1/NT * \sum_t Dt $ \\
+$D_t$ est la densité de l'espèce sur le transect t, $ t \in \{ A, B, C
+\}$; 
+$NT$ est le nombre de transect par station, pour les invertébrés NT =3. 
+Lorsque l'espèce est observée sur quelques transects seulement sa
+densité sur les autres transects est de zéro. 
+
+\subsection{Densité moyenne d'une espèce sur une géomorphologie $geo$:}
+$\displaystyle D_{e, geo} = 1/NSgeo * \sum_s D_s$ \\
+$NSgeo$ est le nombre de stations sur la géomorphologie $g$; la densité de
+l'espèce sur une station est zéro lorsque non-observée
+
+\subsection{Densité moyenne d'un groupe $gr$ sur une
+  géomorphologie $geo$:}
+$\displaystyle D_{gr, geo} = 1/NE_{gr,geo} *\sum_e D_{e, geo}$ \\
+$ e {} \in $ espèces du groupe \emph{gr} observées sur la géomorphologie; 
+
+\subsection{Identification des 10 espèces les plus abondantes sur
+  un groupement spatial}
+
+\subsubsection{En utilisant la première ou la dernière campagne
+  disponible sur la série temporelle}
+
+Permet d'identifier les espèces dont l'abondance aurait changé
+  de manière importante sur la période de l'échantillonage \\
+
+$ \displaystyle AbMoy_{espece, grspatial, campagne} = \frac{AbTotale_{espece, grspatial,
+    campagne}}{Nsite_{grspatial, campagne}}$ \\
+\\
+$Nsite_{grspatial}$ est le nombre de sites échantillonés sur le
+groupement spatial $grspatial$ (géomorphologie $\pm$ impact),
+\emph{campagne} est défini comme la première ou la dernière campagne
+disponible dans la série de données (e.g. 2006 et 2011)
+
+\subsubsection{En se basant sur la série temporelle complète}
+Permet de suivre les espèces dominantes sur toute la période de
+l'échantillonage.  Pour chaque espèce sur un groupement spatial \\
+\\
+$\displaystyle AbMoy_{espece,grspatial} = \frac{\sum_i AbMoy_{campagne_i} }{Nsite_{grspatial}}$ \\
+$Nsite_{grspatial}$ est le nombre de sites échantillonés sur le
+groupement spatial $grspatial$ (géomorphologie $\pm$ impact)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\begin{landscape}
+\thispagestyle{empty}
+
+\begin{table}
+\caption{\label{allo} Description des fonctions R utilisées pour produire les
+  sorties pour les invertébrés (l'unité temporelle est celle de la campagne)}
+\begin{center}
+\begin{tabular}{l l l}
+\scriptsize
+\\
+\textbf{Fonction R} & \textbf{Fichier} & \textbf{Sorties} \\
+\\
+\hline
+\hline
+\\
+
+\texttt{inv.biodiv()} & GS\_CodesInvertebres\_Biodiv.r & Indice de Shannon,
+Index \emph{J} et Index \emph{d} (moyenne et ET) par station, \\
+&& et richesse spécifique par unité taxonomique  \\
+&&\\
+\texttt{inv.biodiv.geom()} & GS\_CodesInvertebres\_Biodiv.r &
+Indices de biodiversité (moyenne et ET) et richesse spécifique  \\
+&& par unité taxonomique par géomorphologie (et impact)  \\
+&&\\
+\texttt{inv.sprich.tbl()} & GS\_CodesInvertebres\_Biodiv.r & Nombre
+d'espèces par type d'un niveau taxonomique donné, par géomorphologie \\
+&&\\
+\texttt{inv.RichSpecifique()} & GS\_CodesInvertebres\_Biodiv.r & 
+Richesse spécifique par unité taxonomique \\
+&& (lancé par
+\texttt{inv.biodiv()} et \texttt{inv.biodiv.geom()}) \\
+&&\\
+\hline
+\hline
+&&\\
+\texttt{inv.dens.tbl.parT()} & GS\_CodesInvertebres\_Densite.r &
+Densité par transect pour un niveau taxonomique donné, \\ 
+&&
+avec ou sans les densités nulles (option \texttt{wZeroAll}) \\ 
+&&\\
+\texttt{inv.dens.tbl()} & GS\_CodesInvertebres\_Densite.r & Densité
+(moyenne et ET) par station pour un niveau taxonomique donné,\\
+&&
+avec ou sans les densités nulles (option \texttt{wZeroAll}) \\ 
+&&\\
+\texttt{inv.dens.geom()} & GS\_CodesInvertebres\_Densite.r & Densité
+(moyenne et ET) par géomorphologie \\
+&& (avec ou sans facteur \emph{Impact}, option \texttt{aj.impact})\\
+&&\\
+\texttt{inv.graph.TS()} & GS\_CodesInvertebres\_Densite.r & Séries temporelles
+de la densité (moyenne et ET) des groupes ou sous-groupes, \\
+&& par géomorphologie\\
+&&\\
+\texttt{inv.graph.TS()} & GS\_CodesInvertebres\_Densite.r & Séries temporelles
+de la densité moyenne (et ET) des groupes ou sous-groupes, \\
+&& par géomorphologie, en utilisant les espèces présente dans le top 10 seulement \\ 
+
+\\
+\hline
+\\
+\\
+
+\end{tabular}
+\end{center}
+\label{table_inv}
+\end{table}
+\end{landscape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{comment}
+\section*{Fonctions clés}
+
+
+\section*{Poissons}
+Code sous: GSwork\_Start.r
+A faire: nettoyer code poissons, incorporer fonction barres d'erreur,
+changer les noms de colonne pour harmoniser avec sprich
+\begin{enumerate}
+\item Tableau brut
+\item Tableau synth\`ese I
+\item Tableau synth\`ese II
+\item S\'eries temporelles I
+\item S\'eries temporelles II
+\end{enumerate}
+
+\newpage
+
+
+\section*{LIT}
+\end{comment}
+
+\end{document}
