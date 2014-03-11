@@ -1,12 +1,14 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-11-15 14:21:28 Laura>
+# Time-stamp: <2014-03-12 09:11:37 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
-####### N'oubliez pas d'enregistrer tous les changements #######
+### *** N'oubliez pas d'enregistrer tous les changements ***####
+
 ################################################################
+### Contenu du code:
 ### 1. Filtre années
 ### 2. Filtre espèces
 ### 3. Sorties à produire (invertébrés, poissons, LIT)
@@ -35,8 +37,9 @@ if(filtre.sur.especes) {
     ## Ces valeurs sont prises en compte seulement lorsque:
     ## filtre.sur.especes = TRUE
     ## Voir aussi la fonction def.filtre.especes() pour définir ces valeurs
-    ## dans la console, et la fonction voir.filtre.taxo() pour voir les valeurs
-    ## présentement enregistrées
+    ## dans la console, import.filtre.taxo() pour importer les valeurs à
+    ## filtrer directement d'un fichier .csv et la fonction voir.filtre.taxo()
+    ## pour voir les valeurs présentement enregistrées
 
        taxoF.incl <- "inclure" # Inclure ou exclure le niveau taxonomique donnée?
        taxoF.utaxo <- "Groupe" # Niveau taxonomique ciblé
