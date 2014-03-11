@@ -1,6 +1,6 @@
 # Analyses des donn√©es KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-02 15:49:40 Laura>
+# Time-stamp: <2014-03-11 16:10:54 Laura>
 
 # Sujet: Ce code vÈrifie que les tableaux utilis√©s pour les analyses sont √† jour
 # ... et dans le cas √©ch√©ant modifie la base de donn√©es en cons√©quence
@@ -67,7 +67,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
     # Enregistrement des nouvelles dates de modification
     DBinf <- DBinf.now
     save(DBinf,file=paste(dossier.donnees,"FichiersDropBox_DatesModif.Rdata",sep=""))
-    print(paste("Nouvelle version pour les fichers", type.tbl[memeVersion])) }
+    message(paste("Nouvelle version pour les fichiers", type.tbl[memeVersion])) }
 
   # Imprimer avertissement au sujet des guillements: s'il y a des guillements non-fermÈs dans les
   # fichiers excels l'import du tableau ne sera pas correct -- e.g. "pomme" est ok, mais pas pomme"
@@ -104,6 +104,10 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       x <- gsub("<a0>|\312","",x) # mystery character removed
       # conversion ‡ iso-8859-5 pour Ùter les accents (sur PC)
       x <- iconv(x, "latin1","iso-8859-5")
+
+      # et pourquoi pas on nettoie les espaces vides avant et aprËs
+      x <- gsub("^\\s+","",gsub("\\s+$","",x))
+
   } else {x}}
 
   # extraire des fichiers csv et assigner aux noms d'objets (voir obj.names)

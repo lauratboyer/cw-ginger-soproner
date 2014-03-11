@@ -1,6 +1,6 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 # ** Indices de biodiversité **
-# Time-stamp: <2014-03-11 15:52:45 Laura>
+# Time-stamp: <2014-03-11 16:06:08 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -306,7 +306,7 @@ sprich.by.aggrtaxo <- function(AS="A", grtax="Groupe", save=FALSE) {
   tb.1 <- aggregate(list("unique.sp"=ta.raw$presence),
                   as.list(ta.raw[,c(ff,"aggrTax")]), sum)
 
-  tb.all <- dcast(tb.1, Campagne*St*T ~ aggrTax, value="unique.sp", fun=sum)
+  tb.all <- cast(tb.1, Campagne*St*T ~ aggrTax, value="unique.sp", fun=sum)
 
   if(save) {
     # définir info filtre pour nom de fichier
