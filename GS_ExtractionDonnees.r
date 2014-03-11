@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2013-08-08 14:17:33 Laura>
+# Time-stamp: <2014-03-11 16:00:26 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -14,8 +14,10 @@ tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')}
 
 prep.analyse <- function() {
 
-  lp <- require(reshape) # load package reshape
-  if(!lp) install.packages("reshape") # installe reshape si requis
+  lp <- try(library(reshape2)) # load package reshape
+  if(class(lp)=="try-error") {
+      install.packages("reshape") # installe reshape si requis
+      library(reshape)}
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
@@ -28,8 +30,8 @@ prep.analyse <- function() {
       getmatch <<- function(x,str2match,...) {
           unlist(regmatches(x,regexpr(str2match,x,...))) }}
 
-  if(!exists("last")) { # dernier element de l'objet
-  last <<- function(x) x[length(x)] }
+  # dernier element de l'objet
+  last <<- function(x) x[length(x)]
 
   # ote les espaces au debut et apres un charactere
   # e.g. "  Famille " -> "Famille"
@@ -55,13 +57,12 @@ prep.analyse <- function() {
   # info.transect: informations sur les transects
   info.transect <- data.info.transect # extraire tableau brut
   info.transect$cpus <- info.transect$Prod_ha # nouvelle colonne pour le cpus
+  info.transect$Geom <- trim(info.transect$Geom) # oter espaces surperflus
+  info.transect$Geomorpho <- info.transect$Geom
 
-  # Nettoyer accents noms géométrie
-  geom.key <- data.frame("Geom"=unique(info.transect$Geom),
-                         "Geomorpho"=c("Recif barriere externe","Recif barriere interne",
-                           "Recif reticule","Recif frangeant","Passe","Herbiers"))
-  print("make geom.key robust to unique order of info.transect$Geom")
-  info.transect <- merge(info.transect, geom.key, by="Geom")
+  # Nettoyer accents noms géométrie -- à reviser vu encodage changé durant import?
+  geom.key <- data.frame("Geom"=unique(info.transect$Geom))
+  geom.key$Geomorpho <- geom.key$Geom # toujours nécéssaire vu accents réglés?
 
   ########### Données LIT ############
   ####################################
@@ -291,7 +292,7 @@ prep.analyse <- function() {
     if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
     tb <- unique(dbio[,c("St","Campagne")])
     tb$echtl <- 1
-    tb2 <- cast(tb, St ~ Campagne, value="echtl")
+    tb2 <- dcast(tb, St ~ Campagne, value="echtl")
 
     # sélectionner les colonnes avec les années désirées pour le filtre
     # campagnes annuelles et semestrielles
