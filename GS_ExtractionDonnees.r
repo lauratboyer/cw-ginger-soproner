@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-11 16:00:26 Laura>
+# Time-stamp: <2014-03-11 16:34:45 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -14,7 +14,7 @@ tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')}
 
 prep.analyse <- function() {
 
-  lp <- try(library(reshape2)) # load package reshape
+  lp <- try(library(reshape)) # load package reshape
   if(class(lp)=="try-error") {
       install.packages("reshape") # installe reshape si requis
       library(reshape)}
@@ -292,7 +292,7 @@ prep.analyse <- function() {
     if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
     tb <- unique(dbio[,c("St","Campagne")])
     tb$echtl <- 1
-    tb2 <- dcast(tb, St ~ Campagne, value="echtl")
+    tb2 <- cast(tb, St ~ Campagne, value="echtl")
 
     # sélectionner les colonnes avec les années désirées pour le filtre
     # campagnes annuelles et semestrielles
