@@ -62,7 +62,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
     # Import des nouveaux fichiers
     dmm <- sapply(type.tbl[memeVersion],function(x)
                   file.copy(paste(dossier.DB,obj.files[x],sep=""),dossier.donnees))
-    if(sum(dmm)!=sum(memeVersion)) print("Attention nouveaux tableaux non importÃ©s")
+    if(sum(dmm)!=sum(memeVersion)) print("Attention nouveaux tableaux non importés")
 
     # Enregistrement des nouvelles dates de modification
     DBinf <- DBinf.now
@@ -71,7 +71,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
 
   # Imprimer avertissement au sujet des guillements: s'il y a des guillements non-fermés dans les
   # fichiers excels l'import du tableau ne sera pas correct -- e.g. "pomme" est ok, mais pas pomme"
-  print("Attention: s'assurer que tous les guillements sont fermés dans les fichiers Excel")
+  message("Attention: s'assurer que tous les guillements sont fermés dans les fichiers Excel")
 
   ############################################################
   ############################################################
