@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 12:55:12 Laura>
+# Time-stamp: <2014-03-12 13:14:02 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -16,7 +16,7 @@
 ################################################################
 
 # Utilisateur pour spécifier l'emplacement des dossiers
-usernow <- "Laura" # ou "Antoine", ou modifiez directement
+usernow <- "Antoine" # ou "Antoine", ou modifiez directement
                    # l'emplacement des dossiers plus bas (section 4)
 
 ############################
@@ -56,9 +56,9 @@ if(filtre.sur.especes) {
 ### 3. Sorties à produire ###
 #############################
 
-sorties.INV <- TRUE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
-sorties.LIT <- TRUE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
-sorties.poissons <- TRUE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
+sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
+sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
+sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 #############################
 ## 4. Définition DOSSIERS ###
