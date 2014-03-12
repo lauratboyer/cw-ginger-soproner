@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 12:18:29 Laura>
+# Time-stamp: <2014-03-12 14:21:29 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -108,6 +108,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       # et pourquoi pas on nettoie les espaces vides avant et après
       x <- gsub("^\\s+","",gsub("\\s+$","",x))
       # + on ajuste les champs minuscules + majuscule au début
+      capitalize <- function(x) gsub('(\\w)(\\w*)','\\U\\1\\L\\2',x,perl=TRUE)
       x <- capitalize(tolower(x))
 
   } else {x}}
