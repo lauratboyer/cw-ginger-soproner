@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 10:41:30 Laura>
+# Time-stamp: <2014-03-12 13:05:43 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -73,10 +73,13 @@ prep.analyse <- function() {
   # ote rangées sans stations
   data.LIT <- data.LIT[data.LIT$St != "",]
   data.LIT$St <- toupper(data.LIT$St)
+  data.LIT$Code_LIT<- toupper(data.LIT$Code_LIT)
+  data.LIT$AQCQ <- toupper(data.LIT$AQCQ)
 
   # défini noms de colonnes pour index.LIT:
   names(index.LIT) <- c("Code_LIT","CODE_DET","S_Corail_Acro","S_Corail_Forme",
                       "S_Corail_All","S_Corail_Sensi","S_Abio_Corail_All")
+  index.LIT$Code_LIT <- toupper(index.LIT$Code_LIT)
 
  # créer catégories de substrat pour tableaux synthèses
   coraux.fig <- list("Coraux_Gen"=c("Coraux","Coraux morts","Coraux mous",
@@ -537,7 +540,7 @@ prep.analyse <- function() {
   ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
   ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
   EM <<- function() {
-      tb <- try(get(".Traceback",envir=baseenv())) # extraire messages d'erreur
+      tb <- try(get(".Traceback",envir=baseenv()),silent=TRUE) # extraire messages d'erreur
       if(identical(paste(lastval(tb)), paste(sys.calls()[1]))) {
           message(sprintf("Erreur dans la fonction %s()",
                       paste(sys.calls()[[1]][1])))

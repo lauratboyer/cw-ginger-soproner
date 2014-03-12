@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 09:11:37 Laura>
+# Time-stamp: <2014-03-12 12:55:12 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -56,9 +56,9 @@ if(filtre.sur.especes) {
 ### 3. Sorties à produire ###
 #############################
 
-sorties.INV <- FALSE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
-sorties.LIT <- FALSE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
-sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
+sorties.INV <- TRUE # pour produire les sorties des invertébrés: sorties.INV <- TRUE
+sorties.LIT <- TRUE # pour produire les sorties pour le LIT: sorties.LIT <- TRUE
+sorties.poissons <- TRUE # pour produire les sorties des poissons: sorties.POISSONS <- TRUE
 
 #############################
 ## 4. Définition DOSSIERS ###
