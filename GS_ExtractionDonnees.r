@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 13:05:43 Laura>
+# Time-stamp: <2014-03-17 14:10:51 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -24,7 +24,7 @@ prep.analyse <- function() {
   ### Fonctions utiles pour formattage
   if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
   capitalize <<- function(x) {
-    gsub('(\\w)(\\w*)','\\U\\1\\L\\2',x,perl=TRUE) }}
+    gsub('(\\w)([\\w|\\s]*)','\\U\\1\\L\\2',x,perl=TRUE) }}
 
   if(!exists("getmatch")) { # extrait la partie correspondante au match
       getmatch <<- function(x,str2match,...) {
@@ -133,7 +133,7 @@ prep.analyse <- function() {
 
   # Vérifier s'il y a des espèces de poissons sans valeurs a ou b:
   abcheck <- length(unique(bioeco[bioeco$a=="inconnu" | bioeco$b=="inconnnu","Code_SP"]))
-  if(abcheck!=0) message(sprintf("%s espèces sans valeur a ou b ôtées de l'analyse"))
+  if(abcheck!=0) message(sprintf("%s espèces sans valeur a ou b ôtées de l'analyse", abcheck))
   bioeco <- bioeco[bioeco$a!="inconnu" & bioeco$b!="inconnu",]
   bioeco$a <- as.numeric(bioeco$a); bioeco$b <- as.numeric(bioeco$b)
 

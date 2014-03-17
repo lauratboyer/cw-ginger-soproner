@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 13:14:02 Laura>
+# Time-stamp: <2014-03-12 15:44:10 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -16,7 +16,7 @@
 ################################################################
 
 # Utilisateur pour spécifier l'emplacement des dossiers
-usernow <- "Antoine" # ou "Antoine", ou modifiez directement
+usernow <- "Laura" # ou "Antoine", ou modifiez directement
                    # l'emplacement des dossiers plus bas (section 4)
 
 ############################

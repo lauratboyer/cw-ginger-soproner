@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 14:21:29 Laura>
+# Time-stamp: <2014-03-17 14:12:36 Laura>
 
 # Sujet: Ce code vérifie que les tableaux utilisés pour les analyses sont à jour
 # ... et dans le cas échéant modifie la base de données en conséquence
@@ -101,14 +101,14 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       ecodes <- "<e9>|<e8>|(\303\251)|(\303\250)|\216|\217|\351|\350"
       x <- gsub(ecodes,"e",x) # remplace e accent aigu/grave
       x <- gsub("<ef>|(\303\257)|\357|\225","i",x) # remplace i accent trema
-      x <- gsub("<a0>|\312","",x) # mystery character removed
+      x <- gsub("<a0>|\312|\240","",x) # mystery character removed
       # conversion à iso-8859-5 pour ôter les accents (sur PC)
       x <- iconv(x, "latin1","iso-8859-5")
 
       # et pourquoi pas on nettoie les espaces vides avant et après
       x <- gsub("^\\s+","",gsub("\\s+$","",x))
       # + on ajuste les champs minuscules + majuscule au début
-      capitalize <- function(x) gsub('(\\w)(\\w*)','\\U\\1\\L\\2',x,perl=TRUE)
+      capitalize <- function(x) gsub('(\\w)([\\w|\\s]*)','\\U\\1\\L\\2',x,perl=TRUE)
       x <- capitalize(tolower(x))
 
   } else {x}}
@@ -118,7 +118,7 @@ type.tbl <- c("inv","bioeco","poissons","data.LIT","typo.LIT","transect","Bacip"
       # vérifier séparateur
       cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),
                  "character",quiet=TRUE)
-      seprt <- ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";")
+      seprt <- suppressWarnings(ifelse(sum(grepl(",",cs)) > sum(grepl(";",cs)), ",",";"))
 
       objnow <- read.csv(paste(dossier.donnees, obj.files[x], sep=""),
                          sep=seprt, dec=".") # point decimal "." (voir aussi tradfunk())
