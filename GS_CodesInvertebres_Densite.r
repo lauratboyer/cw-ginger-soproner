@@ -1,7 +1,7 @@
 # Ginger/Soproner: Produits/Analyses invertebres
 ## ** Tableaux/graphiques de densite ** ##
 
-# Time-stamp: <2014-03-12 11:49:42 Laura>
+# Time-stamp: <2014-03-23 16:20:33 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
@@ -90,10 +90,12 @@ inv.dens.tbl <- function(AS="A", smpl.unit="St", grtax="G_Sp",
 
       # re-rajouter infos taxonomiques
       # définir les champs à rajouter en fonction de grtax
+      if(grtax != "Groupe") {
       colreq <- which(names(index.invSp)==grtax):which(names(index.invSp)=="Groupe")
       tmp.tbl <- unique(index.invSp[,colreq]) # créer tableau index
       row.names(tmp.tbl) <- tmp.tbl[,grtax]
       tb.all[,names(tmp.tbl)] <- tmp.tbl[tb.all[,grtax],]
+  }
   }
 
   # Rajouter infos additionelles

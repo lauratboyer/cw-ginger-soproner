@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-12 15:44:10 Laura>
+# Time-stamp: <2014-03-23 16:32:05 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -18,6 +18,7 @@
 # Utilisateur pour spécifier l'emplacement des dossiers
 usernow <- "Laura" # ou "Antoine", ou modifiez directement
                    # l'emplacement des dossiers plus bas (section 4)
+if(usernow != "Laura") Sys.setlocale("LC_ALL","French") # console R pour les accents
 
 ############################
 ### 1. Filtre sur ANNEES ###
@@ -66,11 +67,13 @@ sorties.poissons <- FALSE # pour produire les sorties des poissons: sorties.POIS
 
 # Dossier où les analyses sont faites, et qui contient le code R et les graphiques/tableaux produits
 # Attention de rajouter un "/" à la fin, selon le format "C:/.../dossier.R/"
-dossier.R <- ifelse(usernow=="Antoine", "C:/dossier.R/","/Users/Laura/Projects/cw-ginger-soproner/")
+dossier.R <- ifelse(usernow=="Laura","/Users/Laura/Projects/cw-ginger-soproner/",
+                    "C:/dossier.R/")
 
 # Dossier de sauvegarde Dropbox
-dossier.DB <- ifelse(usernow=="Antoine","C:/dossier.DB/",
-                     "/Users/Laura/Dropbox/KNS_GINGER-SOPRONER/DB_Dernieres_Versions/")
+dossier.DB <- ifelse(usernow=="Laura",
+                     "/Users/Laura/Dropbox/KNS_GINGER-SOPRONER/DB_Dernieres_Versions/",
+                     "C:/dossier.DB/")
 
 
 ######################################################
@@ -92,16 +95,16 @@ tabl.dir <- paste(dossier.R,"/Tableaux/",sep="")
 dossier.donnees <- paste(dossier.R,"/Data/",sep="")
 
 # Importe les fonctions nécéssaires au lancement des analyses
-source("GS_MiseAJourDB.r") # contient la fonction import.tableaux()
-source("GS_ExtractionDonnees.r") # contient la fonction prep.analyse()
-source("GS_CodesInvertebres_Launch.r") # contient la fonction Run.INV.biodiv()
-source("GS_CodesInvertebres_Densite.r")
-source("GS_CodesInvertebres_Biodiv.r")
-source("GS_CodesPoissons_Launch.r") # lance les codes poissons
-source("GS_CodesPoissons_BioDens.r") # contient les codes densités
+source.with.encoding("GS_MiseAJourDB.r",encoding="UTF-8") # contient la fonction import.tableaux()
+source.with.encoding("GS_ExtractionDonnees.r",encoding="UTF-8") # contient la fonction prep.analyse()
+source.with.encoding("GS_CodesInvertebres_Launch.r",encoding="UTF-8") # contient la fonction Run.INV.biodiv()
+source.with.encoding("GS_CodesInvertebres_Densite.r",encoding="UTF-8")
+source.with.encoding("GS_CodesInvertebres_Biodiv.r",encoding="UTF-8")
+source.with.encoding("GS_CodesPoissons_Launch.r",encoding="UTF-8") # lance les codes poissons
+source.with.encoding("GS_CodesPoissons_BioDens.r",encoding="UTF-8") # contient les codes densités
                                      # et biodiversités pour les poissons
-source("GS_CodesLIT_Launch.r") # lance les codes LIT
-source("GS_CodesLIT_Couvrt.r") # contient les codes pour statistiques LIT
+source.with.encoding("GS_CodesLIT_Launch.r",encoding="UTF-8") # lance les codes LIT
+source.with.encoding("GS_CodesLIT_Couvrt.r",encoding="UTF-8") # contient les codes pour statistiques LIT
 
 
 # si l'objet "data.read" n'existe pas, ou data.read existe
