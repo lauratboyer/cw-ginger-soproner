@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: November 25, 2014
-## Time-stamp: <2014-11-25 08:40:36 Laura>
+## Time-stamp: <2014-11-25 18:20:39 Laura>
 
 ## A faire
 ## tableaux noms de fichiers?
@@ -15,12 +15,15 @@ fact.spat <- c("Geomorpho","St","T")
 ## facteur taxonomique (Groupe, S_Groupe, Famille, Genre, G_Sp)
 fact.taxo <- c("Groupe","S_Groupe","Famille","Genre","G_Sp")
 ## facteur expl (N_Impact)
+fact.expl <- c("N_Impact","Cote","Lieu")
+ftaxo.defaut <- "Groupe"
+fspat.defaut <- "Geomorpho"
 
-## General version
-
-inv.dens.gnrl <- function(filt.camp="A", fspat="Geomorpho",
-                          ftaxo="Groupe", smpl.unit="St", grtax="G_Sp",
-                         save=FALSE, wZeroAll=FALSE) {
+## General version of inv.dens.tbl
+Inv.dens.gnrl <- function(filt.camp="A", fspat=fspat.defaut,
+                          ftaxo=ftaxo.defaut, ftemp="Campagne",
+                          fexpl, smpl.unit="St", grtax="G_Sp",
+                          save=FALSE, wZeroAll=FALSE) {
 
     departFunk() # message de depart
     on.exit(EM())
@@ -30,60 +33,59 @@ inv.dens.gnrl <- function(filt.camp="A", fspat="Geomorpho",
     # Filtre campagnes -- défini dans les arguments de la fonction
     wf <- paste("T",filt.camp,"inv",sep="_") # formatter nom du filtre
     ta.rawF <- filtreTable(dbio, wf)
-
     # Filtre espèces -- défini dans les options générales
     ta.rawF <- filtreTaxo(ta.rawF, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
+    ## Densité par transect: Nombre d'individus/Aire du transect -> N/(50*Ltrans)
+    ## Calculée lors du formattage initial de dbio
 
-  # Densité par transect: Nombre d'individus/Aire du transect -> N/(50*Ltrans)
+    ### 1. #################################
+    ### Densité par transect ###############
 
-  ### 1. #################################
-  ### Densité par transect ###############
-  ff <- c("Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp")
-  ff <- ff[1:(which(ff==grtax))] # sélectionne la partie du vecteur allant jusqu'à grtax
+    # ****** remove this at some point
+    ff <- c("Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp")
+    ff <- ff[1:(which(ff==grtax))] # sélectionne la partie du vecteur allant jusqu'à grtax
 
+    ## Définir les facteurs d'aggrégation à partir des arguments donnés à la fonction
     ff <- c(ftemp, fspat, ftaxo)
-    print(ff)
+    if(!missing(fexpl)) ff <- c(ff, fexpl)
+    ## 3a. ########################################
+    ### Densité de chaque grtax sur le transect ###
+    ff.transect <- unique(c(ff, "St", "T"))
+    dens.par.t <- aggregate(list("D"=ta.rawF$D), as.list(ta.rawF[,ff.transect]), sum)
 
-  ## 3a. ########################################
-  ### Densité de chaque grtax sur le transect ###
-  dens.tb <- aggregate(list("D"=ta.rawF$D), as.list(ta.rawF[,ff]), sum)
-  ta.raw <- merge(dens.tb, info.transect[,c("St","Geomorpho")])
+    # on continue sur l'aggrégation spatiale n'est pas
+    # au niveau du transect
+    if(!("T" %in% fspat)) {
 
-
-  if(smpl.unit!="T") {
-
-      ### 3b. ######################################################
       ### Densité moyenne(SD) by Campagne/St/Espèce ###############
-      ff <- ff[!(ff=="T")] # ôter le facteur transect pour calculer sur stations
-      print(ff)
-
-      tb.1 <- aggregate(list("dens.moy"=ta.raw$D),
-                        as.list(ta.raw[,ff]), mean)
-      tb.1.b <- aggregate(list("dens.sd"=ta.raw$D),
-                          as.list(ta.raw[,ff]), sd)
+      tb.1 <- aggregate(list("dens.moy"=dens.par.t$D),
+                        as.list(dens.par.t[,ff]), mean)
+      tb.1.b <- aggregate(list("dens.sd"=dens.par.t$D),
+                          as.list(dens.par.t[,ff]), sd)
       tb.all <- merge(tb.1,tb.1.b,by=ff)
 
+      # ... et on arrondi à 5 valeurs décimales la moyenne + SD
       tb.all[,c("dens.moy","dens.sd")] <- round(tb.all[,c("dens.moy","dens.sd")],5)
 
-      } else {tb.all <- ta.raw # si smpl.unit == T, on continue avec le tableau transect seulement
-          names(tb.all)[names(tb.all)=="D"] <- "dens" # renomme colonne densité
-          }
+      } else {
+        tb.all <- dens.par.t # si smpl.unit == T, on continue avec le tableau transect seulement
+        names(tb.all)[names(tb.all)=="D"] <- "dens" # renomme colonne densité, pas de moyenne
+        }
 
 
-  # Rajouter infos additionelles
-  iti <- info.transect.INV[,c("Annee","Mois","Mission","Campagne",
-                                "Geomorpho", "St","N_Impact")]
-  tb.all <- merge(iti, tb.all)
+    # Rajouter infos additionelles (ôté temporairement, A_2006 a deux mois)
+    # iti <- unique(info.transect.INV[,c("Campagne","Annee","Mois","Mission")])
+    # tb.all <- merge(iti, tb.all, all.y=TRUE)
+    message("need to figure out which month to add for A_2006 given sampling in Nov 2006 and Feb 2007")
 
-  # ordonner colonnes:
-  ord.ff <- c("Annee", "Mois", "Geomorpho", "N_Impact", "St")
-  if(smpl.unit == "T") ord.ff <- c(ord.ff,"T") # ordonner par transect si applicable
-  tb.all <- tb.all[do.call(order, tb.all[,ord.ff]),]
+    # ordonner colonnes:
+    ord.ff <- c("Campagne", fspat)
+    tb.all <- tb.all[do.call(order, tb.all[,ord.ff]),]
 
-  ### 5. ###############################
-  ### Sauvegarde des tableaux ############
-  if(save) {
+    ### 5. ###############################
+    ### Sauvegarde des tableaux ##########
+    if(save) {
     ftag <- paste("_Filtre-",filt.camp,"_",sep="")
     taxotag <- taxotagFunk()
     write.csv(tb.all,file=paste(tabl.dir,"Inv_DensitePar_", smpl.unit, ftag, grtax, taxotag,
