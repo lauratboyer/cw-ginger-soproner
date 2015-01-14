@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-12-11 09:34:42 Laura>
+# Time-stamp: <2015-01-13 15:29:41 Laura>
 
 # Sujet: Ce code importe les bases de données multi-projets
 # et nettoie les champs au besoin (notamment en ôtant les accents)
@@ -42,7 +42,7 @@ type.tbl <- c("inv","data.LIT","typo.LIT","poissons","bioeco","transect",
   names(obj.files) <- type.tbl
 
   dmm <- sapply(obj.files, function(on)
-                file.copy(paste(dossier.data,on,sep="//"),
+                file.copy(paste(dossier.DB,on,sep="//"),
                           paste(dossier.donnees,on,sep="//")))
 
   DBinf.now <- lapply(type.tbl,function(x)
@@ -84,9 +84,11 @@ type.tbl <- c("inv","data.LIT","typo.LIT","poissons","bioeco","transect",
 
       # et pourquoi pas on nettoie les espaces vides avant et après
       x <- gsub("^\\s+","",gsub("\\s+$","",x))
+
       # + on ajuste les champs minuscules + majuscule au début
       capitalize <- function(x) gsub('(\\w)([\\w|\\s]*)','\\U\\1\\L\\2',x,perl=TRUE)
       x <- capitalize(tolower(x))
+      if(all(grepl(".*_.*_.*_.*",x))) x <- toupper(x) # ... à part pour colonne Id
 
   } else {x}}
 
