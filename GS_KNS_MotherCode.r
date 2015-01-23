@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-23 16:32:05 Laura>
+# Time-stamp: <2015-01-12 07:43:08 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -72,7 +72,7 @@ dossier.R <- ifelse(usernow=="Laura","/Users/Laura/Projects/cw-ginger-soproner/"
 
 # Dossier de sauvegarde Dropbox
 dossier.DB <- ifelse(usernow=="Laura",
-                     "/Users/Laura/Dropbox/KNS_GINGER-SOPRONER/DB_Dernieres_Versions/",
+                     "/Users/Laura/Projects/cw-ginger-soproner/Bases projet/",
                      "C:/dossier.DB/")
 
 
@@ -95,17 +95,25 @@ tabl.dir <- paste(dossier.R,"/Tableaux/",sep="")
 dossier.donnees <- paste(dossier.R,"/Data/",sep="")
 
 # Importe les fonctions nécéssaires au lancement des analyses
-source.with.encoding("GS_MiseAJourDB.r",encoding="UTF-8") # contient la fonction import.tableaux()
-source.with.encoding("GS_ExtractionDonnees.r",encoding="UTF-8") # contient la fonction prep.analyse()
+source.with.encoding <- function (path, encoding, echo = getOption("verbose"), print.eval = echo,
+    max.deparse.length = 150, chdir = FALSE)
+{
+    con = file(path, open = "r", encoding = encoding)
+    on.exit(close(con))
+    source(con, echo = echo, print.eval = print.eval, max.deparse.length = max.deparse.length,
+        chdir = chdir)
+}
+source.with.encoding("GS_MiseAJourDB_TProj.r",encoding="UTF-8") # contient la fonction import.tableaux()
+source.with.encoding("GS_ExtractionDonnees_TProj.r",encoding="UTF-8") # contient la fonction prep.analyse()
 source.with.encoding("GS_CodesInvertebres_Launch.r",encoding="UTF-8") # contient la fonction Run.INV.biodiv()
 source.with.encoding("GS_CodesInvertebres_Densite.r",encoding="UTF-8")
 source.with.encoding("GS_CodesInvertebres_Biodiv.r",encoding="UTF-8")
-source.with.encoding("GS_CodesPoissons_Launch.r",encoding="UTF-8") # lance les codes poissons
-source.with.encoding("GS_CodesPoissons_BioDens.r",encoding="UTF-8") # contient les codes densités
+#source.with.encoding("GS_CodesPoissons_Launch.r",encoding="UTF-8") # lance les codes poissons
+#source.with.encoding("GS_CodesPoissons_BioDens_TProj.r",encoding="UTF-8") # contient les codes densités
                                      # et biodiversités pour les poissons
-source.with.encoding("GS_CodesLIT_Launch.r",encoding="UTF-8") # lance les codes LIT
-source.with.encoding("GS_CodesLIT_Couvrt.r",encoding="UTF-8") # contient les codes pour statistiques LIT
-
+#source.with.encoding("GS_CodesLIT_Launch.r",encoding="UTF-8") # lance les codes LIT
+#source.with.encoding("GS_CodesLIT_Couvrt.r",encoding="UTF-8") # contient les codes pour statistiques LIT
+source.with.encoding("GS_Selection-Donnees-Par-Projet.r",encoding="UTF-8")
 
 # si l'objet "data.read" n'existe pas, ou data.read existe
 # mais a la valeur "FALSE"

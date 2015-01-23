@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2014-03-17 14:10:51 Laura>
+# Time-stamp: <2014-12-11 11:13:40 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -8,9 +8,7 @@
 if(!exists("dossier.R")) {print("Faire \nsource(GS_KNS_MotherCode.r)\n
 pour définir l'emplacement des codes et des dossiers")
                       }else{
-# Définition lien fichiers pour sauvegarder graphiques/tableaux
-fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
-tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')}
+}
 
 prep.analyse <- function() {
 
@@ -21,35 +19,6 @@ prep.analyse <- function() {
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
-  ### Fonctions utiles pour formattage
-  if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
-  capitalize <<- function(x) {
-    gsub('(\\w)([\\w|\\s]*)','\\U\\1\\L\\2',x,perl=TRUE) }}
-
-  if(!exists("getmatch")) { # extrait la partie correspondante au match
-      getmatch <<- function(x,str2match,...) {
-          unlist(regmatches(x,regexpr(str2match,x,...))) }}
-
-  # dernier element de l'objet
-  lastval <<- function(x) x[length(x)]
-
-  # ote les espaces au debut et apres un charactere
-  # e.g. "  Famille " -> "Famille"
-  if(!exists("trim")) { #clumsy regexp
-      trim <<- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
-
-  # Vérifie que la graphic device a la bonne grandeur, sinon en ouvrir une nouvelle
-  check.dev.size <<- function(ww,hh) {
-
-    if(dev.cur()==1){ dev.new(width=ww,height=hh)
-                  } else {
-    ds <- dev.size()
-    if(round(ds[1],2)!=round(ww,2)
-       | round(ds[2],2)!=round(hh,2)) {
-        dev.off(); dev.new(width=ww,height=hh)} }
-}
-  # standard error
-  stand.err <<- function(x) sd(x)/sqrt(length(x))
 
   ####################################
   ###### Information transects #######
@@ -137,8 +106,11 @@ prep.analyse <- function() {
   bioeco <- bioeco[bioeco$a!="inconnu" & bioeco$b!="inconnu",]
   bioeco$a <- as.numeric(bioeco$a); bioeco$b <- as.numeric(bioeco$b)
 
-  ###### Données de comptage Poissons ######
-  ##########################################
+
+
+  ####################################################################################
+  #### Données de comptage Poissons ##################################################
+  ####################################################################################
   # data.poissons: données de comptage brutes sur les poissons
   names(data.poissons) <- c("Campagne","Date","St","Obs","Vis","Courant","Code_SP",
                           "Famille","Genre","Espece","G_Sp","N","L","D1","D2",
@@ -193,14 +165,16 @@ prep.analyse <- function() {
   data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
   data.poissons <- data.poissons2
 
-  ##########################################
-  #### Données de comptage Invertébrés #####
-  ##########################################
+
+
+  ####################################################################################
+  #### Données de comptage Invertébrés ###############################################
+  ####################################################################################
   # data.inv: données de comptage brutes pour invertébrés
 
-  dbio <- data.inv[,c("Campagne","St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans")]
+  dbio <- data.inv[,c("Projet","Campagne","St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans","L")]
   dbio$St <- toupper(data.inv$St)
-  names(dbio) <- c("Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp","N","D","Ltrans")
+  names(dbio) <- c("Projet","Campagne","St","T","Groupe","S_Groupe","Famille","Genre","G_Sp","N","D","Larg.Transct","Long.Transct")
 
   ############################
   # nettoyage:
@@ -253,15 +227,16 @@ prep.analyse <- function() {
                            "Famille","Genre","G_Sp","Ltrans")]), sum)
 
   # Calculer la densité en hectares
-  # longueur du transect est de 50 mètres, largeur est définie sous Ltrans
-  dbio$D <- dbio$N/(50*dbio$Ltrans) * 10000
+  # Individus/hectares
+  # Larg.transct et Long.transct en mètres
+  dbio$D <- dbio$N/(dbio$Larg.transct*dbio$Long.transct) * 10000
 
   ########################
   ### Tableaux annexes ###
 
   # clés noms des invertébrés
   InvGr.Key <- c("Algues","Ascidies","Cnidaires","Crustaces","Echinodermes",
-                 "Eponges","Mollusques","Phan?rogame","Vers")
+                 "Eponges","Mollusques","Phanerogame","Vers")
 
   # tableau index pour la taxonomie de toutes les espèces observée:
   index.invSp <- unique(dbio[,c("G_Sp","Genre","Famille","S_Groupe","Groupe")])
@@ -296,6 +271,14 @@ prep.analyse <- function() {
   info.transect.INV.geo <- aggregate(info.transect.INV[,c("Mois", "Annee")],as.list(info.transect.INV[,c("Mission","Campagne","Geomorpho")]), lastval)
   message("-> Lorsqu'un transect ou Campagne est échantilloné dans 2 mois différents, 1 seul mois/année est gardé dans le tableau référence")
 
+  # rajouter les infos transects au tableau dbio principal:
+  dbio.tmp <- merge(dbio, info.transect[,c("St","Geomorpho","N_Impact")])
+  if(nrow(dbio.tmp)<nrow(dbio)) {
+    miss.St <- unique(dbio$St)[!(unique(dbio$St) %in% info.transect$St)]
+    message(sprintf("\n***********************\nStations manquantes dans tableau info.transect: %s",
+                    paste(miss.St,collapse=", ")))
+  }
+  dbio <- dbio.tmp
 
   ####################################
   ###### Périodes BACIP Campagnes ####
@@ -573,3 +556,38 @@ prep.analyse <- function() {
 Pour lancer les analyses manuellement utiliser les fonctions:\n
 -- Invertébrés: Run.INV.biodiv(), Run.INV.densite() \n-- LIT: Run.LIT.all() \n-- Poissons: Run.poissons.all()\n\n***********************\n")
 }
+
+##################### Fin de la fonction prep.analyse() #####################
+
+
+### Fonctions utiles pour formattage
+if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
+  capitalize <- function(x) {
+    gsub('(\\w)([\\w|\\s]*)','\\U\\1\\L\\2',x,perl=TRUE) }}
+
+if(!exists("getmatch")) { # extrait la partie correspondante au match
+      getmatch <- function(x,str2match,...) {
+          unlist(regmatches(x,regexpr(str2match,x,...))) }}
+
+# dernier element de l'objet
+lastval <- function(x) x[length(x)]
+
+# Ote les espaces au debut et apres un charactere
+# e.g. "  Famille " -> "Famille"
+if(!exists("trim")) { #clumsy regexp
+  trim <- function(x) gsub("^\\s+","",gsub("\\s+$","",x)) }
+
+# Vérifie que la graphic device a la bonne grandeur,
+# sinon en ouvrir une nouvelle selon les dimensions ww x hh
+check.dev.size <- function(ww,hh) {
+
+    if(dev.cur()==1){ dev.new(width=ww,height=hh)
+                  } else {
+    ds <- dev.size()
+    if(round(ds[1],2)!=round(ww,2)
+       | round(ds[2],2)!=round(hh,2)) {
+        dev.off(); dev.new(width=ww,height=hh)} }
+}
+
+# Standard error
+stand.err <<- function(x) sd(x)/sqrt(length(x))

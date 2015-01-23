@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-21 08:30:39 Laura>
+# Time-stamp: <2015-01-22 15:59:15 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -27,7 +27,7 @@ facteurs.tempo <- c("Période.BACI","Saison")
 ## valeurs à moins qu'une valeur différente soit directement
 ## spécifiée dans l'argument de la fonction)
 agtaxo.defaut <- "Groupe"
-fspat.defaut <- "Geomorpho"
+fspat.defaut <- "St"
 ftempo.defaut <- "Campagne"
 ################################################################
 ### Contenu du code:

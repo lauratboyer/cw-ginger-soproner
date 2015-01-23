@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-21 08:05:10 Laura>
+# Time-stamp: <2015-01-23 07:57:45 Laura>
 
 # Sujet: Ce code importe les bases de données multi-projets
 # et nettoie les champs au besoin (notamment en ôtant les accents)
@@ -14,13 +14,15 @@ Sys.setlocale("LC_ALL", "fr_FR.UTF-8") # changement de locale
 fc.inv <- "Invertebres.csv" # données brutes invertébrés
 fc.LIT <- "LIT.csv" # données brutes LIT
 fc.typoLIT <- "Typo_LIT.csv"  # infos typologie LIT
+fc.quad <- "Quadrats.csv" # données brutes quadrats
 fc.poissons <- "Poissons.csv" # données brutes poissons
 fc.bioeco <- "Bioeco.csv" # infos sur les espèces de poissons
 fc.transect <- "Facteurs_spatiaux.csv" # facteurs explicatifs spatiaux
 fc.fct.temprl <- "Facteurs_temporels.csv" # facteurs explicatifs temporels
 
+
 # types de tableaux
-type.tbl <- c("inv","data.LIT","typo.LIT","poissons","bioeco","transect",
+type.tbl <- c("inv","data.LIT","typo.LIT","data.quad","poissons","bioeco","transect",
               "fact.temprl")
 
 ###############################################################
@@ -32,11 +34,11 @@ type.tbl <- c("inv","data.LIT","typo.LIT","poissons","bioeco","transect",
   # noms des objets correspondants sous R
   # attention ne pas changer ces noms car ils sont utilisés dans plusieurs fonctions
   obj.names <- c("data.inv","data.LIT",
-                 "index.LIT","data.poissons","data.bioeco",
+                 "index.LIT","data.quad","data.poissons","data.bioeco",
                  "data.info.transect","data.info.temprl")
 
   # objet synthèse pour les noms de fichiers
-  obj.files <- c(fc.inv, fc.LIT, fc.typoLIT, fc.poissons, fc.bioeco,
+  obj.files <- c(fc.inv, fc.LIT, fc.typoLIT, fc.quad, fc.poissons, fc.bioeco,
                  fc.transect, fc.fct.temprl)
   names(obj.files) <- type.tbl
 

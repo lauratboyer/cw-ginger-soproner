@@ -1,25 +1,15 @@
-############################################################
-############################################################
-## A faire
-## tableaux noms de fichiers?
-## calcul de densité moy + SD par:
-## facteur temporel (Campagne par défaut)
-fact.temp <- "Campagne"
-## facteur spatial (Geomorpho, Station, Transect)
-fact.spat <- c("Geomorpho","St","T")
-## facteur taxonomique (Groupe, S_Groupe, Famille, Genre, G_Sp)
-fact.taxo <- c("Groupe","S_Groupe","Famille","Genre","G_Sp")
-## facteur expl (N_Impact)
-fact.expl <- c("N_Impact","Cote","Lieu")
+## GS_CodesInvertebres_TProj.r
+##
+## -------------------------------------------------------
+## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
+## Written on: January 22, 2015
 
 ############################################################
-############################################################
-
 ## General version of inv.dens.tbl
 INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
-                          agtaxo=agtaxo.defaut,
-                          filt.camp="X", smpl.unit="St",
-                          wZeroSt=FALSE, wZeroTransect=TRUE, save=FALSE) {
+                          agtaxo=ftaxo.defaut, par.transect=FALSE,
+                          filt.camp="X",
+                          wZeroSt=FALSE, wZeroT=TRUE, save=FALSE) {
 
     departFunk() # message de depart
     on.exit(EM())
@@ -30,9 +20,10 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
     wf <- paste("T",filt.camp,"inv",sep="_") # formatter nom du filtre
     ta.rawF <- filtreTable(dbio, wf)
     # Filtre espèces -- défini dans les options générales
-    ta.rawF <- filtreTaxo(ta.rawF, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+    ta.rawF <- filtreTaxo(ta.rawF, action=taxoF.incl,
+                          taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-    if(!wZeroTransect) ta.rawF <- ta.rawF[ta.rawF$D > 0,]
+    if(!wZeroT) ta.rawF <- ta.rawF[ta.rawF$D > 0,]
 
     ## Densité par transect:
     ## Nombre d'individus/Aire du transect -> N/(Largeur*Longueur.Transect)
@@ -45,12 +36,12 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 
     ## 3a. ########################################
     ### Densité de chaque grtax sur le transect ###
-    ff.transect <- unique(c(ff, "St", "T"))
+    ff.transect <- unique(c(ff, "Campagne","St", "T"))
     dens.par.t <- aggregate(list("D"=ta.rawF$D), as.list(ta.rawF[,ff.transect]), sum)
 
     # on continue si l'aggrégation spatiale n'est pas
     # au niveau du transect
-    if(!("T" %in% fspat)) {
+    if(!par.transect) {
 
       # on ôte "T" des facteurs d'aggrégation et on calcule
       # la densité moyenne/ET des transects par stations
@@ -75,9 +66,9 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
           tb.St.1$Moy[is.na(tb.St.1$Moy)] <- tb.St.1$ET[is.na(tb.St.1$Moy)] <- 0
           # Oter les combinaisons de Campagne/St non-échantillonées
           # (vu que pas toutes les stations ont été échantl à chaque campagne)
-          St.Camp <<- unique(dbio[,ff.St[ff.St != agtaxo]])
+          St.Camp <- unique(dbio[,ff.St[ff.St != agtaxo]])
           tb.St <- merge(tb.St.1, St.Camp)
-          t1 <<- tb.St
+          t1 <- tb.St
     }
 
         tb.all <- aggr.multi(list(list("dens.moy"=tb.St$Moy),
@@ -85,7 +76,7 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
         } else { tb.all <- tb.St }
 
       } else {
-        tb.all <- dens.par.t # si smpl.unit == T, on continue avec le tableau transect seulement
+        tb.all <- dens.par.t # on continue avec le tableau transect seulement
         names(tb.all)[names(tb.all)=="D"] <- "dens" # renomme colonne densité, pas de moyenne
         }
 
@@ -97,10 +88,10 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
     ### Sauvegarde des tableaux ##########
     if(save) {
     ftag <- paste("_Filtre-",filt.camp,"_",sep="")
-    fact.tag <- paste(fspat,ftemp,sep="-",collapse="-")
+    fact.tag <- paste(fspat,ftemp,ifelse(par.transect,"T",""),sep="-",collapse="-")
     taxotag <- taxotagFunk()
 
-    write.csv(tb.all,file=paste(tabl.dir,"Inv_DensitePar_", smpl.unit,
+    write.csv(tb.all,file=paste(tabl.dir,"Inv_DensitePar_",
                        ftag, agtaxo, taxotag,"_",
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
   }
@@ -111,16 +102,16 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 #################################################
 ## Tableau Indices de Biodiversité par station ##
 #################################################
-
-inv.biodiv <- function(filt.camp="X", qunit="T", save=FALSE) {
+INV.biodiv.gnrl <- function(ftemp="Campagne", fspat="St",
+                            par.transect=FALSE, unit.base="T",
+                            filt.camp="X", save=FALSE) {
     departFunk() # message de depart
     on.exit(EM())
 
     # définition des facteurs d'aggrégation
-    mf <- c("Campagne","Geomorpho","St","T")
-    if(qunit%in%fact.expl) mf <-  c("Campagne","Geomorpho",qunit,"St","T")
-
-    # ôte les abondances = 0
+    # par défaut pas d'aggrégation, calcul sur Campagne x St x T
+    mf <- unique(c(ftemp, "Campagne", fspat, "St", unit.base))
+    # ignore les abondances = 0 dans les calculs de biodiv
     dbn <- dbio[dbio$N > 0,]
 
     # Filtre sur les stations
@@ -132,10 +123,10 @@ inv.biodiv <- function(filt.camp="X", qunit="T", save=FALSE) {
 
     # Indice de Shannon #
     # nombre d'individus observés sur le transect
-    N.St <- aggregate(list(N.Tot=dbn$N), as.list(dbn[,mf]),sum)
+    N.St <- aggregate(list(N.Tot=dbn$N), as.list(dbn[,mf]), sum)
 
     # nombre d'individus *par espèce* observés sur le transect
-    N.taxon <- aggregate(list(N.Tax=dbn$N), as.list(dbn[,c(mf,"G_Sp")]),sum)
+    N.taxon <- aggregate(list(N.Tax=dbn$N), as.list(dbn[,c(mf,"G_Sp")]), sum)
 
     # calcul final de l'indice de Shannon
     shannon.df <- merge(N.taxon,N.St,by=mf)
@@ -146,9 +137,7 @@ inv.biodiv <- function(filt.camp="X", qunit="T", save=FALSE) {
     shannon.final$H <- -shannon.final$H # index de Shannon Index par Campagne/Station
 
     # nombre d'espèces uniques observées sur le transect
-    bio.St.i <- aggregate(dbn$G_Sp, as.list(dbn[,mf]), unique)
-    bio.St.i$bd <- sapply(bio.St.i$x, length)
-    bio.St <- bio.St.i[,c(mf,"bd")] # bio.St$bd = richesse spécifique sur le transect
+    bio.St <- aggregate(list(bd=dbn$G_Sp), as.list(dbn[,mf]), count)
 
     # Assemblage des tableaux:
     all.bio <- merge(bio.St,N.St,by=mf)
@@ -167,172 +156,104 @@ inv.biodiv <- function(filt.camp="X", qunit="T", save=FALSE) {
     if(val.inf != sum(is.na(all.bio[,c("H","J","d")]))) {
     print("Attention certaines valeurs NA ne sont pas causées par N=1 ou S=1 sur un transect")}
 
-    if(qunit!="T") {
+    if(!par.transect) {
 
-      mf <- mf[1:which(mf==qunit)] # on ôte le transect des facteurs d'aggrégation pour faire les stats
-
+      # on calcule les stats sur les facteurs d'aggrégation en gardant
+      # les transects comme unité de base
+      mf <- c(ftemp, fspat)
       # Moyenne et écart type des indices par station/Campagne:
-      all.bio.mean <- aggregate(list("Moy"=all.bio[,c("H","J","d")]),
-                            as.list(all.bio[,mf]), mean, na.rm=TRUE)
-      all.bio.sd <- aggregate(list("ET"=all.bio[,c("H","J","d")]),
-                          as.list(all.bio[,mf]), sd, na.rm=TRUE)
-      stat.cols <- c("Moy.H","Moy.J","Moy.d","ET.H","ET.J","ET.d")
+      all.bioFN <- aggr.multi(list(list("Moy"=all.bio[,c("H","J","d")]),
+                            as.list(all.bio[,mf]), mean.sd))
+      } else {
 
-      # Assembler + arrondir
-      all.bioFN <- merge(all.bio.mean, all.bio.sd)
-      all.bioFN[,stat.cols] <- round(all.bioFN[,stat.cols],5)
+        all.bioFN <- all.bio }
 
-      } else { all.bioFN <- all.bio }
+    # Rajout de la richesse taxonomique:
+    rsdf <- INV.RS.gnrl(ftemp,fspat,par.transect,unit.base,filt.camp=filt.camp)
+    all.bioFN <- merge(all.bioFN, rsdf)
 
-    # Rajouter colonne géomorpho:
-#    all.bioFN <- merge(unique(info.transect[,c("St","Geomorpho")]),all.bioFN)
-#  all.bioFN <- merge(info.transect.INV, all.bioFN, by=c("Campagne","St","Geomorpho"))
+    if(save) {
 
-  # Rajout de la richesse taxonomique:
-  rsdf <- inv.RichSpecifique(qunit="T",AS="Absent")
-  all.bioFN <- merge(all.bioFN, rsdf)
-
-  # Ordonner le tableau par campagne
-#  if(qunit == "T") {
-#  all.bioFN <- with(all.bioFN, all.bioFN[order(Annee, Mois, Geomorpho, N_Impact, St, T),])
-#  } else {
-#    all.bioFN <- with(all.bioFN, all.bioFN[order(Annee, Mois, Geomorpho, N_Impact, St),])}
-
-  if(save) {
-
-    ftag <- paste("_Filtre-",filt.camp,"_",sep="")
-    taxotag <- taxotagFunk()
+      ftag <- paste("_Filtre-",filt.camp,"_",sep="")
+      fact.tag <- paste(fspat,ftemp,ifelse(par.transect,"T",""),sep="-",collapse="-")
+      taxotag <- taxotagFunk()
       write.csv(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodivPar",
-                          qunit,ftag,taxotag,
-                        Sys.Date(),".csv",sep=""),row.names=FALSE) }
+                            ftag,taxotag,fact.tag,
+                            Sys.Date(),".csv",sep=""),row.names=FALSE) }
 
   invisible(all.bioFN)
 }
 
+######################################################################
+######################################################################
 
-INV.biodiv.gnrl <- function(AS="X", fspat="Geomorpho", save=FALSE) {
-    # Campagnes "A"nnuelles ou "S"emestrielles
+INV.RS.gnrl <- function(ftemp="Campagne", fspat="St",
+                            par.transect=FALSE, unit.base="T",
+                            filt.camp="X", save=FALSE) {
 
     departFunk() # message de depart
     on.exit(EM())
-    all.bio <- inv.biodiv(qunit="St") # requiert tableau all.bio (~ 1 sec)
-    all.bio <- merge(all.bio, unique(info.transect[,c("St",fspat)]))
 
-    # Définir facteurs d'aggrégation
-    ff <- c("Campagne",fspat)
-
-    ### 1. #############################
-    ### Appliquer filtre ###############
-  wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
-  dd.filt <- filtreTable(all.bio, wf)
-
-  ### 2. #################################
-  ### Définir fonction d'aggrégation #####
-    print("Pour le moment les valeurs J et d -> inf sont ignorees")
-    dd.geo <- aggregate(dd.filt[,c("Moy.H","Moy.J","Moy.d")],
-                      as.list(dd.filt[,ff]),mean,na.rm=TRUE)
-    dd.geo.SE <- aggregate(dd.filt[,c("Moy.H","Moy.J","Moy.d")],
-                           as.list(dd.filt[,ff]),sd,na.rm=TRUE)
-    names(dd.geo.SE)[grep("Moy",names(dd.geo.SE))] <-
-    sub("Moy","ET",names(dd.geo.SE)[grep("Moy",names(dd.geo.SE))])
-    dd.geo.both <- merge(dd.geo, dd.geo.SE, by=ff)
-
-    # Certaines geomorphologies/campagne sont echantillonees sur des
-    # mois differents, donc on selecte le mois le plus recent
-    IT.tmp <- aggregate(list("Mois"=info.transect.INV$Mois),
-                        as.list(info.transect.INV[,c("Annee","Mission","Campagne","Geomorpho")]),
-                                lastval)
-
-    # Rajouter info complementaire Mission/Mois/etc
-    dd.geo.both <- merge(IT.tmp,dd.geo.both,by=ff[1:2])
-    dd.geo.both <- dd.geo.both[,c("Annee","Mission","Mois",ff,
-                                  "Moy.H","ET.H","Moy.J","ET.J","Moy.d","ET.d")]
-
-    # Rajouter info richesse spécifique
-      rsdf <- inv.RichSpecifique(fspat=ff[-1], AS=AS)
-      dd.geo.both <- merge(dd.geo.both, rsdf)
-      dd.geo.both <- dd.geo.both[order(dd.geo.both$Annee, dd.geo.both$Mois,
-                                       dd.geo.both$Geomorpho),]
-
-
-    ##### Sauvegarde #####
-
-    if(save) {
-      # format nom de fichier
-      ftag <- paste("_Filtre-",AS,"_",sep="")
-      gtag <- gsub("N_","",paste(ff[-1],collapse="-"))
-      taxotag <- taxotagFunk()
-      write.csv(dd.geo.both,file=paste(tabl.dir,"Inv_IndexBiodiv_",gtag,ftag,taxotag,
-                         Sys.Date(),".csv",sep=""),row.names=FALSE) }
-
-    invisible(dd.geo.both)
-}
-
-######################################################################
-######################################################################
-inv.RichSpecifique <- function(AS="A", qunit="St", fspat=NA) {
-
-    departFunk() # message de depart
-    on.exit(EM())
+    # Échelles taxonomiques sur lesquelles on calcule la RS
+    niv.taxo <- c("G_Sp","Genre","Famille","S_Groupe","Groupe")
 
     ### 1. #############################
     ### Appliquer filtres ##############
     # on commence par ôter les observations N=0
     ta.raw <- dbio[dbio$N > 0,]
 
-    wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
+    wf <- paste("T",filt.camp,"inv",sep="_") # colonne du filtre
     ta.raw <- filtreTable(ta.raw, wf)
 
     # Filtre les espèces au besoin
     ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-    # Définition des facteurs spatiaux d'aggrégation
-    # Ordonnés de grand à petit
-    ff <- c("Campagne","Geomorpho","St","T")
-    # on rajoute facteur explicatif 'fspat' (ou qunit) entre Geomorpho et St au besoin
-    if(!is.na(fspat[1]) | (qunit %in% fact.expl)) {
-      ff <- na.omit(unique(c("Campagne","Geomorpho",fspat,qunit,"St","T"))) }
-    ff <- ff[1:which(ff==qunit)] # élimine les unités plus petites que qunit
+    # Définition des facteurs d'aggrégation temporels/spatiaux
+    ff <- unique(c(ftemp, "Campagne", fspat, "St",  unit.base))
 
     ### 2. ######################################################################
-    ### Nombre d'espèces par Campagne/GéomorphologieOuSite/Groupe_Taxonomique ###
-    e1 <- new.env() # créer environnment pour assembler les tableaux au fur et à mesure
+    ### RS par niveau taxonomique par facteurs sur l'unité de base (St ou T)
+    tb.all <- aggregate(list(RS=ta.raw[,niv.taxo]), as.list(ta.raw[,ff]), count)
 
-    rsfunk <- function(grtax) {
+    ### 3. Statistiques de la richesse spécifique sur aggrégation spatiale ou temporelle
+    ### seulement si par.transect = FALSE
+    if(!par.transect) {
 
-    # Richesse spécifique totale par aggrégation spatiale:
-    # Calcul du nombre ~total~ d'espèces par unité spatiale spécifiée sous 'qunit'
-    count <- function(x) length(unique(x)) # cette fonction compte le nombre d'espèces uniques
-    tb.1 <- aggregate(list(RS=ta.raw[,grtax]),
-                      as.list(ta.raw[,ff]), count)
+      # on commence par la richesse totale sur toute l'aggrégation spécifiée,
+      # tous unit.base confondus
+      ff <- c(ftemp, fspat)
 
-    # **Moyenne** de la richesse spécifique par facteurs > St
-    if(!is.na(fspat[1])) {
+      # Richesse totale sur toute l'aggrégation
+      # (donc on utilise ta.raw vu qu'on refait le calcul sur toute
+      # l'aggrégation spécifiée)
+      tb.tot <- aggregate(list(RS.Tot=ta.raw[,niv.taxo]),
+                              as.list(ta.raw[,ff]), count)
 
-      ff <- ff[1:which(ff==last(fspat))] # on ôte les unités spatiales plus petites que fspat
-      # moyenne
-      tb.2 <- aggregate(list("Moy.RS"=tb.1$RS),
-                        as.list(tb.1[,ff]), mean)
-      # écart type
-      tb.2.sd <- aggregate(list("ET.RS"=tb.1$RS),
-                           as.list(tb.1[,ff]), sd)
-      tb.all <- merge(tb.2, tb.2.sd, by=ff)
-      # on nomme les colonnes
-      names(tb.all) <- c(ff, paste(c("Moy.RS","ET.RS"),grtax,sep="."))
+      # Statistiques de la RS sur l'aggrégation calculée sur l'unité de base
+      colnoms <- paste("RS",niv.taxo,sep=".")
+      tb.stat <- aggr.multi(list(list(tb.all[,colnoms]),
+                              as.list(tb.all[,ff]), mean.sd))
 
-    }else{ # si on ne fait pas d'aggrégations statistiques, on garde RS seulement
-      tb.all <- tb.1
-      names(tb.all) <- c(ff, paste("RS",grtax,sep="."))
+      tb.all <- merge(tb.tot, tb.stat)
     }
 
-    # ... et on rajoute au tableau principal de RS
-    if(grtax != "G_Sp") e1$rs.all <- merge(e1$rs.all, tb.all, by=ff)
-
-    return(tb.all)
-    }
-
-  e1$rs.all <- rsfunk("G_Sp")
-  dmm <- lapply(c("Genre","Famille","S_Groupe","Groupe"), rsfunk)
-
-  invisible(e1$rs.all)
+    invisible(tb.all)
 }
+
+################################################################
+################################################################
+INV.stats <- function(ftemp="Campagne", fspat="Geomorpho", type.model="aov") {
+
+  # aller chercher les données par transect
+  dat.stat <<- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+                      ftemp=c(facteurs.tempo, "Campagne"), par.transect=TRUE)
+
+  formule <- as.formula(sprintf("log(dens+0.01) ~ %s + %s", paste(ftemp, collapse="+"), paste(fspat, collapse="+")))
+
+  obj <- do.call(type.model, list(formula=formule, data=dat.stat))
+
+  boxplot(residuals(obj) ~ Campagne, data=dat.stat)
+
+  obj
+}
+

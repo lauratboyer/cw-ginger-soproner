@@ -1,20 +1,20 @@
 # Ginger/Soproner
-# Code pour calcul des densitÃ©s et indices de biodiversitÃ© pour les poissons
-# Time-stamp: <2014-03-12 11:55:15 Laura>
+# Code pour calcul des densités et indices de biodiversité pour les poissons
+# Time-stamp: <2015-01-13 10:58:39 Laura>
 
 setwd(dossier.R)
 fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
 tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
- # Extraction tableaux des bases de donnÃ©es
+ # Extraction tableaux des bases de données
 if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
-# Fichiers des donnÃ©es de comptage = dpoissons, produit dans prep.analyse()
+# Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 
 ########################################
 ############# Tableaux #################
 
-# reformattage du tableau des donnÃ©es de comptage initial
+# reformattage du tableau des données de comptage initial
 poissons.tableau.brut <- function(save=FALSE) {
 
   ################################
@@ -27,7 +27,7 @@ poissons.tableau.brut <- function(save=FALSE) {
   # D.obs = N/(2xdm.obsxL); dm.obs= 0.5*(d1+d2) + 0.5
   # Bio.obs = N*a*T^b/(2xdm.obsxL)
 
-  # par dÃ©faut mais changer une fois que la colonne est ajoutÃ©e
+  # par défaut mais changer une fois que la colonne est ajoutÃ©e
   # dans poissons.csv
   LT <- 50 # Longueur du transect
   fc <- c("Campagne","An","St","Code_SP")
@@ -60,7 +60,6 @@ poissons.tableau.brut <- function(save=FALSE) {
   tb.1$Tx.Sed <- "Non dispo"
 
   # + DonnÃ©es lit
-  print("rajouter donnees LIT au tableau brut poissons")
   tb.1$Donnees.LIT <- "Non dispo"
 
   # + CharactÃ©ristiques de l'espÃ¨ce: code_espÃ¨ce/famille/genre/espÃ¨ce/...
@@ -142,7 +141,7 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
 
   # Biomasse/Dens -> zero si allN=0 mais laisser la taille.moy a NA
   # pour que les moyennes de tailles soient calculees sur les individus
-  # observÃ©s seulements
+  # observés seulements
   ds.df[ds.df$allN==0,c("dens","biomasse")] <- 0
 
   # ordonner par campagne/sites
@@ -161,8 +160,8 @@ BioDens.sp.poissons <- function() { # formerly BD.by.sp()
 
 ################################################
 ################################################
-# Tableau synthÃ¨se 1:
-# moyenne et Ã©cart type pour: densitÃ© (d), biomasse (b),
+# Tableau synthèse 1:
+# moyenne et écart type pour: densitÃ© (d), biomasse (b),
 # richesse spÃ©cifique (rs), taille moyenne (tm)
 # calculÃ© sur:
 # toutes espÃ¨ces confondues (tot), commerciales (com), carnivore (car),

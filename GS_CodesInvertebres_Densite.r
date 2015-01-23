@@ -1,14 +1,14 @@
 # Ginger/Soproner: Produits/Analyses invertebres
 ## ** Tableaux/graphiques de densite ** ##
 
-# Time-stamp: <2014-03-23 16:20:33 Laura>
+# Time-stamp: <2015-01-12 07:48:18 Laura>
 
 setwd(dossier.R)
-fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
-tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
+#fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
+#tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
  # Extraction tableaux des bases de donnees
-if(!exists("data.read")) source("GS_ExtractionDonnees.r")
+#if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 print("TO DO: inv.dens.tbl should be the same as inv.dens.TS - not the case right now")
 print("TO DO: make sure a single month is entered in DB")

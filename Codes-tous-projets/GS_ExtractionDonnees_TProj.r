@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-21 14:44:22 Laura>
+# Time-stamp: <2015-01-23 15:55:16 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -44,8 +44,9 @@ prep.analyse <- function(check.typo=TRUE) {
   ############################################
   ########### Infos temporelles ##############
   info.transect.tempo <- unique(data.info.temprl)
-  rownames(info.transect.tempo) <- info.transect.tempo$Id
-  info.transect.tempo$Mois <-  as.numeric(gsub("../(.*)/.*","\\1",info.transect.tempo$Année))
+  info.spat.temp <- merge(info.transect, info.transect.tempo, all=TRUE)
+  rownames(info.spat.temp) <- info.spat.temp$Id
+
 
   # Nettoyer accents noms géométrie -- à reviser vu encodage changé durant import?
   ########### Données LIT ############
@@ -94,6 +95,40 @@ prep.analyse <- function(check.typo=TRUE) {
 
   # utilise Code_LIT pour indexer le tableau
   rownames(index.LIT) <- index.LIT$Code_LIT
+
+  ###########################################
+  ## Formatter données quadrats:
+  data.quad <- data.quad[,c("Id","Campagne","St","Code_LIT","Quadrat","X.")]
+  data.quad$Projet <- id2proj(data.quad$Id)
+  data.quad[,c("Campagne","St","Code_LIT")] <-
+    sapply(data.quad[,c("Campagne","St","Code_LIT")], toupper)
+  message("Quadrats: ôte rangées avec Code_LIT = Q03, pas de couverture (typo)")
+  data.quad <- data.quad[!(grepl("Q0.", data.quad$Code_LIT)),]
+  data.quad$X. <- as.numeric(data.quad$X)
+
+
+  # on ôte les zéros vu qu'ils ne sont pas entrés partout
+  data.quad <- data.quad[data.quad$X. > 0,]
+  # consolider les observations multiples du même Code_LIT sur un transect
+  data.quad <- aggregate(list(X.=data.quad$X.),
+                        data.quad[,c("Projet","Campagne","St","Id","Quadrat","Code_LIT")], sum)
+
+  # rajouter des abondances nulles pour les groupes observés sur certains
+  # quadrats seulement
+  # catégories identifiées au moins une fois par station/campagne:
+  quad.uID <- unique(data.quad[,c("Projet","Campagne","St","Code_LIT")])
+  # on crée un tableau avec les noms des transects échantillonés
+  ### sur chaque combinaison stations x
+  ### campagne (vu que certaines campagnes ont T02 et T04)
+  quad.allT <- unique(data.quad[,c("Id","Projet","Campagne","St","Quadrat")])
+  # on merge ces deux tableaux ensemble pour associer des densités
+  ### nulles aux espèces identifiées
+  # sur une station mais pas sur tous les transects
+  quad.allT.uID <- merge(data.quad, quad.uID, all.x=TRUE)
+
+  dtmp <- merge(quad.allT.uID, data.quad, all.x=TRUE)
+  data.quad <- dtmp
+  data.quad[is.na(data.quad$X.),"X."] <- 0
 
  # créer catégories de substrat pour tableaux synthèses
   coraux.fig <- list("General"=c("Coraux","Corail mort","Coraux mous",
@@ -160,13 +195,13 @@ prep.analyse <- function(check.typo=TRUE) {
   #### Données de comptage Poissons ##################################################
   ####################################################################################
   # data.poissons: données de comptage brutes sur les poissons
-  names(data.poissons) <- c("ID","Client","Site","Campagne","An","Mois","Date","St",
+  names(data.poissons) <- c("Id","Client","Site","Campagne","An","Mois","Date","St",
                             "Long.Transct","T","Obs","Vis","Courant","Code_SP",
                           "Famille","Genre","Espece","G_Sp","N","L","D1","D2",
                           "Secteur","Spatiaux","Tempo")
   # rajout année de la campagne
   data.poissons$Projet <- toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*",
-                                       "\\1",data.poissons$ID))
+                                       "\\1",data.poissons$Id))
 
   # temporary fix:
   message("Correction typo: data.poissons Kns_koniambo_11_2013_ibr3_t01, D2=Arus -> NA")
@@ -207,40 +242,32 @@ prep.analyse <- function(check.typo=TRUE) {
   data.poissons$N[is.na(data.poissons$N)] <- 0
   #data.poissons <- data.poissons[!(is.na(data.poissons$L)),] # Taille
 
+  # remettre les valeurs de transect au cas où certaines manquaient
+  unique.sans.na <- function(x) unique(na.omit(x))
+  proj.ltrans <- tapply(data.poissons$Long.Transct, data.poissons$Projet, unique.sans.na)
+  if(length(unlist(proj.ltrans))!=length(proj.ltrans)) stop("Longueurs de transect différentes par projet")
+  data.poissons$Long.Transct <- proj.ltrans[data.poissons$Projet]
+
   # Expansion du data frame pour inclure toutes les combinaisons Campagne/St/Code_SP:
   # ... donc pour les poissons les densités sont nulles sur toutes Campagnes/St où
   # ... l'espèce est non-observée
-  all.comb.poissons <- expand.grid("Campagne"=unique(data.poissons$Campagne),
-                                   "St"=unique(data.poissons$St),
-                                   "T"=unique(data.poissons$T),
-                                   "Code_SP"=unique(data.poissons$Code_SP),
-                                   stringsAsFactors=FALSE)
-
-  # garder seulement les combinaisons distinctes de transect/station/campagne présentes dans les données:
-  St.by.year <- unique(data.poissons[,c("Projet","An","Mois","Campagne","St","T","Long.Transct")]) # year/station samples
-  all.comb.poissons <- merge(all.comb.poissons, St.by.year)
+  proj.poissons <- unique(data.poissons[,c("Projet","Code_SP")])
+  trans.poissons <- unique(data.poissons[,c("Projet","Campagne","St","T","Id","Long.Transct")])
+  pt.all <- merge(proj.poissons, trans.poissons, all=TRUE)
 
   # ... reunion avec données poissons pour rajouter les densité nulles
-  poissons.coln <- c("Projet","An","Mois","Campagne","St","Code_SP","Long.Transct","T",
-                     "N","L","D1","D2")
-
-  data.poissons2 <- merge(all.comb.poissons,
-                          data.poissons[,poissons.coln],
-                          by=c("Projet","An","Mois","Campagne","St","Code_SP","Long.Transct","T"),all.x=TRUE)
+  poissons.coln <- c("Id","Projet","Campagne","St",
+                     "Code_SP","Long.Transct","T","N","L","D1","D2")
+  data.poissons2 <- merge(pt.all, data.poissons[,poissons.coln], all.x=TRUE)
   data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
   data.poissons3 <- merge(data.poissons2, index.Poissons[,c("Code_SP","G_Sp","Genre","Famille")], all.x=TRUE)
-
   # ... rajoute les coeff a et b pour calculs de biomasse
   print(sprintf("Code_SP manquants dans tableau bioeco et ôtés de l'analyse: %s",
                 paste(unique(data.poissons3$Code_SP)[!(unique(data.poissons3$Code_SP) %in% bioeco$Code_SP)],
               collapse=", ")))
   data.poissons <- merge(data.poissons3, bioeco)
 
-  # ... rajoute info.transect:
-  dpois.tmp <- merge(data.poissons, unique(info.transect[,c("Projet","St","Geomorpho","N_Impact")]))
-  data.poissons <- dpois.tmp
-
-  # rajouter la ensité/biomasse par *observation*
+  # rajouter la densité/biomasse par *observation*
   # D1 et D2 sont les distances entre la ligne du transect et l'individu observé
   # Lorsqu'il y a un banc de poissons D1 est la distance de l'individu
   # ... le plus proche, D2 celle de l'indiv le plus loin
@@ -260,10 +287,10 @@ prep.analyse <- function(check.typo=TRUE) {
   ####################################################################################
   # data.inv: données de comptage brutes pour invertébrés
   data.inv$Projet <- toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*","\\1",data.inv$ID))
-  dbio <- data.inv[,c("Projet","ID","Annee","Mois","Date","Campagne",
+  dbio <- data.inv[,c("Projet","ID","Date","Campagne",
                       "St","T","Grp2","S_Grp2","F2","G2","G_Sp","N","D","Ltrans","L")]
   dbio$St <- toupper(data.inv$St)
-  names(dbio) <- c("Projet","Id","Annee","Mois","Date","Campagne","St","T",
+  names(dbio) <- c("Projet","Id","Date","Campagne","St","T",
                    "Groupe","S_Groupe","Famille","Genre","G_Sp","N","D","Larg.Transct","Long.Transct")
   message(sprintf("On ôte %s rangées avec valeurs N absentes",sum(is.na(dbio$N))))
   dbio <- dbio[!is.na(dbio$N),]
@@ -353,25 +380,30 @@ prep.analyse <- function(check.typo=TRUE) {
 
   ################
   # infos sur station/mission/année
-  info.transect.INV <- unique(data.inv[,c("Annee","Mois","Mission","Campagne","St")])
-  info.transect.INV$St <- toupper(info.transect.INV$St)
-  info.transect.INV <- merge(info.transect.INV, info.transect,
-                             by=c("St","Mois"))[,c("Annee","Mois","Mission","Campagne","St",
-                               "Geomorpho","N_Impact")]
-  info.transect.INV.geo <- aggregate(info.transect.INV[,c("Mois", "Annee")],
-                                     as.list(info.transect.INV[,c("Mission","Campagne","Geomorpho")]), lastval)
-  message("-> Lorsqu'un transect ou Campagne est échantilloné dans 2 mois différents, 1 seul mois/année est gardé dans le tableau référence")
+#  info.transect.INV <- unique(data.inv[,c("Annee","Mois","Mission","Campagne","St")])
+#  info.transect.INV$St <- toupper(info.transect.INV$St)
+#  info.transect.INV <- merge(info.transect.INV, info.transect,
+#                             by=c("St","Mois"))[,c("Annee","Mois","Mission","Campagne","St",
+#                               "Geomorpho","N_Impact")]
+#  info.transect.INV.geo <- aggregate(info.transect.INV[,c("Mois", "Annee")],
+#                                     as.list(info.transect.INV[,c("Mission","Campagne","Geomorpho")]), lastval)
+#  message("-> Lorsqu'un transect ou Campagne est échantilloné dans 2 mois différents, 1 seul mois/année est gardé dans le tableau référence")
 
-  # rajouter les infos transects au tableau dbio principal:
-  dbio.tmp <- merge(dbio, unique(info.transect[,c("Projet","St",facteurs.spatio)]))
+  # rajouter les infos transects aux tableaux de données principaux:
+  add.infos <- function(x) {
 
-  if(nrow(dbio.tmp)<nrow(dbio)) {
-    miss.St <- unique(dbio$St)[!(unique(dbio$St) %in% info.transect$St)]
-    message(sprintf("\n***********************\nStations manquantes dans tableau info.transect: %s",
-                    paste(miss.St,collapse=", ")))
+    id.manq <- unique(x$Id)[!(unique(x$Id) %in% info.spat.temp$Id)]
+    if(length(id.manq)>0) {
+    message(sprintf("Id manquants dans info.transect: %s",paste(id.manq,collapse=", ")))
   }
-  dbio <- dbio.tmp
-  dbio <- data.frame(dbio, info.transect.tempo[dbio$Id, c("Année","Mois",facteurs.tempo)])
+    id2k <- x$Id[(x$Id %in% info.spat.temp$Id)]
+    df <- info.spat.temp[x$Id,c("An","Mois",facteurs.spatio,facteurs.tempo)]
+    data.frame(x, df, row.names=NULL)
+  }
+
+  dbio <- add.infos(dbio) # invertébrés
+  data.poissons <- add.infos(data.poissons) # poissons
+  data.LIT <- add.infos(data.LIT) # LIT
 
   ####################################
   #### Tableau espèces universels ####
@@ -630,7 +662,7 @@ prep.analyse <- function(check.typo=TRUE) {
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
-  info.transect.TProj <<- info.transect
+  info.transect.TProj <<- info.spat.temp
   info.transect.INV <<- info.transect.INV
   info.transect.INV.geo <<- info.transect.INV.geo
   dpoissons.TProj <<- data.poissons
@@ -641,6 +673,7 @@ prep.analyse <- function(check.typo=TRUE) {
   bioeco.all <<- bioeco.all
   data.LIT.TProj <<- data.LIT
   index.LIT <<- index.LIT
+  dQuad.TProj <<- data.quad
   coraux.fig <<- coraux.fig
   index.tt.especes <<- index.tt.especes
 
@@ -742,3 +775,6 @@ typo.finder <- function(vect, typo.sensi=2, tag, ote.prem=TRUE) {
                  typo.sensi))
  }
 }
+
+# Extraire nom du projet du champ 'Id'
+id2proj <- function(x) toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*", "\\1",x))

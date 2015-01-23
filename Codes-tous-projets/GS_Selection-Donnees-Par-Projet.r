@@ -4,16 +4,16 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: November 25, 2014
-## Time-stamp: <2015-01-20 15:37:59 Laura>
+## Time-stamp: <2015-01-24 08:31:54 Laura>
 
 nom.projets <- function() {
-  message("KNS_KONIAMBO\nSLN_THIO\nSLN_KAALA\nSLN_NEPOUI\nSMSP_BORENDI")
+  message("ADECAL_TOUHO\nKNS_KONIAMBO\nSLN_THIO\nSLN_KAALA\nSLN_NEPOUI\nSMSP_BORENDI\n")
 }
 selection.projet <- function(x="KNS_KONIAMBO") {
   if(!(x %in% c("ADECAL_TOUHO","KNS_KONIAMBO","SLN_THIO",
               "SLN_KAALA","SLN_NEPOUI","SMSP_BORENDI"))) {
     stop("\n\nLe nom du projet devrait être l'un des suivants:
-\nKNS_KONIAMBO\nSLN_THIO\nSLN_KAALA\nSLN_NEPOUI\nSMSP_BORENDI")
+\nADECAL_TOUHO\nKNS_KONIAMBO\nSLN_THIO\nSLN_KAALA\nSLN_NEPOUI\nSMSP_BORENDI")
 
   }
   projet <<- x
@@ -36,7 +36,9 @@ selection.projet <- function(x="KNS_KONIAMBO") {
   dbio <<- dbio.TProj[dbio.TProj$Projet == x,]
   dpoissons <<- dpoissons.TProj[dpoissons.TProj$Projet == x,]
   dLIT <<- data.LIT.TProj[data.LIT.TProj$Projet == x,]
+  dQuad <<- dQuad.TProj[dQuad.TProj$Projet == x,]
 
+  if(x=="ADECAL_TOUHO") message("Pas de données INV disponibles")
 
 }
 

@@ -1,13 +1,13 @@
 # Ginger/Soproner: Produits/Analyses invertébrés
 # ** Indices de biodiversité **
-# Time-stamp: <2014-03-12 11:45:59 Laura>
+# Time-stamp: <2015-01-13 08:29:50 Laura>
 
 setwd(dossier.R)
-fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
-tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
+#fig.dir <- paste(dossier.R,"//Graphiques//",sep='')
+#tabl.dir <- paste(dossier.R,"//Tableaux//",sep='')
 
  # Extraction tableaux des bases de données
-if(!exists("data.read")) source("GS_ExtractionDonnees.r")
+#if(!exists("data.read")) source("GS_ExtractionDonnees.r")
 
 #################################################
 ## Tableau Indices de Biodiversité par station ##
@@ -187,34 +187,34 @@ inv.RichSpecifique <- function(AS="A", aj.impact=FALSE, aggr="St") {
 
     ### 1. #############################
     ### Appliquer filtres ##############
-    ta.raw <- merge(dbio, info.transect[,c("St","Geomorpho","N_Impact")])
+    ta.raw <- merge(dbio, unique(info.transect[,c("St","Geomorpho","N_Impact")]))
     # ôter les observations N=0
     ta.raw <- ta.raw[ta.raw$N > 0,]
 
     wf <- paste("T",AS,"inv",sep="_") # colonne du filtre
     ta.raw <- filtreTable(ta.raw, wf)
 
-  # Filtre les espèces au besoin
-  ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+    # Filtre les espèces au besoin
+    ta.raw <- filtreTaxo(ta.raw, action=taxoF.incl, taxtype=taxoF.utaxo, taxnom=taxoF.nom)
 
-  ### 2. ######################################################################
-  ### Nombre d'espèces par Campagne/GéomorphologieOuSite/Groupe_Taxonomique ###
-  e1 <- new.env() # créer environnment pour assembler les tableaux au fur et à mesure
+    ### 2. ######################################################################
+    ### Nombre d'espèces par Campagne/GéomorphologieOuSite/Groupe_Taxonomique ###
+    e1 <- new.env() # créer environnment pour assembler les tableaux au fur et à mesure
 
   rsfunk <- function(grtax) {
+
     # Richesse spécifique par St/T sur Geomorpho/Impact:
     ff <- c("Campagne","Geomorpho","St")
     if(aj.impact) ff[3:4] <- c("N_Impact","St")
     if(aggr=="T") ff <- c(ff,"T") # Rajouter le transect aux facteurs si spécifié
 
-    tb.1 <- aggregate(list("unique.tax"=ta.raw[,grtax]),
-                      as.list(ta.raw[,ff]), unique)
-    tb.1$St.RS <- sapply(tb.1$unique.tax,length)
-    tb.1 <- tb.1[,-(grep("unique.tax",names(tb.1)))]
+    count <- function(x) length(unique(x)) # compte le nombre d'espèces uniques
+    tb.1 <- aggregate(list(St.RS=ta.raw[,grtax]),
+                      as.list(ta.raw[,ff]), count)
 
     # **Moyenne** de la richesse spécifique par Géomorphologie
     if(aggr == "geom") {
-      ff <- ff[!(ff %in% c("T","St"))] # conserver aggrégration > St/Transect
+      ff <- ff[!(ff %in% c("T","St"))] # conserver aggrégration > St/Transect
       tb.2 <- aggregate(list("Moy.RS"=tb.1$St.RS),
                         as.list(tb.1[,ff]), mean)
       tb.2.sd <- aggregate(list("ET.RS"=tb.1$St.RS),
