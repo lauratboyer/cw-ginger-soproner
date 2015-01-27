@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-23 15:55:16 Laura>
+# Time-stamp: <2015-01-27 07:23:08 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -11,10 +11,7 @@ pour définir l'emplacement des codes et des dossiers")
 }
 
 prep.analyse <- function(check.typo=TRUE) {
-  lp <- try(library(reshape)) # load package reshape
-  if(class(lp)=="try-error") {
-      install.packages("reshape") # installe reshape si requis
-      library(reshape)}
+
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
@@ -379,17 +376,7 @@ prep.analyse <- function(check.typo=TRUE) {
   row.names(index.invSp) <- index.invSp$G_Sp
 
   ################
-  # infos sur station/mission/année
-#  info.transect.INV <- unique(data.inv[,c("Annee","Mois","Mission","Campagne","St")])
-#  info.transect.INV$St <- toupper(info.transect.INV$St)
-#  info.transect.INV <- merge(info.transect.INV, info.transect,
-#                             by=c("St","Mois"))[,c("Annee","Mois","Mission","Campagne","St",
-#                               "Geomorpho","N_Impact")]
-#  info.transect.INV.geo <- aggregate(info.transect.INV[,c("Mois", "Annee")],
-#                                     as.list(info.transect.INV[,c("Mission","Campagne","Geomorpho")]), lastval)
-#  message("-> Lorsqu'un transect ou Campagne est échantilloné dans 2 mois différents, 1 seul mois/année est gardé dans le tableau référence")
-
-  # rajouter les infos transects aux tableaux de données principaux:
+  # Rajouter les infos transects aux tableaux de données principaux:
   add.infos <- function(x) {
 
     id.manq <- unique(x$Id)[!(unique(x$Id) %in% info.spat.temp$Id)]
@@ -419,7 +406,7 @@ prep.analyse <- function(check.typo=TRUE) {
   # modif après discussion avec Antoine 12 Octobre 2012:
   # re-créer tableau filtre à partir des années désirées pour l'analyse
 
-  creerFiltre <- function(qAnnees) {
+  creerFiltre <<- function(qAnnees) {
 
     if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
     tb <- unique(dbio[,c("St","Campagne")])
@@ -461,13 +448,13 @@ prep.analyse <- function(check.typo=TRUE) {
   # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <<- function(wtable, wfiltre) {
     if(wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv")) { # appliquer le filtre si spécifié
-    message(paste("Stations filtrees par",wfiltre))
-    filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
+      message(paste("Stations filtrees par",wfiltre))
+      filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
 
-    wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
-    dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
+      wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
+      dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
                      wtable,by="key", drop.x="key")
-    dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
+      dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
   } else {
     CmpTag <- paste(filtre.annees,collapse="|")
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
@@ -609,9 +596,9 @@ prep.analyse <- function(check.typo=TRUE) {
       return("") # si tous les groupes sont inclus, ne pas modifier le nom de fichiers
     } else {
         if(length(taxoF.nom) <= 5) {
-            taxotag <- paste("_",paste(c(capitalize(taxoF.utaxo),abbreviate(c(capitalize(taxoF.incl),
+            taxotag <- paste(paste(c(capitalize(taxoF.utaxo),abbreviate(c(capitalize(taxoF.incl),
                                                                           sort(taxoF.nom)))), collapse="-"),"_",sep="")
-        } else {taxotag <- paste("_",paste(c(capitalize(taxoF.utaxo),
+        } else {taxotag <- paste(paste(c(capitalize(taxoF.utaxo),
                                          abbreviate(c(capitalize(taxoF.incl),
                                                       sort(taxoF.nom)[1:5], "etc",
                                                       paste("N=",length(taxoF.nom),sep="")))), collapse="-"),"_",sep="")}
@@ -663,8 +650,6 @@ prep.analyse <- function(check.typo=TRUE) {
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
   info.transect.TProj <<- info.spat.temp
-  info.transect.INV <<- info.transect.INV
-  info.transect.INV.geo <<- info.transect.INV.geo
   dpoissons.TProj <<- data.poissons
   dbio.TProj <<- dbio
   index.invSp <<- index.invSp
@@ -684,7 +669,7 @@ prep.analyse <- function(check.typo=TRUE) {
 
   message("\n\n***********************\nFonction prep.analyse() complétée: tableaux formattés et analyses prêtes à lancer.
 Pour lancer les analyses manuellement utiliser les fonctions:\n
--- Invertébrés: Run.INV.biodiv(), Run.INV.densite() \n-- LIT: Run.LIT.all() \n-- Poissons: Run.poissons.all()\n\n***********************\n")
+-- Invertébrés: INV.dens.gnrl(), INV.biodiv.gnrl() \n-- LIT: LIT.couvrt.gnrl(); Quad.couvrt.gnrl() \n-- Poissons: POIS.dens.gnrl()\n\n***********************\n")
 }
 
 ##################### Fin de la fonction prep.analyse() #####################
@@ -730,6 +715,7 @@ val.arrondi <- 4
 tot.mean.sd <- function(x,...) round(c(Tot=sum(x,...), Moy=mean(x,...), ET=sd(x,...)),val.arrondi)
 mean.sd <- function(x,...) round(c(Moy=mean(x,...), ET=sd(x,...)),val.arrondi)
 aggr.multi <- function(...) {
+
   t1 <- do.call(aggregate, args=...)
   colcl <- sapply(t1, class)
   colnom <- names(t1)[colcl=="matrix"]

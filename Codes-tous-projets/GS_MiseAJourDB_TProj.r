@@ -1,13 +1,14 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-23 07:57:45 Laura>
+# Time-stamp: <2015-01-26 08:36:57 Laura>
 
 # Sujet: Ce code importe les bases de données multi-projets
 # et nettoie les champs au besoin (notamment en ôtant les accents)
 
 # Note pour Laura: sauvegarder les csv en mode Windows sous Excel/Mac
 # Locale R = FR-UTF-8; encodage pour l'import = iso-8859-1
-Sys.setlocale("LC_ALL", "fr_FR.UTF-8") # changement de locale
+#Sys.setlocale("LC_ALL", "fr_FR.UTF-8") # changement de locale
+
 ###############################################################
 ###############################################################
 # Noms des fichiers

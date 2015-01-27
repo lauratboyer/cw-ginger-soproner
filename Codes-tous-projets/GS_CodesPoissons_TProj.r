@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2015-01-23 07:25:04 Laura>
+# Time-stamp: <2015-01-26 07:45:52 Laura>
 
 # Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 ########################################################
@@ -8,24 +8,25 @@
 # Densité
 POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                            par.transect=FALSE,
-                           agtaxo="G_Sp", wZeroT=FALSE) {
-# formerly BD.by.sp()
-print("changer nom argument zeros")
+                           agtaxo="G_Sp", wZeroT=FALSE, save=FALSE) {
+
   ################################
   departFunk() # message de depart
   on.exit(EM())
   ################################
 
+  ### 1. ########################################################
+  ### Appliquer filtres taxonomiques
+  ### Filtre espèces -- défini dans les options générales
+  ds.calc <- filtreTaxo(dpoissons, action=taxoF.incl,
+                          taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+  if(!wZeroT) ds.calc <- ds.calc[ds.calc$N>0,] # ôter zéros
+
   # Calcul densité/biomasse par espèce/transect/campagne
   # unité de base pour le calcul est "St" par défaut
   ff <- unique(c(ftemp,"Campagne",fspat,"St","T", agtaxo)) # variables d'aggrégation grande -> petite
 
-  ds.calc <- dpoissons # transfert à l'objet ds.calc
-  if(!wZeroT) ds.calc <- ds.calc[ds.calc$N>0,]
-
   LT <- ds.calc$Long.Transct[1]
-print(sum(is.na(ds.calc$Long.Transct)))
-  if(diff(range(ds.calc$Long.Transct))!=0) print("Attention plus d'une longueur de transect par projet")
 
   # calcul de la densité/biomasse sur unité spatiale aggrégée et par espèce
   # on dérive la distance moyenne pondérée
@@ -49,7 +50,6 @@ print(sum(is.na(ds.calc$Long.Transct)))
   # pour que les moyennes de tailles soient calculees sur les individus
   # observés seulements
   ds.df[ds.df$N==0,c("dens","biomasse")] <- 0
-  message("Refaire statistiques par station pour projets avec num transect > 1")
 
   if(!par.transect) {
   # Calcul des biomasses/densités moyennes par unité spatiale 'fspat'
@@ -67,6 +67,19 @@ print(sum(is.na(ds.calc$Long.Transct)))
   ff.RS <- ff[!(ff == agtaxo)]
   t1.RS <- aggregate(list(RS.aggr.taxo=ds.df[,agtaxo]), as.list(ds.df[,ff.RS]), count)
   BDtable <- merge(ds.df, t1.RS)
+
+    if(save) {
+
+
+      fact.tag <- paste(fspat,ftemp,sep="-",collapse="-")
+      print(fact.tag)
+      fact.tag <- paste(fact.tag, ifelse(par.transect,"-T",""), sep="")
+      taxotag <- taxotagFunk()
+
+    write.csv(BDtable,file=paste(tabl.dir,"Poissons_DensBio_",
+                       agtaxo, taxotag, "_", fact.tag, "_",
+                            Sys.Date(),".csv",sep=""),row.names=FALSE)
+  }
 
   invisible(BDtable)
 }

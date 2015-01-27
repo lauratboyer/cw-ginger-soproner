@@ -7,7 +7,7 @@
 ############################################################
 ## General version of inv.dens.tbl
 INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
-                          agtaxo=ftaxo.defaut, par.transect=FALSE,
+                          agtaxo=agtaxo.defaut, par.transect=FALSE,
                           filt.camp="X",
                           wZeroSt=FALSE, wZeroT=TRUE, save=FALSE) {
 
@@ -86,17 +86,19 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 
     ### 5. ###############################
     ### Sauvegarde des tableaux ##########
+
     if(save) {
     ftag <- paste("_Filtre-",filt.camp,"_",sep="")
-    fact.tag <- paste(fspat,ftemp,ifelse(par.transect,"T",""),sep="-",collapse="-")
+    fact.tag <- paste(fspat,ftemp,sep="-",collapse="-")
+    fact.tag <- paste(fact.tag, ifelse(par.transect,"-T",""), sep="")
     taxotag <- taxotagFunk()
 
-    write.csv(tb.all,file=paste(tabl.dir,"Inv_DensitePar_",
-                       ftag, agtaxo, taxotag,"_",
+    write.csv(tb.all,file=paste(tabl.dir,"Inv_Densite",
+                       ftag, agtaxo, "_", taxotag, fact.tag,"_",
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
   }
 
-  return(tb.all)
+  invisible(tb.all)
 }
 
 #################################################
@@ -175,10 +177,11 @@ INV.biodiv.gnrl <- function(ftemp="Campagne", fspat="St",
     if(save) {
 
       ftag <- paste("_Filtre-",filt.camp,"_",sep="")
-      fact.tag <- paste(fspat,ftemp,ifelse(par.transect,"T",""),sep="-",collapse="-")
+      fact.tag <- paste(fspat,ftemp,sep="-",collapse="-")
+      fact.tag <- paste(fact.tag, ifelse(par.transect,"-T",""), sep="")
       taxotag <- taxotagFunk()
-      write.csv(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodivPar",
-                            ftag,taxotag,fact.tag,
+      write.csv(all.bioFN,file=paste(tabl.dir,"Inv_IndexBiodiv",
+                            ftag,taxotag,fact.tag,"_",
                             Sys.Date(),".csv",sep=""),row.names=FALSE) }
 
   invisible(all.bioFN)
