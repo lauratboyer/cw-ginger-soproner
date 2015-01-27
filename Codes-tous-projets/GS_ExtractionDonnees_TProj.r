@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-27 07:23:08 Laura>
+# Time-stamp: <2015-01-28 07:48:10 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -310,6 +310,8 @@ prep.analyse <- function(check.typo=TRUE) {
                         as.list(dbio[,c("Id","Projet","Campagne","St","T","Groupe","S_Groupe",
                                "Famille","Genre","G_Sp","Larg.Transct","Long.Transct")]),
                         sum)
+  print(dim(dbio.tmp));
+
   dbio <- dbio.tmp
 
   # rajouter les transects N=0 *seulement* lorsque l'espèce

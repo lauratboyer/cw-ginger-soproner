@@ -1,13 +1,19 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-27 07:20:14 Laura>
+# Time-stamp: <2015-01-28 08:12:59 Laura>
+
+refaire.image <- TRUE
+# Lorsque refaire.image <- TRUE on sauvegarde un fichier R
+# avec tous les tableaux/fonctions formattés une fois le chargement
+# terminé. En faisant refaire.image <- FALSE dans une session future,
+# on charge directement ce tableau dans la nouvelle session R (et donc
+# on peut sauver du temps vu qu'on a pas à refaire tout l'import/
+# nettoyage, etc.
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
 ### *** N'oubliez pas d'enregistrer tous les changements ***####
-refaire.image <- FALSE
-charger.codes <- function() {
 
 # Dossier contenant les codes et où les sorties vont être sauvegardées
 dossier.R <<- getwd() # le 'working directory',
@@ -41,9 +47,9 @@ ftempo.defaut <<- "Campagne"
 ############################
 ### 1. Filtre sur ANNEES ###
 ############################
-filtre.annees <<- 2012:2013 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
-                           # exemples de format:
-                           # c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
+filtre.annees <<- 2006:2014 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
+                            # exemples de format:
+                            # c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
 
 #############################
 ### 2. Filtre sur ESPECES ###
@@ -77,6 +83,8 @@ if(filtre.sur.especes) {
 ### (en théorie il n'y a rien à modifier plus bas) ###
 ######################################################
 ######################################################
+charger.codes <- function() {
+
 options('stringsAsFactors'=FALSE) # option générale ôte les colonnes de type "factor" lors de l'import des données
 
 # Crée les dossiers Data/Tableaux/Graphiques dans dossier.R s'ils n'existent pas

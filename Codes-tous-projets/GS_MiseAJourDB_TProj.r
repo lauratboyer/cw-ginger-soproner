@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-26 08:36:57 Laura>
+# Time-stamp: <2015-01-28 08:29:28 Laura>
 
 # Sujet: Ce code importe les bases de données multi-projets
 # et nettoie les champs au besoin (notamment en ôtant les accents)
@@ -45,7 +45,8 @@ type.tbl <- c("inv","data.LIT","typo.LIT","data.quad","poissons","bioeco","trans
 
   dmm <- sapply(obj.files, function(on)
                 file.copy(paste(dossier.DB,on,sep="//"),
-                          paste(dossier.donnees,on,sep="//")))
+                          paste(dossier.donnees,on,sep="//"),
+                          overwrite=TRUE))
 
   DBinf.now <- lapply(type.tbl,function(x)
                     file.info(paste(dossier.DB,obj.files[x],sep="/"))$mtime)
