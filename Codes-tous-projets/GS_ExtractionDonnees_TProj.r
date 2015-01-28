@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-29 07:53:33 Laura>
+# Time-stamp: <2015-01-29 08:40:27 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -549,21 +549,30 @@ prep.analyse <- function(check.typo=TRUE) {
 
   # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
   # "inclure" ou "exclure" / unité taxonomique / nom
-  def.filtre.especes <<- function(aF="tous") {
+  def.filtre.especes <<- function(taxoF.incl, taxoF.utaxo, taxoF.nom) {
 
-    if(aF == "tous") {
+    if(taxoF.incl == "tous") {
        taxoF.incl <<- "inclure"
        taxoF.utaxo <<- "Groupe"
        taxoF.nom <<- "Tous"
      } else {
        message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
-    taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
-    mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
-    taxoF.utaxo <<- capitalize(tolower(readline(mm)))
+       if(missing(taxoF.incl)) {
+         taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
+       }else{ taxoF.incl <<- tolower(taxoF.incl)}
+
+       if(missing(taxoF.utaxl)) {
+         mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
+         taxoF.utaxo <<- capitalize(tolower(readline(mm)))
+       }else{ taxoF.utaxo <<- capitalize(tolower(taxoF.utaxo)) }
+
        if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Groupe"
        if(taxoF.utaxo == "Espece") taxoF.utaxo <<- "G_Sp"
-    taxoF.nom <<- readline("Nom? ")
-    taxoF.nom <<- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
+
+       if(missing(taxoF.nom)) {
+         taxoF.nom <<- readline("Nom? ")
+         taxoF.nom <<- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
+       }else{ taxoF.nom <<- capitalize(tolower(taxoF.nom)) }
   }
 }
   # Fonction qui permet de sélectionner un fichier .csv pour importer
