@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-28 08:36:21 Laura>
+# Time-stamp: <2015-01-29 07:53:33 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -408,7 +408,7 @@ prep.analyse <- function(check.typo=TRUE) {
 
   creerFiltre <<- function(qAnnees) {
 
-    if(length(qAnnees)==1) stop("Attention: spécifier 2 années ou plus")
+    if(length(qAnnees)==1) stop("Attention: spécifiez 2 années ou plus")
     tb <- unique(dbio[,c("St","Campagne")])
     tb$echtl <- 1
     tb2 <- cast(tb, St ~ Campagne, value="echtl")
@@ -439,15 +439,13 @@ prep.analyse <- function(check.typo=TRUE) {
     return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T <- T_AeS_inv))
   }
 
-  filtre.Camp <<- creerFiltre(filtre.annees)
-
   ###################################################
   ######## Fonctions génériques #####################
   # Définition de fonctions qui seront utilisées couramment dans le code
 
   # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <<- function(wtable, wfiltre) {
-    if(wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv")) { # appliquer le filtre si spécifié
+    if((length(filtre.annees)>1) & (wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv"))) { # appliquer le filtre si spécifié
       message(paste("Stations filtrees par",wfiltre))
       filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
 
@@ -456,7 +454,13 @@ prep.analyse <- function(check.typo=TRUE) {
                      wtable,by="key", drop.x="key")
       dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
   } else {
-    CmpTag <- paste(filtre.annees,collapse="|")
+    if(wfiltre %in% c("A","S")) {
+    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
+  } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
+    wfiltre <- gsub("._(.)_.*","\\1",wfiltre)
+    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
+  } else {
+    CmpTag <- paste(filtre.annees,collapse="|") }
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
     dd.filt <- wtable[wtable$Campagne %in% wCampKeep,]
     }

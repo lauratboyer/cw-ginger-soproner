@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2015-01-26 07:45:52 Laura>
+# Time-stamp: <2015-01-29 07:28:31 Laura>
 
 # Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 ########################################################
@@ -8,7 +8,8 @@
 # Densité
 POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                            par.transect=FALSE,
-                           agtaxo="G_Sp", wZeroT=FALSE, save=FALSE) {
+                           agtaxo="G_Sp", wZeroT=FALSE,
+                           filt.camp="X", save=FALSE) {
 
   ################################
   departFunk() # message de depart
@@ -16,9 +17,12 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
   ################################
 
   ### 1. ########################################################
-  ### Appliquer filtres taxonomiques
+  ### Appliquer filtres
+  ### Filtre campagne:
+  d1 <- filtreTable(dpoissons, filt.camp) # filtre années seulement pour l'instant
+
   ### Filtre espèces -- défini dans les options générales
-  ds.calc <- filtreTaxo(dpoissons, action=taxoF.incl,
+  ds.calc <- filtreTaxo(d1, action=taxoF.incl,
                           taxtype=taxoF.utaxo, taxnom=taxoF.nom)
   if(!wZeroT) ds.calc <- ds.calc[ds.calc$N>0,] # ôter zéros
 
@@ -70,14 +74,13 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 
     if(save) {
 
-
+      ftag <- paste("_Filtre-",filt.camp,"_",sep="")
       fact.tag <- paste(fspat,ftemp,sep="-",collapse="-")
-      print(fact.tag)
       fact.tag <- paste(fact.tag, ifelse(par.transect,"-T",""), sep="")
       taxotag <- taxotagFunk()
 
-    write.csv(BDtable,file=paste(tabl.dir,"Poissons_DensBio_",
-                       agtaxo, taxotag, "_", fact.tag, "_",
+    write.csv(BDtable,file=paste(tabl.dir,"Poissons_DensBio",
+                       ftag, agtaxo, taxotag, "_", fact.tag, "_",
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
   }
 

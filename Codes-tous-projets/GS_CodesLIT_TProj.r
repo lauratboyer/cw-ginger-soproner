@@ -38,8 +38,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT") {
     # Option d'appliquer un filtre sur le tableau final
     # filt.camp a la valeur "A" ou "S"
       if(filt.camp %in% c("A","S")) {
-          wf <- paste("T",filt.camp,"LIT",sep="_") # colonne du filtre
-          DL <- filtreTable(DL, wf) }
+          DL <- filtreTable(DL, filt.camp) }
     LIT.transect.info <- unique(DL[,c("Campagne","St",smpl)])
 
     # 2. Rajouter infos sur les coraux
