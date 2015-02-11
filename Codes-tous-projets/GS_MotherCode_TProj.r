@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-28 08:12:59 Laura>
+# Time-stamp: <2015-02-12 09:31:19 Laura>
 
 refaire.image <- TRUE
 # Lorsque refaire.image <- TRUE on sauvegarde un fichier R
@@ -27,6 +27,9 @@ setwd(dossier.R)
 ## 'Facteurs_...' à mettre disponible pour les analyses
 facteurs.spatio <<- c("Geomorpho","N_Impact","Cote","Lieu")
 facteurs.tempo <<- c("Période.BACI","Saison")
+facteurs.taxo <<- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
+                       poissons=c("Famille","Genre","G_Sp","GTlabel","moblabel","Peche","Cible"),
+                       LIT=c("General","Forme","Acroporidae","Sensibilite","Famille","Genre"))
 
 ############################################
 ## Valeurs par défaut pour l'aggrégation taxonomique,
@@ -54,7 +57,11 @@ filtre.annees <<- 2006:2014 # indiquer quelles années à inclure dans l'analyse
 #############################
 ### 2. Filtre sur ESPECES ###
 #############################
+## a. Filtre famille par défaut (spécifié dans Filtre-taxo_Famille.csv)
+filtre.famille <<- TRUE
 
+#############################
+## b. Général
 filtre.sur.especes <<- FALSE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
 

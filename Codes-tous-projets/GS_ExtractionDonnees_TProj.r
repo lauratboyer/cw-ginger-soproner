@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-01-29 08:40:27 Laura>
+# Time-stamp: <2015-02-12 09:25:36 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -549,19 +549,19 @@ prep.analyse <- function(check.typo=TRUE) {
 
   # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
   # "inclure" ou "exclure" / unité taxonomique / nom
-  def.filtre.especes <<- function(taxoF.incl, taxoF.utaxo, taxoF.nom) {
+  def.filtre.especes <<- function(taxoF.incl="tous", taxoF.utaxo, taxoF.nom) {
 
     if(taxoF.incl == "tous") {
        taxoF.incl <<- "inclure"
        taxoF.utaxo <<- "Groupe"
        taxoF.nom <<- "Tous"
      } else {
-       message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
        if(missing(taxoF.incl)) {
+       message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
          taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
        }else{ taxoF.incl <<- tolower(taxoF.incl)}
 
-       if(missing(taxoF.utaxl)) {
+       if(missing(taxoF.utaxo)) {
          mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
          taxoF.utaxo <<- capitalize(tolower(readline(mm)))
        }else{ taxoF.utaxo <<- capitalize(tolower(taxoF.utaxo)) }
@@ -582,9 +582,10 @@ prep.analyse <- function(check.typo=TRUE) {
   # argument "niveau" défini le niveau taxonique, taxoF.utaxo
   # argument "titre" défini si la première rangée est le nom de la colonne dans le
   # ... fichier .csv (si non, spécifier titre = FALSE)
-  import.filtre.taxo <<- function(niveau="Famille",action="inclure",titre=TRUE,sepval=";") {
+  import.filtre.taxo <<- function(fichier, niveau="Famille",action="inclure",titre=FALSE,sepval=";") {
 
-      lnoms <- read.csv(file.choose(),header=titre,sep=sepval) # sélectionner le fichier dans l'ordi
+    if(missing(fichier)) fichier <- file.choose()
+      lnoms <- read.csv(fichier,header=titre,sep=sepval) # sélectionner le fichier dans l'ordi
       if(class(lnoms)=="data.frame") lnoms <- lnoms[,1]
       lnoms <- capitalize(tolower(trim(lnoms))) # nettoyer format des noms
       taxoF.incl <<- action
@@ -662,6 +663,7 @@ prep.analyse <- function(check.typo=TRUE) {
   ###################################################
   ###################################################
   # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
+  if(filtre.famille) import.filtre.taxo("Filtre-taxo_Famille.csv","Famille")
   info.transect.TProj <<- info.spat.temp
   dpoissons.TProj <<- data.poissons
   dbio.TProj <<- dbio

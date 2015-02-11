@@ -50,20 +50,14 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
       tb.St <- aggr.multi(list(dens.par.t$D,
                         as.list(dens.par.t[,ff.St]), mean.sd))
 
-      ### Si l'aggrégation spatiale est plus élevée que la station,
-      ### on fait la moyenne des valeurs par station pour fspat
-      ### Densité moyenne(SD) by Campagne/St/Groupe taxo ###############
-      ### Faire moyenne sur stations par aggrégration spatiale fspat
-      if(!("St" %in% fspat)) {
-
         if(wZeroSt) {
           ### Rajouter les zéros sur les stations/campagnes où l'espèce
           ### n'a pas été observée sur l'aggrégation spatiale
           fact.vals <- sapply(ff.St, function(fct) unique(tb.St[,fct]))
           all.fact.df <- do.call(expand.grid, fact.vals)
-
           tb.St.1 <- merge(tb.St, all.fact.df, all.y=TRUE)
-          tb.St.1$Moy[is.na(tb.St.1$Moy)] <- tb.St.1$ET[is.na(tb.St.1$Moy)] <- 0
+          tb.St.1$Moy[is.na(tb.St.1$Moy)] <- 0
+
           # Oter les combinaisons de Campagne/St non-échantillonées
           # (vu que pas toutes les stations ont été échantl à chaque campagne)
           St.Camp <- unique(dbio[,ff.St[ff.St != agtaxo]])
@@ -71,6 +65,12 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
           t1 <- tb.St
     }
 
+     ### Si l'aggrégation spatiale est plus élevée que la station,
+      ### on fait la moyenne des valeurs par station pour fspat
+      ### Densité moyenne(SD) by Campagne/St/Groupe taxo ###############
+      ### Faire moyenne sur stations par aggrégration spatiale fspat
+
+      if(!("St" %in% fspat)) {
         tb.all <- aggr.multi(list(list("dens.moy"=tb.St$Moy),
                         as.list(tb.St[,ff]), mean.sd))
         } else { tb.all <- tb.St }
