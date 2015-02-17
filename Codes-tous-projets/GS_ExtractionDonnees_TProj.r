@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-12 09:25:36 Laura>
+# Time-stamp: <2015-02-17 14:08:31 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -304,6 +304,7 @@ prep.analyse <- function(check.typo=TRUE) {
   # commencer par oter les rangées N=0 pour eliminer les stations
   # où l'espèce n'est observée sur aucun T
   dbio <- dbio[dbio$N > 0,]
+
   # collater les rangées où la même espèce est observée plusieurs fois
   # sur le même transect
   dbio.tmp <- aggregate(list(N=dbio$N),
@@ -312,41 +313,8 @@ prep.analyse <- function(check.typo=TRUE) {
                         sum)
   dbio <- dbio.tmp
 
-  # rajouter les transects N=0 *seulement* lorsque l'espèce
-  ### est observée sur la ST mais pas tous les transects
-  # créer identifiant unique pour chaque combinaison campagne/st/espèce observée
-  dbio$uID <- paste(dbio$Projet,dbio$Campagne,dbio$St,dbio$G_Sp,sep="_")
-  # on commence par identifier les espèces identifiées au moins une fois
-  ### par station/campagne:
-  dbio.uID <- unique(dbio[,c("Projet","Campagne","St","G_Sp","uID")])
-  # on crée un tableau avec les noms des transects échantillonés
-  ### sur chaque combinaison stations x
-  ### campagne (vu que certaines campagnes ont T02 et T04)
-  dbio.allT <- unique(dbio[,c("Id","Projet","Campagne","St","T")])
-  # on merge ces deux tableaux ensemble pour associer des densités
-  ### nulles aux espèces identifiées
-  # sur une station mais pas sur tous les transects
-  allT.uID <- merge(dbio.allT, dbio.uID, all.x=TRUE)
-  index.dbio <- unique(dbio[,c("uID","Projet","Campagne","St","Groupe","S_Groupe",
-                               "Famille","Genre","G_Sp","Larg.Transct","Long.Transct")])
-  dbio.tmp <- merge(dbio[,c("uID","T","N")],allT.uID,by=c("uID","T"),all.y=TRUE)
-  dbio.tmp$N[is.na(dbio.tmp$N)] <- 0 # valeurs NA remplacées par 0 pour remplir les transects manquants
-  dbio <- merge(dbio.tmp, index.dbio)
-
-
-  ################
-  # Fix Ltrans that are NA
-  if((sum(is.na(dbio$Larg.Transct)) > 0 )|(sum(is.na(dbio$Long.Transct)) > 0 )) {
-    message("Attention certaines largeurs ou longueurs de transect sont manquantes")
-  }
-
-  # Calculer la densité en hectares
-  # Individus/hectares
-  # Larg.transct et Long.transct en mètres
-  dbio$D <- dbio$N/(dbio$Larg.Transct*dbio$Long.Transct) * 10000
-
-  ########################
-  ### Tableaux annexes ###
+  ##############################
+  # on créé l'index des espèces invertébrés (tableau annexe)
 
   # clés noms des invertébrés
   InvGr.Key <- c("Algues","Ascidies","Cnidaires","Crustaces","Echinodermes",
@@ -374,6 +342,50 @@ prep.analyse <- function(check.typo=TRUE) {
   # maintenant que le tableau a une ligne unique par espèce on crée un index en définissant les
   # noms de rangées
   row.names(index.invSp) <- index.invSp$G_Sp
+
+  ###########################
+  ## Densités nulles
+  ### Rajouter les transects N=0 *seulement* lorsque l'espèce
+  ### est observée sur la ST mais pas tous les transects
+  # créer identifiant unique pour chaque combinaison campagne/st/espèce observée
+  dbio$uID <- paste(dbio$Projet, dbio$G_Sp, sep="_")
+
+  # on commence par identifier les espèces identifiées au moins une fois
+  ### sur un projet:
+  dbio.uID <- unique(dbio[,c("uID","Projet","G_Sp")])
+
+  # longueur/largeur transect, par transect/espèces vu valeur non-uniques sur la même station
+  # en S_2010
+  ll.transect <- unique(dbio[,c("Projet","Campagne","St","T","G_Sp","Larg.Transct","Long.Transct")])
+
+  # on crée un tableau avec les noms de tous les transects échantillonés
+  ### sur chaque combinaison stations x
+  ### campagne (vu que certaines campagnes ont T02 et T04)
+  dbio.allT <- unique(dbio[,c("Id","Projet","Campagne","St","T")])
+
+  # on merge ces deux tableaux ensemble pour associer des densités
+  ### nulles aux espèces identifiées
+  # sur une station mais pas sur tous les transects
+  allT.uID <- merge(dbio.allT, dbio.uID, all.x=TRUE)
+  dbio.tmp <- merge(dbio[,c("uID","Campagne","St","T","N")],
+                    allT.uID, all.y=TRUE)
+  dbio.tmp$N[is.na(dbio.tmp$N)] <- 0 # valeurs NA remplacées par 0 pour remplir les transects manquants
+
+  ## on rajoute le reste des infos taxonomiques via le tableau index invertébrés
+  dbt <- merge(dbio.tmp, index.invSp)
+  dbio <- merge(dbt, ll.transect, all.x=TRUE)
+
+  ################
+  # Fix Ltrans that are NA
+  if((sum(is.na(dbio$Larg.Transct)) > 0 )|(sum(is.na(dbio$Long.Transct)) > 0 )) {
+    message("Attention certaines largeurs ou longueurs de transect sont manquantes")
+  }
+
+  # Calculer la densité en hectares
+  # Individus/hectares
+  # Larg.transct et Long.transct en mètres
+  dbio$D <- dbio$N/(dbio$Larg.Transct*dbio$Long.Transct) * 10000
+  dbio$D[is.na(dbio$D)] <- 0
 
   ################
   # Rajouter les infos transects aux tableaux de données principaux:

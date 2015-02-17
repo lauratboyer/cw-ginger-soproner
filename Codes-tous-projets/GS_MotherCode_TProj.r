@@ -1,8 +1,8 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-12 09:31:19 Laura>
+# Time-stamp: <2015-02-12 10:17:13 Laura>
 
-refaire.image <- TRUE
+refaire.image <- FALSE
 # Lorsque refaire.image <- TRUE on sauvegarde un fichier R
 # avec tous les tableaux/fonctions formattés une fois le chargement
 # terminé. En faisant refaire.image <- FALSE dans une session future,
