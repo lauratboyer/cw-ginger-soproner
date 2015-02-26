@@ -1,0 +1,446 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage[utf8]{inputenc}
+\usepackage{parskip}
+\input{/Users/Laura/Projects/misc-ressources/Laura's-latex-tools.tex}
+\newcommand{\mcode} {\texttt{GS\_MotherCode\_TProj.r}{ }}
+\begin{document}
+
+{\Large \textbf{Description des codes R développés pour les analyses
+    des données d'échantillonage}}\\
+Auteur: Laura Tremblay-Boyer, contact: lauratboyer@gmail.com\\
+Nouméa le 25 février 2015\\
+
+
+
+\section{Survol: une session en exemple}
+Pour une illustration rapide de l'utilisation des codes, vous
+trouverez ci-dessous une série de \texttt{Commandes R} ainsi que les
+\emph{explications} pour les arguments donnés. Toutes ces fonctions et
+arguments sont expliqués en détails dans les sections suivantes.\\
+
+\texttt{> source(GS\_MotherCode\_TProj.r)} \\
+
+\texttt{> selection.projet()}\\
+\emph{KNS\_KONIAMBO, par défaut, voir \texttt{nom.projets()} pour les autres options}\\
+
+\texttt{> facteurs.tempo}\\
+\texttt{[1] "Période.BACI" "Saison"}\\
+\emph{Valeurs disponibles pour l'aggrégation temporelle, voir aussi \texttt{facteurs.spatio} et \texttt{facteurs.taxo}.}\\
+
+%obj1 <- INV.dens.gnrl( par.transect=TRUE)
+
+\texttt{> obj1 <- INV.dens.gnrl(fspat="Cote",agtaxo="Famille",
+  filt.camp="A", save=TRUE)}\\
+\emph{Densité moyenne (et ET) par Côte et Campagne (vu que l'argument
+\texttt{ftemp} n'a pas été spécifié, on utilise l'aggrégation
+temporelle par défaut, voir objet \hl{\texttt{ftempo.defaut}}). Le
+tableau a été sauvegardé dans le dossier KNS\_KONIAMBO/Tableaux}\\
+
+\texttt{> obj2 <- INV.biodiv.gnrl(ftemp=c("Saison","Campagne"),unit.base="St")}\\
+\emph{Shannon, H et d (moyenne et ET), richesse taxonomique (totale, moyenne
+et ET) par saison et station, en utilisant la station comme unité de
+base (donc tous transects aggréés)  (l'argument
+\texttt{fspat} n'a pas été spécifié, donc l'aggrégation spatiale est
+sur les stations \hl{\texttt{fspat.defaut}})
+Mettre \texttt{ftemp=c(`Saison','Campagne')} fera l'aggrégation par
+campagne et saison (mais vu que chaque campagne n'apparaît que dans
+une saison ça ne fait que rajouter une colonne et les densités ne
+changent pas), \texttt{fspat =
+  c(`Geomorpho',`Cote',`St')} fera l'aggrégation spatiale par
+station, côte et géomorphologie, \texttt{fspat =
+  c(`Geomorpho',`N\_Impact')} fera l'aggrégation par géomorphologie et
+zone d'impact, mais ici vu qu'il y a plus qu'une zone d'impact par
+géomorphologie les densités seront différentes.}
+
+\texttt{> obj3 <- POIS.dens.gnrl(fspat=`Geomorpho', agtaxo=`moblabel')}\\
+\emph{VERIFIER POURQUOI NA EN DENS}
+
+\texttt{> facteurs.taxo\$LIT}\\
+\texttt{[1] "General"     "Forme"       "Acroporidae" "Sensibilite"
+  "Famille" "Genre" }\\
+\emph{Types de catégorie LIT disponible pour rafiner les analyses avec
+l'argument \texttt{LIT.cat}}
+
+\texttt{> obj4 <- LIT.couvrtr.gnrl(LIT.cat=`Acroporidae')}\\
+\emph{Couverture (moyenne et ET) des Acroporidae/non-Acroporidae sur
+  les transects LIT par station et campagne (\texttt{fspat} et
+  \texttt{ftemp} n'ayant pas été spécifiés, les valeurs pas défaut
+  sont utilisées)}\\
+
+\texttt{> obj5 <- Quad.couvrtr.gnrl(fspat=`Geomorpho')}\\
+\emph{Couverture (moyenne et ET) par catégorie LIT générale (valeur
+  par défaut de \texttt{LIT.cat}) sur
+  les quadrats par géomorphologie et campagne}\\
+
+\section{Lancement initial}
+La dernière version des codes peut être téléchargée sous le lien suivant:
+
+Repérez le dossier 'Codes-tous-projets' et transférez-le à l'emplacement d'où vous
+voulez lancer et sauvegarder vos analyses. Ouvrir
+R et définir le répertoire courant à cet emplacement avec la commande
+\texttt{setwd()}, ou en allant dans Fichier \ra Changer le répertoire courant...\\
+\texttt{setwd(`.../Codes-tous-projets')}, en remplacant ``...''
+par la trajectoire appropriée.  Par exemple si
+'Codes-tous-projets' est placé sur le bureau, le répertoire courant
+devrait être défini comme suit:\\
+\texttt{setwd(`C:/Users/gilbert/Desktop/Codes-tous-projets')}.
+
+Pour confirmer que le changement a bien été fait, tapez
+\texttt{getwd()} et confirmez que le retour correspond bien au dossier
+voulu.
+
+*** Si vous recevez un message d'erreur du genre:
+\texttt{'Erreur dans getwd('...'): impossible de changer le répertoire
+  de travail'}, vous avez soit une erreur de frappe, soit
+'Codes-tous-projets' n'est pas situé à l'emplacement spécifié.
+
+Truc: si vous double-cliquez directement sur un des fichiers .r,
+e.g. \mcode, le fichier s'affichera dans R
+Studio et le répertoire de travail sera déjà mis à la valeur du
+dossier contenant le code ouvert.
+
+\section{Chargement des données}
+
+Avant de commencer les analyses, vérifiez dans le fichier
+\texttt{GS\_Mother-code\_TProj.r} la valeur des variables suivantes,
+soit:
+\begin{enumerate}
+\item \hl{\texttt{facteurs.spatio}}: Cet objet contient les variables
+  explicatives spatiales disponibles pour l'analyse (autre que
+  \texttt{St}). Si vous rajoutez des variables dans le fichier
+  \texttt{Facteurs\_spatiaux.csv}, vous devrez rajouter le nom de la
+  nouvelle colonne dans cet objet pour que la variable soit prise en
+  compte. En tout temps dans la session R vous pouvez consultez la
+  valeur de cet objet pour voir les options qui peuvent être passées à
+  l'argument \texttt{fspat} des fonctions d'analyses.
+\item \hl{\texttt{facteurs.tempo}}: Comme pour les facteurs spatiaux,
+  mais pour les variables explicatives temporelles (autre que
+  'Campagne') disponibles dans le fichier
+  \texttt{Facteurs\_temporels.csv}. Ces variables peuvent être données
+  en argument sous \texttt{ftemp} dans les fonctions d'analyses.
+\item \hl{\texttt{facteurs.taxo}}: Cet objet contient les valeurs
+  disponibles pour les aggrégations taxonomiques (argument
+  \texttt{ftaxo}) selon le groupe invertébrés, poissons ou LIT. Il
+  existe purement pour un but
+  informatif, donc vous ne devriez pas à avoir le changer (mais si
+  vous le faites cela n'affectera pas les analyses).
+\item \hl{\texttt{fspat.defaut}}, \hl{\texttt{ftempo.defaut}} et
+  \hl{\texttt{ftempo.defaut}}: Valeurs par défaut des facteurs
+  spatiaux, temporels, et taxonomiques, utilisées lorsque les
+  arguments \texttt{fspat}, \texttt{ftemp} ou \texttt{agtaxo} ne sont
+  pas spécifiés en argument. Vous pouvez changez la valeur de ces
+  objets selon vos préférences pour les analyses.
+\item \hl{\texttt{filtre.annees}}: Un filtre sur les années pour
+  l'analyse peut être spécifié ici mais je vous conseille de garder
+  cette valeur à toutes les années (donc, \texttt{2006:2014}) quand vous
+  initialisez les codes, et la changer ensuite manuellement dans la
+  console R en tapant: \texttt{filtre.annees <- 2013}
+
+\item \hl{\texttt{filtre.famille}}: Gardez cette valeur à
+  \texttt{TRUE} pour appliquer automatiquement sur les invertébrés le
+  filtre sur les familles spécifiées dans le ficher
+  \texttt{Filtre-taxo\_Famille.csv}, sinon changez la valeur à
+  \texttt{FALSE}.
+
+\item \hl{\texttt{filtre.sur.especes}}: un filtre taxonomique peut
+  être spécifié manuellement ici. Voir section \ref{ftaxo} pour les
+  autres options.
+\end{enumerate}
+
+Une fois les valeurs des
+variables changées (au besoin), sauvegardez les changements et
+initialisez le chargement des fonctions R et des données avec la commande: \\
+\texttt{source('GS\_Mother-code\_TProj.r')}\\
+
+Ce code lance automatiquement la fonction \hllb{\texttt{import.tableaux()}},
+qui importe les bases de données dans R, et la fonction
+\hllb{\texttt{prep.analyse()}} qui nettoie les données pour l'analyse.
+
+% si le chargement a déjà été fait vous pouvez sauvegarder une image...
+\section{Filtre taxonomique} \label{ftaxo}
+
+Le filtre sur espèces est défini par trois objets:
+
+\begin{enumerate}
+  \item \hl{\texttt{taxoF.incl}} spécifie si les noms donnés devraient être
+    exclus (\texttt{`exclure'}) ou inclus (\texttt{`inclure'}) dans
+    l'analyse.
+  \item \hl{\texttt{taxoF.utaxo}} contient le niveau taxonomique à laquelle
+    l'inclusion (ou l'exclusion) est faite, e.g. G\_Sp, Genre,
+    Famille, S\_Groupe ou Groupe.
+   \item \hl{\texttt{taxoF.nom}} contient la liste des noms des membres du
+     niveau \texttt{taxoF.utaxo} sur laquelle l'action
+     \texttt{taxoF.incl} sera portée.
+\end{enumerate}
+
+Une fois la session lancée, pour voir la valeur des filtres
+présentement enregistrée, tapez \hllb{\texttt{voir.filtre.taxo()}} dans la
+console R.
+
+Vous avez plusieurs options pour changer la valeur du filtre:
+
+\begin{itemize}
+\item[--] Pour un lancement des codes complètement automatique, mettez dans
+\mcode l'option \texttt{filtre.sur.especes =  TRUE} et modifiez
+directement les valeurs des objets
+\texttt{taxoF.incl}, \texttt{taxoF.utaxo} et \texttt{taxoF.nom}. *** Ces
+valeurs peuvent aussi être modifiée manuellement dans la console R une
+fois que \mcode{} est lancé.***
+\item[--] \label{impFtaxo}Si vous avez une liste de noms à importer
+d'un fichier .csv, utilisez la fonction \texttt{import.filtre.taxo()}
+et spécifiez en argument \texttt{niveau=`...'} pour le niveau
+taxonomique désiré et \texttt{action=exclure'} si cette action est
+désirée (par défaut la fonction spécifie
+\texttt{taxoF.incl='inclure'}. Pour voir le format approprié au
+fichier .csv, référez-vous au fichier \texttt{Filtre-taxo\_Famille.csv}
+\item[--] Finalement vous pouvez aussi utiliser
+la fonction \texttt{def.filtre.especes()} pour définir intéractivement
+sous R les valeurs du filtre, comme suit:
+
+
+\texttt{$>$ def.filtre.especes.def("Inclure")}
+
+\indent \texttt{\color{MidnightBlue} Unité taxonomique? (Groupe/Sous-Groupe/Famille/Genre/Espece)} \\
+\indent \indent \texttt{Groupe}\\
+\\
+\indent \texttt{\color{MidnightBlue} Nom?} \\
+\indent \indent \texttt{Crustaces, Mollusques, Echinodermes}\\
+\end{itemize}
+
+Pour éliminer le fitre sur espèces, faites
+\texttt{def.filtre.especes()} dans la console R, sans arguments.
+
+\section{Sélection du projet}
+
+\ra \textbf{Cette étape est essentielle aux lancements des codes, sinon vous
+aurez une erreur R.}\\
+
+Une fois les données chargées et nettoyées, vous devez sélectionner le
+projet à utiliser. Pour voir les noms de projet disponibles, faites:\\
+
+\hllb{\texttt{nom.projets()}} \\
+
+Vous pourrez sélectionner un de ces projets pour les analyses avec la
+fonction \hllb{\texttt{selection.projet()}}, par exemple:\\
+
+\texttt{selection.projet(`ADECAL\_TOUHO')}\\
+
+Si vous ne donnez pas d'arguments à cette fonction, la valeur définie
+par défaut est `KNS\_KONIAMBO'. Veillez à utiliser exactement le même
+format défini sous \texttt{nom.projets()}.
+
+En tout temps vous pouvez voir la valeur du projet en cours en tapant
+la variable \hl{\texttt{projet}} dans la console R.
+
+À noter que lorsqu'un projet est sélectionné, un dossier est
+automatiquement créé (si non-existant) à l'intérieur du dossier
+\texttt{Codes-tous-projets} pour sauvegarder les sorties tableaux ou
+graphiques. Les bases de données sont filtrées pour ne conserver que
+les tableaux pertinents au projet en cours, et mises dans les tableaux
+\hl{\texttt{dbio}} pour les invertébrés, \hl{\texttt{dpoissons}} pour les
+poissons, \hl{\texttt{dLIT}} pour les LIT et \hl{\texttt{dQuad}} pour les quadrats.
+
+\section{Début des analyses}
+
+Les fonctions suivantes font le calcul de la densité/couverture
+moyenne et de l'écart type sur les aggrégations spatiales, temporelles
+et taxonomiques définies en argument:
+\begin{enumerate}
+\item \hlyel{INV.dens.gnrl()}: fspat, ftemp, ftaxo
+\item Pois.dens.gnrl(): fspat, ftemp, ftaxo
+\item LIT.couvrt.gnrl(): fspat, ftemp, LIT.cat
+\item Quad.couvrt.gnrl(): fspat, ftemp, LIT.cat
+\end{enumerate}
+
+Pour toutes les fonctions vous pouvez spécifiez `A' ou `S' à
+l'argument \texttt{filt.camp} pour ne conservez que les campagnes
+annuelles ou semestrielles, respectivement.
+
+Pour voir les arguments disponibles pour n'importe quelle fonction (et leurs valeurs
+par défaut), utilisez la fonction \texttt{formals()}, e.g:
+
+\texttt{formals(INV.dens.gnrl)}
+
+%Pour lancer une fonction de calcul, utilisez ... Pour utiliser les
+%résultats dans R assignez la fonction à un objet.
+
+Pour sauvegarder les calculs dans un tableau et les
+visualiser/utiliser sous R, assignez la fonction à
+un objet. Pour sauvegarder le tableau, spécifiez l'argument
+\texttt{'save=TRUE'}. Par exemple: \\
+
+\texttt{obj1 $<-$ INV.dens.gnrl() \# tableau contenu dans `obj1'}\\
+\texttt{INV.dens.gnrl(save=TRUE) \# tableau sauvegardé mais non-visible dans R}\\
+\texttt{obj1 $<-$ INV.dens.gnrl(save=TRUE) \# tableau contenu dans `obj1'}\\
+
+\section{Invertébrés}
+
+Fichier: \texttt{GS\_CodesInvertebres\_TProj.r}\\
+Tableau formatté: \hl{\texttt{dbio}}\\
+Fonctions:\\
+\indent (1) \texttt{INV.dens.gnrl()}:  mesures de densité\\
+\indent (2) \texttt{INV.biodiv.gnrl()}:  métriques de biodiversité\\
+
+Les arguments \hl{\texttt{fspat}} et \hl{\texttt{ftemp}} définisent les facteurs
+spatiaux et temporels d'aggrégation, respectivement, alors que
+\hl{\texttt{agtaxo}} défini
+le niveau taxonomique sur lequel les densités sont calculées. Les
+valeurs par défaut pour ces arguments sont
+`St', `Campagne' et `Groupe' (modifiables dans
+\texttt{GS\_mother-code\_TProj.r}). Donc,
+lancer \texttt{INV.dens.gnrl()} sans arguments spécifiques produira une moyenne (ET)
+de la densité par groupe par station par campagne, alors que
+\texttt{INV.dens.gnrl(fspat='Geomorpho', ftemp='Saison', agtaxo='Famille')}
+produira ces mêmes statistiques mais par famille, géomophologie et
+saison.
+
+Pour avoir les valeurs par transect, donc sans aggrégation, utilisez
+l'argument \hl{\texttt{`par.transect = TRUE'}}.
+
+Abondances nulles: \hl{\texttt{wZeroT = TRUE}} (valeur par défaut) conserve
+les abondances nulles sur tous les transects et campagnes où une
+espèce n'a pas été observée. \hl{\texttt{wZeroSt = TRUE}} (mis à
+\texttt{FALSE} par défaut) garde les abondances nulles sur les
+stations même lorsque \texttt{wZeroT = FALSE}. Ça peut être utile si vous
+voulez calculez les densités moyennes observées en excluant les
+abondances nulles, mais quand même voir les stations où l'espèce n'a
+été observée sur aucun des transects. Changer la valeur de
+\texttt{wZeroSt} n'affectera le résultat seulement lorsque
+\texttt{wZeroT = FALSE}.
+
+Les arguments sont les mêmes pour \texttt{INV.biodiv.gnrl()}, à part qu'il n'y
+pas d'aggrégation taxonomique \texttt{ftaxo}. Les métriques sont calculées à
+l'échelle de l'espèce en utilisant soit le transect (valeur par
+défaut, \hl{\texttt{unit.base = `T'}}) ou la station
+(\hl{\texttt{unit.base = `St'}}) comme unité de
+base pour le calcul. Les richesses spécifiques sont calculées à toutes
+les échelles taxonomiques.
+
+\section{Poissons}
+Fichier: \texttt{GS\_CodesPoissons\_TProj.r}\\
+\texttt{POIS.dens.gnrl()}: mesures de densité, biomasse, taille
+moyenne et richesse spécifique\\
+
+La fonction \texttt{POIS.dens.gnrl()} produit les analyses pour
+les poissons. Les arguments principaux sont les mêmes que pour les
+statistiques sur
+les invertébrés, à part que l'argument \hl{\texttt{`agtaxo'}} peut-être utilisé
+pour spécifier une échelle taxonomique ou une charactéristique
+écologique, e.g. \texttt{agtaxo=`moblabel'} rendra les statisques par
+type de mobilité comme spécifié dans le tableau Bioeco. Pour conserver
+les abondances nulles sur les transects vous utilisez, comme pour les
+invertébrés, \hl{\texttt{wZeroT = TRUE}} (valeur par
+défaut). A noter que \texttt{wZeroSt} n'est pas disponible pour les
+poissons vu qu'il n'y a qu'un transect par station dans la grande majorité
+des cas.
+
+\section{LIT et Quadrats}
+Fichier: \texttt{GS\_CodesLIT\_TProj.r}\\
+\texttt{LIT.couvrt.gnrl()} et \texttt{Quad.couvrt.gnrl()}: couverture
+moyenne par typologie LIT
+
+Les statistiques LIT/Quadrat peuvent être obtenues avec les fonctions
+\texttt{LIT.couvrt.gnrl()} et \texttt{Quad.couvrt.gnrl()}. L'argument
+\hl{\texttt{LIT.cat}} spécifie
+le type de catégorie LIT utilisé pour l'aggrégation (défini dans le
+tableau `Type\_LIT.csv'). Les arguments \hl{\texttt{fspat}} et
+\hl{\texttt{ftemp}} sont utilisés comme ci-dessus. Note: pour avoir les
+données brutes par transect/quadrat, sans aggrégation, vous pouvez
+utiliser les fonctions \texttt{LIT.tableau.brut()} et
+\texttt{Quad.tableau.brut()}.
+
+\section{Abondances nulles}
+Invertébrés: Par défaut, lorsqu'une espèce est observée sur certains
+transects seulement d'une station/campagne, on rajoute une abondance
+nulle pour l'espèce pour les transects manquants de la campagne (donc,
+pas d'abondances nulles pour les campagnes précédentes si l'espèce
+était absente).
+
+\section{Trucs pour trouver la source de l'erreur}
+
+Avant tout travail de détective, commencez par vous assurez que vous
+n'avez faites aucune erreur de frappe (!) et/ou spécification du
+répertoire de travail.
+
+S'il y a un bug lors du lancement des codes (initialement ou dans les
+analyses subséquentes), commencez par identifier la fonction où le bug
+apparaît. Typiquement ça sera indiqué dans le message d'erreur
+(e.g. \texttt{Erreur dans la fonction LIT.couvrt.gnrl()}). Sinon
+regardez bien le message pour identifier un des objets où l'erreur
+prend place, e.g. \\
+
+\texttt{Error in data.frame(t1[, colcl != "matrix"], t1.sub)
+\hl{(from con\#756)}}\\
+
+nous indique qu'il y a une commande, quelque part dans les codes, où
+la ligne suivante est utilisée: \texttt{data.frame(t1[, colcl !=
+  "matrix"], t1.sub)}, possiblement sur la ligne 756 d'un des fichiers
+de code.
+
+La fonction \hllb{\texttt{file.scan()}} permet de retrouver le fichier R où
+une certaine ligne de code apparaît, comme suit: \\
+\texttt{> file.scan("data.frame(t1"))}\\
+\texttt{[1] "GS\_ExtractionDonnees\_TProj.r"}\\
+
+... et effectivement si je vais vers la ligne 756 de ce fichier, je
+retrouve cette commande, qui se trouve en fait dans une fonction
+s'appelant \texttt{aggr.multi()}. (Notez que la fonction \texttt{file.scan()}
+ne vient avec R par défaut mais est définie lors du lancement initial
+des codes.)
+
+Alternativement, si vous connaissez déjà le nom de la fonction où le
+bug prend place, vous pouvez utilisez la fonction
+\hllb{\texttt{debugonce(...)}}:\\
+\texttt{> debugonce(prep.analyse)}\\
+
+... qui vous permettra de lancer les commandes ligne par ligne (vous
+devrez peser sur la touche retour pour que la ligne suivante soit
+lancée dans la console), et donc identifier la ligne exacte où le bug
+prend place.
+
+Une fois la ligne identifiée, examinez les objets utilisés dans la
+commande. En continuant avec l'exemple précédent, vous pourriez
+faire:\\
+\texttt{> debugonce(aggr.multi)}\\
+et relancer la commande initiale qui avait produit le bug. Lorsque la
+fonction arrivera à l'étape d'utilisation de \texttt{aggr.multi()}
+elle devrait s'arrêter et vous faire passer par chaque ligne. Quand
+vous reconnaissez la ligne où le bug s'est produit, avant de peser sur
+la touche RETOUR, examinez en détail la commande...
+\texttt{ t1.fn = data.frame(t1[,colcl!="matrix"], t1.sub)}
+Ici on sélectionne les colonnes \texttt{colcl} dans le tableau
+\texttt{t1}, et on le joint avec le tableau \texttt{t1.sub}. Vu que le
+message d'erreur disait:\\
+\texttt{arguments imply differing number of rows: 564, 0}\\
+on peut se douter que \texttt{t1} et \texttt{t1.sub} n'ont pas le même
+nombre de rangées... et effectivement lorsqu'on vérifie avec les
+commandes \texttt{nrow(t1); nrow(t1.sub)} c'est bien le
+cas. \texttt{t1.sub} est vide. L'étape suivante est de trouver où
+\texttt{t1.sub} est crée, et de vérifier pourquoi il est vide... et
+ainsi de suite. Tant que vous y allez étape par étape vous allez
+trouver la source du bug, et deviendrez plus efficace avec la pratique
+dans l'interprétation du message d'erreur. Ici, la commande initiale
+ayant causée le bug était: \\
+\texttt{> LIT.couvrt.gnrl(LIT.cat="hop")}\\
+et éventuellement vous auriez trouvez que \texttt{t1.sub} est vide
+parce qu'il n'y pas de catégorie s'appellant `hop' dans les tableaux LIT.
+
+Finalement, il y a plusieurs fonctionalités pour `débugger' à explorer
+dans RStudio.
+
+\begin{comment}
+\section{Informations supplémentaires}
+\subsection{Fichiers de code R requis}
+
+%GS\_MotherCode\_TProj.r
+%GS\_MisesAJourDB\_TProj.r
+%GS\_ExtractionDonnees\_TProj.r
+%GS\_Selection-Donnees-Par-Projet.r
+%GS\_CodesInvertebres\_TProj.r
+%GS\_CodesPoissons\_TProj.r
+%GS\_CodesLIT\TProj.r
+
+\end{comment}
+
+\end{document}

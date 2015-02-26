@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-17 14:08:31 Laura>
+# Time-stamp: <2015-02-27 08:13:26 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -257,6 +257,10 @@ prep.analyse <- function(check.typo=TRUE) {
                      "Code_SP","Long.Transct","T","N","L","D1","D2")
   data.poissons2 <- merge(pt.all, data.poissons[,poissons.coln], all.x=TRUE)
   data.poissons2$N[is.na(data.poissons2$N)] <- 0 # abondance à zero si non-observée
+  data.poissons2$D1[is.na(data.poissons2$D1)] <- 0 # ... et les autres paramètres aussi
+  data.poissons2$D2[is.na(data.poissons2$D2)] <- 0 # ... pour que biomasse et densité
+  data.poissons2$L[is.na(data.poissons2$L)] <- 0 # ... soit à zero
+
   data.poissons3 <- merge(data.poissons2, index.Poissons[,c("Code_SP","G_Sp","Genre","Famille")], all.x=TRUE)
   # ... rajoute les coeff a et b pour calculs de biomasse
   print(sprintf("Code_SP manquants dans tableau bioeco et ôtés de l'analyse: %s",
@@ -570,21 +574,26 @@ prep.analyse <- function(check.typo=TRUE) {
      } else {
        if(missing(taxoF.incl)) {
        message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
-         taxoF.incl <<- tolower(readline("Inclure ou exclure? "))
-       }else{ taxoF.incl <<- tolower(taxoF.incl)}
+         taxoF.incl <- tolower(readline("Inclure ou exclure? "))
+       }else{ taxoF.incl <- tolower(taxoF.incl)}
 
        if(missing(taxoF.utaxo)) {
          mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
-         taxoF.utaxo <<- capitalize(tolower(readline(mm)))
-       }else{ taxoF.utaxo <<- capitalize(tolower(taxoF.utaxo)) }
+         taxoF.utaxo <- capitalize(tolower(readline(mm)))
+       }else{ taxoF.utaxo <- capitalize(tolower(taxoF.utaxo)) }
 
-       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <<- "S_Groupe"
-       if(taxoF.utaxo == "Espece") taxoF.utaxo <<- "G_Sp"
+       taxoF.utaxo <- taxoF.utaxo
+       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <- "S_Groupe"
+       if(taxoF.utaxo == "Espece") taxoF.utaxo <- "G_Sp"
 
        if(missing(taxoF.nom)) {
-         taxoF.nom <<- readline("Nom? ")
-         taxoF.nom <<- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
-       }else{ taxoF.nom <<- capitalize(tolower(taxoF.nom)) }
+         taxoF.nom <- readline("Nom? ")
+         taxoF.nom <- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
+       }else{ taxoF.nom <- capitalize(tolower(taxoF.nom)) }
+
+       taxoF.incl <<- taxoF.incl
+       taxoF.utaxo <<- taxoF.utaxo
+       taxoF.nom <<- taxoF.nom
   }
 }
   # Fonction qui permet de sélectionner un fichier .csv pour importer

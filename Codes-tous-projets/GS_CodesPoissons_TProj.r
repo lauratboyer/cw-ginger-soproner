@@ -1,14 +1,15 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2015-01-29 07:28:31 Laura>
+# Time-stamp: <2015-02-20 08:42:24 Laura>
 
 # Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 ########################################################
 ########################################################
 # Densité
 POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
+                           agtaxo="G_Sp",
                            par.transect=FALSE,
-                           agtaxo="G_Sp", wZeroT=FALSE,
+                           wZeroT=TRUE,
                            filt.camp="X", save=FALSE) {
 
   ################################

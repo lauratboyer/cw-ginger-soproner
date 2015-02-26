@@ -1,14 +1,7 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-12 10:17:13 Laura>
+# Time-stamp: <2015-02-23 07:52:44 Laura>
 
-refaire.image <- FALSE
-# Lorsque refaire.image <- TRUE on sauvegarde un fichier R
-# avec tous les tableaux/fonctions formattés une fois le chargement
-# terminé. En faisant refaire.image <- FALSE dans une session future,
-# on charge directement ce tableau dans la nouvelle session R (et donc
-# on peut sauver du temps vu qu'on a pas à refaire tout l'import/
-# nettoyage, etc.
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -40,6 +33,7 @@ facteurs.taxo <<- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
 agtaxo.defaut <<- "Groupe"
 fspat.defaut <<- "St"
 ftempo.defaut <<- "Campagne"
+
 ################################################################
 ### Contenu du code:
 ### 1. Filtre années
@@ -65,7 +59,7 @@ filtre.famille <<- TRUE
 filtre.sur.especes <<- FALSE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
 
-    ## Modifiez les valeurs pour le filtre sur espèces ici!!!
+    ## Modifiez les valeurs pour le filtre sur espèces ici!!! Voir ***
     ## Ces valeurs sont prises en compte seulement lorsque:
     ## filtre.sur.especes = TRUE
     ## Voir aussi la fonction def.filtre.especes() pour définir ces valeurs
@@ -73,6 +67,7 @@ if(filtre.sur.especes) {
     ## filtrer directement d'un fichier .csv et la fonction voir.filtre.taxo()
     ## pour voir les valeurs présentement enregistrées
 
+    ## *** Valeurs à modifier, les trois lignes suivantes ***
        taxoF.incl <<- "inclure" # Inclure ou exclure le niveau taxonomique donnée?
        taxoF.utaxo <<- "Groupe" # Niveau taxonomique ciblé
        taxoF.nom <<- c("Crustaces","Mollusques","Echinodermes") # Nom des membres à inclure ou exclure
@@ -94,7 +89,9 @@ charger.codes <- function() {
 
 options('stringsAsFactors'=FALSE) # option générale ôte les colonnes de type "factor" lors de l'import des données
 
-# Crée les dossiers Data/Tableaux/Graphiques dans dossier.R s'ils n'existent pas
+# Crée le dossier Data dans dossier.R s'ils n'existent pas
+# Ce dossier contient une copie des données utilisées pour faire
+# l'analyse
 dir.create("Data",FALSE)
 dossier.donnees <<- paste(dossier.R,"/Data/",sep="")
 
@@ -115,14 +112,13 @@ source.with.encoding("GS_CodesInvertebres_TProj.r",encoding="UTF-8") # contient 
 source.with.encoding("GS_CodesPoissons_TProj.r",encoding="UTF-8") # lance les codes poissons
 source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes LIT
 
-
 # si l'objet "data.read" n'existe pas, ou data.read existe
 # mais a la valeur "FALSE"
 # (ré)extraire et (re)formatter les données
 if(!(exists("data.read"))) { import.tableaux()
                          } else { if(!data.read) import.tableaux() }
 # (par défaut import.tableaux() lance la fonction prep.analyse()
-# ... une fois les tableaux importés de la DB DropBox)
+# ... une fois les tableaux importés)
 
 }
 
@@ -135,11 +131,19 @@ if(class(lp2)=="try-error") {
       install.packages("Rcpp") # installe reshape si requis
 library(Rcpp)}
 
-
 charger.db <- function() {
 aa <- try(load(file="Objets-DB-Codes-R.Rdata"))
 if(class(aa)=="try-error") message("\nLe fichier R 'Objects-DB-Codes-R.Rdata' n'existe pas; \nlancer d'abord GS_MotherCode_TProj.r avec refaire.image = TRUE")
 }
+
+refaire.image <- TRUE
+# (Pas encore implémenté)
+# Lorsque refaire.image <- TRUE on sauvegarde un fichier R
+# avec tous les tableaux/fonctions formattés une fois le chargement
+# terminé. En faisant refaire.image <- FALSE dans une session future,
+# on charge directement ce tableau dans la nouvelle session R (et donc
+# on peut sauver du temps vu qu'on a pas à refaire tout l'import/
+# nettoyage, etc.
 
 if(refaire.image) {
 charger.codes()
