@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-23 07:52:44 Laura>
+# Time-stamp: <2015-04-28 07:39:39 Laura>
 
 
 ################################################################
@@ -44,7 +44,7 @@ ftempo.defaut <<- "Campagne"
 ############################
 ### 1. Filtre sur ANNEES ###
 ############################
-filtre.annees <<- 2006:2014 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
+filtre.annees <<- 2006:2015 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
                             # exemples de format:
                             # c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
 

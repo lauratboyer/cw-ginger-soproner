@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{fullpage}
 \usepackage[utf8]{inputenc}
+\usepackage{hyperref}
 \usepackage{parskip}
 \input{/Users/Laura/Projects/misc-ressources/Laura's-latex-tools.tex}
 \newcommand{\mcode} {\texttt{GS\_MotherCode\_TProj.r}{ }}
@@ -11,22 +12,31 @@
 Auteur: Laura Tremblay-Boyer, contact: lauratboyer@gmail.com\\
 Nouméa le 25 février 2015\\
 
+\section{À compléter}
+table des matières
+vérifier format couleurs
+relecture finale
 
+\clearpage
+\tableofcontents
 
 \section{Survol: une session en exemple}
 Pour une illustration rapide de l'utilisation des codes, vous
 trouverez ci-dessous une série de \texttt{Commandes R} ainsi que les
-\emph{explications} pour les arguments donnés. Toutes ces fonctions et
+\emph{explications} pour les arguments donnés. Ces fonctions et
 arguments sont expliqués en détails dans les sections suivantes.\\
 
 \texttt{> source(GS\_MotherCode\_TProj.r)} \\
+\emph{On commence par charger les données et les fonctions sous R.}\\
 
 \texttt{> selection.projet()}\\
-\emph{KNS\_KONIAMBO, par défaut, voir \texttt{nom.projets()} pour les autres options}\\
+\emph{Sélection du projet à analyser, KNS\_KONIAMBO par défaut, voir
+  \texttt{nom.projets()} pour les autres options}\\
 
 \texttt{> facteurs.tempo}\\
 \texttt{[1] "Période.BACI" "Saison"}\\
-\emph{Valeurs disponibles pour l'aggrégation temporelle, voir aussi \texttt{facteurs.spatio} et \texttt{facteurs.taxo}.}\\
+\emph{Valeurs disponibles pour l'aggrégation temporelle, voir aussi
+  \texttt{facteurs.spatio} et \texttt{facteurs.taxo}.}\\
 
 %obj1 <- INV.dens.gnrl( par.transect=TRUE)
 
@@ -40,9 +50,9 @@ tableau a été sauvegardé dans le dossier KNS\_KONIAMBO/Tableaux}\\
 \texttt{> obj2 <- INV.biodiv.gnrl(ftemp=c("Saison","Campagne"),unit.base="St")}\\
 \emph{Shannon, H et d (moyenne et ET), richesse taxonomique (totale, moyenne
 et ET) par saison et station, en utilisant la station comme unité de
-base (donc tous transects aggréés)  (l'argument
+base (donc tous transects agrégés)  (l'argument
 \texttt{fspat} n'a pas été spécifié, donc l'aggrégation spatiale est
-sur les stations \hl{\texttt{fspat.defaut}})
+sur les stations \hl{\texttt{fspat.defaut}}).
 Mettre \texttt{ftemp=c(`Saison','Campagne')} fera l'aggrégation par
 campagne et saison (mais vu que chaque campagne n'apparaît que dans
 une saison ça ne fait que rajouter une colonne et les densités ne
@@ -50,11 +60,13 @@ changent pas), \texttt{fspat =
   c(`Geomorpho',`Cote',`St')} fera l'aggrégation spatiale par
 station, côte et géomorphologie, \texttt{fspat =
   c(`Geomorpho',`N\_Impact')} fera l'aggrégation par géomorphologie et
-zone d'impact, mais ici vu qu'il y a plus qu'une zone d'impact par
-géomorphologie les densités seront différentes.}
+zone d'impact, mais ici les densités seront différentes vu qu'il y a
+plus qu'une zone d'impact par géomorphologie.}
 
 \texttt{> obj3 <- POIS.dens.gnrl(fspat=`Geomorpho', agtaxo=`moblabel')}\\
-\emph{VERIFIER POURQUOI NA EN DENS}
+\emph{Densité, biomasse, taille moyenne, richesse spécifique (et ET)
+  par géomorphologie et catégorie de mobilité. Voir
+  facteurs.taxo\$poissons pour les autres options d'aggrégation taxonomique.}
 
 \texttt{> facteurs.taxo\$LIT}\\
 \texttt{[1] "General"     "Forme"       "Acroporidae" "Sensibilite"
@@ -74,14 +86,22 @@ l'argument \texttt{LIT.cat}}
   les quadrats par géomorphologie et campagne}\\
 
 \section{Lancement initial}
-La dernière version des codes peut être téléchargée sous le lien suivant:
 
-Repérez le dossier 'Codes-tous-projets' et transférez-le à l'emplacement d'où vous
+La dernière version des codes peut être téléchargée sous le lien
+suivant:\\
+
+\url{https://github.com/lauratboyer/cw-ginger-soproner/archive/master.zip}\\
+
+Repérez le dossier `Codes-tous-projets' et transférez-le à l'emplacement d'où vous
 voulez lancer et sauvegarder vos analyses. Ouvrir
 R et définir le répertoire courant à cet emplacement avec la commande
-\texttt{setwd()}, ou en allant dans Fichier \ra Changer le répertoire courant...\\
-\texttt{setwd(`.../Codes-tous-projets')}, en remplacant ``...''
-par la trajectoire appropriée.  Par exemple si
+\texttt{setwd()}, ou en allant dans Fichier \ra Changer le répertoire
+courant...\\
+
+\texttt{setwd(`.../Codes-tous-projets') \# remplacer ``...''
+par la trajectoire appropriée.}\\
+
+Par exemple si
 'Codes-tous-projets' est placé sur le bureau, le répertoire courant
 devrait être défini comme suit:\\
 \texttt{setwd(`C:/Users/gilbert/Desktop/Codes-tous-projets')}.
@@ -91,7 +111,7 @@ Pour confirmer que le changement a bien été fait, tapez
 voulu.
 
 *** Si vous recevez un message d'erreur du genre:
-\texttt{'Erreur dans getwd('...'): impossible de changer le répertoire
+\texttt{`Erreur dans getwd(`...'): impossible de changer le répertoire
   de travail'}, vous avez soit une erreur de frappe, soit
 'Codes-tous-projets' n'est pas situé à l'emplacement spécifié.
 
@@ -126,7 +146,7 @@ soit:
   informatif, donc vous ne devriez pas à avoir le changer (mais si
   vous le faites cela n'affectera pas les analyses).
 \item \hl{\texttt{fspat.defaut}}, \hl{\texttt{ftempo.defaut}} et
-  \hl{\texttt{ftempo.defaut}}: Valeurs par défaut des facteurs
+  \hl{\texttt{agtaxo.defaut}}: Valeurs par défaut des facteurs
   spatiaux, temporels, et taxonomiques, utilisées lorsque les
   arguments \texttt{fspat}, \texttt{ftemp} ou \texttt{agtaxo} ne sont
   pas spécifiés en argument. Vous pouvez changez la valeur de ces
@@ -158,7 +178,7 @@ qui importe les bases de données dans R, et la fonction
 \hllb{\texttt{prep.analyse()}} qui nettoie les données pour l'analyse.
 
 % si le chargement a déjà été fait vous pouvez sauvegarder une image...
-\section{Filtre taxonomique} \label{ftaxo}
+\subsection{Filtre taxonomique} \label{ftaxo}
 
 Le filtre sur espèces est défini par trois objets:
 
@@ -211,7 +231,7 @@ sous R les valeurs du filtre, comme suit:
 Pour éliminer le fitre sur espèces, faites
 \texttt{def.filtre.especes()} dans la console R, sans arguments.
 
-\section{Sélection du projet}
+\subsection{Sélection du projet}
 
 \ra \textbf{Cette étape est essentielle aux lancements des codes, sinon vous
 aurez une erreur R.}\\
@@ -247,10 +267,11 @@ Les fonctions suivantes font le calcul de la densité/couverture
 moyenne et de l'écart type sur les aggrégations spatiales, temporelles
 et taxonomiques définies en argument:
 \begin{enumerate}
-\item \hlyel{INV.dens.gnrl()}: fspat, ftemp, ftaxo
-\item Pois.dens.gnrl(): fspat, ftemp, ftaxo
-\item LIT.couvrt.gnrl(): fspat, ftemp, LIT.cat
-\item Quad.couvrt.gnrl(): fspat, ftemp, LIT.cat
+\item hop
+\item \hllb{\texttt{INV.dens.gnrl()}}: fspat, ftemp, ftaxo
+\item \hllb{\texttt{Pois.dens.gnrl()}}: fspat, ftemp, ftaxo
+\item \hllb{\texttt{LIT.couvrt.gnrl()}}: fspat, ftemp, LIT.cat
+\item \hllb{\texttt{Quad.couvrt.gnrl()}}: fspat, ftemp, LIT.cat
 \end{enumerate}
 
 Pour toutes les fonctions vous pouvez spécifiez `A' ou `S' à
@@ -258,7 +279,7 @@ l'argument \texttt{filt.camp} pour ne conservez que les campagnes
 annuelles ou semestrielles, respectivement.
 
 Pour voir les arguments disponibles pour n'importe quelle fonction (et leurs valeurs
-par défaut), utilisez la fonction \texttt{formals()}, e.g:
+par défaut), utilisez la fonction \hllb{\texttt{formals()}}, e.g:
 
 \texttt{formals(INV.dens.gnrl)}
 
@@ -319,6 +340,8 @@ les échelles taxonomiques.
 
 \section{Poissons}
 Fichier: \texttt{GS\_CodesPoissons\_TProj.r}\\
+Tableau formatté: \hl{\texttt{dpoissons}}\\
+Fonctions:\\
 \texttt{POIS.dens.gnrl()}: mesures de densité, biomasse, taille
 moyenne et richesse spécifique\\
 
@@ -337,8 +360,10 @@ des cas.
 
 \section{LIT et Quadrats}
 Fichier: \texttt{GS\_CodesLIT\_TProj.r}\\
+Tableaux formattés: \hl{\texttt{...}}\\
+Fonctions:\\
 \texttt{LIT.couvrt.gnrl()} et \texttt{Quad.couvrt.gnrl()}: couverture
-moyenne par typologie LIT
+moyenne par typologie LIT\\
 
 Les statistiques LIT/Quadrat peuvent être obtenues avec les fonctions
 \texttt{LIT.couvrt.gnrl()} et \texttt{Quad.couvrt.gnrl()}. L'argument
@@ -351,7 +376,9 @@ utiliser les fonctions \texttt{LIT.tableau.brut()} et
 \texttt{Quad.tableau.brut()}.
 
 \section{Abondances nulles}
-Invertébrés: Par défaut, lorsqu'une espèce est observée sur certains
+A partir du moment où une espèce est observée sur un transect pour un
+projet, une abondance nulle est rajoutér sur tous les transects,
+stations et campagnes où l'espèce est absente. Ceci est valide pour   pro sur certains
 transects seulement d'une station/campagne, on rajoute une abondance
 nulle pour l'espèce pour les transects manquants de la campagne (donc,
 pas d'abondances nulles pour les campagnes précédentes si l'espèce

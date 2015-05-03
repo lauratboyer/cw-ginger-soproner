@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-02-27 08:13:26 Laura>
+# Time-stamp: <2015-05-02 17:01:43 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -478,7 +478,9 @@ prep.analyse <- function(check.typo=TRUE) {
   } else {
     CmpTag <- paste(filtre.annees,collapse="|") }
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-    dd.filt <- wtable[wtable$Campagne %in% wCampKeep,]
+
+    dd.filt <- data.frame(filter(wtable, Campagne %in% wCampKeep))
+
     }
 
     if(nrow(dd.filt)==0) warning(
@@ -556,7 +558,7 @@ prep.analyse <- function(check.typo=TRUE) {
                     paste(sort(taxnom),collapse=", ")),collapse=" :: "))
 
       if(tolower(action) == "inclure") { # inclusion des groupes X
-      wtable <- wtable[wtable[,taxtype] %in% taxnom,]
+      wtable <- wtable %>% filtre(taxtype %in% taxnom)
       } else { # exclusion des groupes X
       wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}}
 
@@ -800,3 +802,14 @@ typo.finder <- function(vect, typo.sensi=2, tag, ote.prem=TRUE) {
 
 # Extraire nom du projet du champ 'Id'
 id2proj <- function(x) toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*", "\\1",x))
+
+# Fonctions dplyr:
+s_group_by <- function(.data, ...) {
+  eval.string.dplyr(.data, "group_by", ...) }
+eval.string.dplyr <- function(.data, .fun.name, ...) {
+  args = list(...)
+  args = unlist(args)
+  code = paste0(.fun.name,"(.data,", paste0(args, collapse=","), ")")
+  df = eval(parse(text=code,srcfile=NULL))
+  df
+}

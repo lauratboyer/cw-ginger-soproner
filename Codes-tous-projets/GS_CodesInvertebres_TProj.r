@@ -9,9 +9,10 @@
 INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                           agtaxo=agtaxo.defaut, par.transect=FALSE,
                           filt.camp="X",
-                          wZeroSt=FALSE, wZeroT=TRUE, save=FALSE) {
+                          wZeroSt=FALSE, wZeroT=TRUE, save=FALSE,
+                          silent=FALSE) {
 
-    departFunk() # message de depart
+    if(!silent) departFunk() # message de depart
     on.exit(EM())
 
     ### 1. ########################################################
@@ -19,10 +20,10 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
     # Filtre campagnes -- défini dans les arguments de la fonction
     wf <- paste("T",filt.camp,"inv",sep="_") # formatter nom du filtre
     ta.rawF <- filtreTable(dbio, wf)
+
     # Filtre espèces -- défini dans les options générales
     ta.rawF <- filtreTaxo(ta.rawF, action=taxoF.incl,
                           taxtype=taxoF.utaxo, taxnom=taxoF.nom)
-
     if(!wZeroT) ta.rawF <- ta.rawF[ta.rawF$D > 0,]
 
     ## Densité par transect:
@@ -37,7 +38,12 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
     ## 3a. ########################################
     ### Densité de chaque grtax sur le transect ###
     ff.transect <- unique(c(ff, "Campagne","St", "T"))
-    dens.par.t <- aggregate(list("D"=ta.rawF$D), as.list(ta.rawF[,ff.transect]), sum)
+
+    # using this solution for now
+    # see also:
+    # gb.args <- lapply(ff.transect, as.symbol)
+    # dens.par.t <- ta.rawF %>% group_by_(gb.args) %>% summarize(D=sum(D))
+    dens.par.t <- ta.rawF %>% s_group_by(ff.transect) %>% summarize(D=sum(D))
 
     # on continue si l'aggrégation spatiale n'est pas
     # au niveau du transect
@@ -245,17 +251,28 @@ INV.RS.gnrl <- function(ftemp="Campagne", fspat="St",
 
 ################################################################
 ################################################################
-INV.stats <- function(ftemp="Campagne", fspat="Geomorpho", type.model="aov") {
+INV.stats <- function(form="Geomorpho",
+                      agtaxo="Groupe",
+                      agtaxo.val="Crustaces", ftemp.val="A_2013",
+                      fspat.val,
+                      type.model="aov") {
 
   # aller chercher les données par transect
-  dat.stat <<- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
-                      ftemp=c(facteurs.tempo, "Campagne"), par.transect=TRUE)
+  if(!exists("dat.stat.inv")) {
+  dat.stat.inv <<- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+                      ftemp=c(facteurs.tempo, "Campagne"),
+                             agtaxo=agtaxo, par.transect=TRUE)
+}
+print(agtaxo.val)
+  dstat.now <- dat.stat.inv[dat.stat.inv[,agtaxo]%in% agtaxo.val,]
+  dstat.now <- dstat.now[dstat.now$Campagne %in% ftemp.val,]
+print(head(dstat.now))
+#  formule <- as.formula(sprintf("log(dens+0.01) ~ %s + %s", paste(ftemp, collapse="+"), paste(fspat, collapse="+")))
+ formule <- as.formula(sprintf("log(dens+0.01) ~ %s", form))
 
-  formule <- as.formula(sprintf("log(dens+0.01) ~ %s + %s", paste(ftemp, collapse="+"), paste(fspat, collapse="+")))
+  obj <- do.call(type.model, list(formula=formule, data=dstat.now))
 
-  obj <- do.call(type.model, list(formula=formule, data=dat.stat))
-
-  boxplot(residuals(obj) ~ Campagne, data=dat.stat)
+  #boxplot(residuals(obj) ~ Campagne, data=dat.stat)
 
   obj
 }
