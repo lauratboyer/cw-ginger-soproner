@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-02 17:01:43 Laura>
+# Time-stamp: <2015-05-06 14:23:33 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -36,12 +36,22 @@ prep.analyse <- function(check.typo=TRUE) {
   message("Info.transect Transect extrait du champ Id (et non de la colonne T vu quelques typos)")
   info.transect$T <- toupper(gsub(".*_([A-Za-z][0-9]{2})$","\\1",info.transect$Id))
   info.transect <- unique(info.transect)
+  # Ote Id ADECAL/CAGES EXTERIEURES (cf. mail Tom H 6/5/2015)
+  info.transect <- filter(info.transect, !grepl("ADECAL.*CAGES_[E|I]", Id))
+  info.transect <- info.transect[!duplicated(info.transect$Id),] # ôte les doublons restants
   rownames(info.transect) <- info.transect$Id
 
   ############################################
   ########### Infos temporelles ##############
   info.transect.tempo <- unique(data.info.temprl)
-  info.spat.temp <- merge(info.transect, info.transect.tempo, all=TRUE)
+  rm.all.na <- function(x) !all(is.na(x))
+  print(names(info.transect.tempo ))
+  info.transect.tempo <- info.transect.tempo[,sapply(info.transect.tempo, rm.all.na)]
+  print(names(info.transect.tempo ))
+  # pareil pour facteurs temporels
+  info.transect.tempo <- filter(info.transect.tempo, !grepl("ADECAL.*CAGES_[E|I]", Id))
+  info.transect.tempo <- info.transect.tempo[!duplicated(info.transect.tempo$Id),] # ôte les doublons restants
+  info.spat.temp <- merge(info.transect, info.transect.tempo, by=c("Id","Client","Site"))
   rownames(info.spat.temp) <- info.spat.temp$Id
 
 
@@ -558,11 +568,12 @@ prep.analyse <- function(check.typo=TRUE) {
                     paste(sort(taxnom),collapse=", ")),collapse=" :: "))
 
       if(tolower(action) == "inclure") { # inclusion des groupes X
-      wtable <- wtable %>% filtre(taxtype %in% taxnom)
+        filt.string <- sprintf("%s %%in%% c('%s')", taxtype, paste(taxnom, collapse="', '"))
+        wtable <- wtable %>% filter_(filt.string)
       } else { # exclusion des groupes X
       wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}}
 
-    return(wtable)
+    return(as.data.frame(wtable)) # switch out of dplyr df format
   }
 
   # Fonction interactive utilisée pour définir les variables du filtre sur les espèces

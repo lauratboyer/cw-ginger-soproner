@@ -1,6 +1,6 @@
 # Ginger/Soproner
 # Code pour calcul des densités et indices de biodiversité pour les poissons
-# Time-stamp: <2015-02-20 08:42:24 Laura>
+# Time-stamp: <2015-05-04 07:37:37 Laura>
 
 # Fichiers des données de comptage = dpoissons, produit dans prep.analyse()
 ########################################################
@@ -67,6 +67,23 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
   t1.moy <- t1.moy[,!(names(t1.moy)=="taille.moy.Tot")] # ôte la somme de la taille moyenne
   ds.df <- t1.moy
 }
+
+  # wZeroSt de invertébrés... à adapter pour les poissons
+  #      if(wZeroSt) {
+          ### Rajouter les zéros sur les stations/campagnes où l'espèce
+          ### n'a pas été observée sur l'aggrégation spatiale
+  #        fact.vals <- sapply(ff.St, function(fct) unique(tb.St[,fct]))
+  #        all.fact.df <- do.call(expand.grid, fact.vals)
+  #        tb.St.1 <- merge(tb.St, all.fact.df, all.y=TRUE)
+  #        tb.St.1$Moy[is.na(tb.St.1$Moy)] <- 0
+
+         # Oter les combinaisons de Campagne/St non-échantillonées
+          # (vu que pas toutes les stations ont été échantl à chaque campagne)
+   #       St.Camp <- unique(dbio[,ff.St[ff.St != agtaxo]])
+   #       tb.St <- merge(tb.St.1, St.Camp)
+   #       t1 <- tb.St
+   # }
+
 
   # Richesse spécifique sur l'unité spatiale par défaut (St)
   ff.RS <- ff[!(ff == agtaxo)]

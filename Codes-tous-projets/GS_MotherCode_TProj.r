@@ -1,7 +1,8 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-04-28 07:39:39 Laura>
+# Time-stamp: <2015-05-06 08:26:53 Laura>
 
+*********  A oter cages exterieurs et interieurs adecal
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -111,6 +112,7 @@ source.with.encoding("GS_ExtractionDonnees_TProj.r",encoding="UTF-8") # contient
 source.with.encoding("GS_CodesInvertebres_TProj.r",encoding="UTF-8") # contient la fonction Run.INV.biodiv()
 source.with.encoding("GS_CodesPoissons_TProj.r",encoding="UTF-8") # lance les codes poissons
 source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes LIT
+source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes LIT
 
 # si l'objet "data.read" n'existe pas, ou data.read existe
 # mais a la valeur "FALSE"
@@ -124,12 +126,16 @@ if(!(exists("data.read"))) { import.tableaux()
 
 lp <- try(library(reshape)) # load package reshape
 lp2 <- try(library(Rcpp)) # load package Rcpp
+lp3 <- try(library(dplyr)) # load package dplyr
 if(class(lp)=="try-error") {
       install.packages("reshape") # installe reshape si requis
 library(reshape)}
 if(class(lp2)=="try-error") {
       install.packages("Rcpp") # installe reshape si requis
 library(Rcpp)}
+if(class(lp3)=="try-error") {
+      install.packages("dplyr") # installe reshape si requis
+library(dplyr)}
 
 charger.db <- function() {
 aa <- try(load(file="Objets-DB-Codes-R.Rdata"))

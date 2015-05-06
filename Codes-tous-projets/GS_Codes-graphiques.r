@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: March 15, 2015
-## Time-stamp: <2015-05-02 17:17:56 Laura>
+## Time-stamp: <2015-05-06 08:15:04 Laura>
 
 ## Graphiques à produire:
 ## one variable: barplot
@@ -17,7 +17,7 @@ require(ggplot2)
 fig.etiq <- c(Geomorpho="Géomorphologie", N_Impact="Niveau d'impact",
               dens="Densité moyenne",
               Campagne="Campagne",
-              Saison="Saison")
+              Saison="Saison", St="Station")
 
 geomorpho.lab <- c("Recif barriere externe"="RBE",
                    "Recif barriere interne"="RBI",
@@ -55,11 +55,10 @@ prep.var <- function(wvar, df) {
 }
 
 ###### ###### ###### ###### ###### ###### ###### ###### ######
-fig.2var <- function(var1="Geomorpho", var2="Campagne",
-                     var.expl="dens", filtre,
+fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
                      agtaxo="Groupe", typ.taxo="Crustaces",
                      type.fig="Pas.Panneau",
-                     dat=dat.stat.inv) {
+                     dat=dat.stat.inv, tous.niveaux=TRUE) {
 
   dat <- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
                       ftemp=c(facteurs.tempo, "Campagne"),
@@ -68,45 +67,105 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
 
   dat <- data.frame(dat)
   if(!missing(typ.taxo)) dat <- filter(dat, Groupe %in% typ.taxo)
-  if(!missing(typ.taxo)) dat <- filter_(dat, filtre)
+  if(!missing(filtre)) dat <- filter_(dat, filtre)
 
-#  dat <- data.frame(dat.stat.inv)
   dat$var.expl <- dat[,var.expl]
 
-  dat.plot <- dat %>% s_group_by(var1, var2) %>%
+  dat.plot <- dat %>% s_group_by(var1) %>%
+    summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE))
+
+  dat.plot$vx <- prep.var(var1, dat.plot)
+  dat.plot$v.expl <- dat.plot$mean
+
+  if(tous.niveaux & missing(filtre)) {
+  all.lev <- expand.grid(var1=levels(dat.plot$vx))
+  names(all.lev) <- c("vx")
+  dat.plot <- left_join(all.lev, dat.plot)
+}
+
+  # defining data and main aes/mapping
+  # see also aes_string maybe
+  p1 <- ggplot(data=dat.plot, aes(x=vx, y=v.expl,
+                 ymin=v.expl-sd, ymax=v.expl+sd))
+
+  # defining layers
+  p1 <- p1 + geom_bar(stat="identity", width=0.8,
+                      position=position_dodge(0.95),
+                      fill="dodgerblue2", colour="dodgerblue4")
+
+  # changing display parameters
+  p1 <- p1 +
+    xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
+      theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
+            axis.title.x=element_text(vjust=-1), axis.title.y=element_text(vjust=2)) +
+              guides(fill=guide_legend(title=var1))
+
+#  p1 + geom_point() #position=pd)
+p1
+}
+
+###### ###### ###### ###### ###### ###### ###### ###### ######
+fig.2var <- function(var1="Geomorpho", var2="Campagne",
+                     var3=NULL, var.expl="dens", filtre,
+                     agtaxo="Groupe", typ.taxo="Crustaces",
+                     type.fig="Pas.Panneau",
+                     dat=dat.stat.inv, tous.niveaux=TRUE) {
+
+  dat <- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+                      ftemp=c(facteurs.tempo, "Campagne"),
+                             agtaxo=agtaxo, par.transect=TRUE,
+                                silent=TRUE)
+
+  dat <- data.frame(dat)
+  if(!missing(typ.taxo)) dat <- filter(dat, Groupe %in% typ.taxo)
+  if(!missing(filtre)) dat <- filter_(dat, filtre)
+
+  dat$var.expl <- dat[,var.expl]
+
+  dat.plot <- dat %>% s_group_by(var1, var2, var3) %>%
     summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE))
 
   dat.plot$vx <- prep.var(var1, dat.plot)
   dat.plot$vy <- prep.var(var2, dat.plot)
+  if(!missing(var3)) dat.plot$vz <- prep.var(var3, dat.plot)
   dat.plot$v.expl <- dat.plot$mean
 
-  all.lev <- expand.grid(levels(dat.plot$vx), levels(dat.plot$vy))
+  if(tous.niveaux & missing(filtre)) {
+  all.lev <- expand.grid(var1=levels(dat.plot$vx), var2=levels(dat.plot$vy))
   names(all.lev) <- c("vx","vy")
   dat.plot <- left_join(all.lev, dat.plot)
+}
+
+
 
   # defining data and main aes/mapping
   # see also aes_string maybe
   p1 <- ggplot(data=dat.plot, aes(x=vx, y=v.expl,
                  ymin=v.expl-sd, ymax=v.expl+sd,
                  fill=vy))
+
   #p1 <- ggplot(data=dat.plot, aes(x=vy, y=v.expl,
    #              ymin=v.expl-sd, ymax=v.expl+sd,
     #             fill=vy))
 
   # defining layers
-  p1 <- p1 + geom_bar(stat="identity", width=0.9,
+  p1 <- p1 + geom_bar(stat="identity", width=0.5,
                       position=position_dodge(0.95))
 
   if(type.fig=="Panneau") {
-  p1 <- p1 + aes(x=vy, y=v.expl, fill=vy) + facet_wrap(~ vx) }
+    if(missing(var3)) {
+      p1 <- p1 + aes(x=vy, y=v.expl, fill=vy) + facet_wrap(~ vx)#, scales="free_x")
+    } else {
+      p1 <- p1 + aes(x=vx, y=v.expl, fill=vy) #+ facet_wrap(~ vx)
+      p1 <- p1 + facet_wrap(~ vz, scales="free_x")
+    }
+}
   # changing display parameters
   p1 <- p1 +
     xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
       theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
             axis.title.x=element_text(vjust=-1), axis.title.y=element_text(vjust=2)) +
- guides(fill=guide_legend(title=var2))
-
-
+              guides(fill=guide_legend(title=var2))
 
 #  p1 + geom_point() #position=pd)
 p1
@@ -145,11 +204,16 @@ fig.3var <- function(var1="Geomorpho", var2="Campagne", var3="N_Impact",
               guides(fill=guide_legend(title=var2))
 
   if(type.fig=="Panneau") {
-#    p1 <- p1 + facet_wrap(~ vz, scales="free_x")
-    p1 <- p1 + facet_wrap(~ vz) }
-
+    p1 <- p1 + facet_wrap(~ vz, scales="free_x")
+#    p1 <- p1 + facet_wrap(~ vz) }
+  }
 
 #  p1 + geom_point() #position=pd)
 
-p1
+  p1
 }
+
+###################################
+# Raccourcis pour fonctions ggplot:
+verti.x.val <- theme(axis.text.x = element_text(angle = 90))
+no.x.val <- theme(axis.text.x=element_blank())
