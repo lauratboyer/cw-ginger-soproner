@@ -1,14 +1,12 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-06 08:26:53 Laura>
-
-*********  A oter cages exterieurs et interieurs adecal
+# Time-stamp: <2015-05-06 15:03:42 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
 ### *** N'oubliez pas d'enregistrer tous les changements ***####
-
+à vérifier options pour fenêtre extérieure
 # Dossier contenant les codes et où les sorties vont être sauvegardées
 dossier.R <<- getwd() # le 'working directory',
 # ... ou sinon mettre le nom du dossier désiré, e.g. C:/Documents/Codes_R
@@ -136,6 +134,7 @@ library(Rcpp)}
 if(class(lp3)=="try-error") {
       install.packages("dplyr") # installe reshape si requis
 library(dplyr)}
+library(grid) # installé automatiquement par dplyr
 
 charger.db <- function() {
 aa <- try(load(file="Objets-DB-Codes-R.Rdata"))
