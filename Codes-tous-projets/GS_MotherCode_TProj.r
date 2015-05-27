@@ -1,12 +1,12 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-06 15:03:42 Laura>
+# Time-stamp: <2015-05-28 07:51:31 Laura>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
 ### *** N'oubliez pas d'enregistrer tous les changements ***####
-à vérifier options pour fenêtre extérieure
+message("à vérifier options pour fenêtre extérieure")
 # Dossier contenant les codes et où les sorties vont être sauvegardées
 dossier.R <<- getwd() # le 'working directory',
 # ... ou sinon mettre le nom du dossier désiré, e.g. C:/Documents/Codes_R
@@ -95,7 +95,7 @@ dir.create("Data",FALSE)
 dossier.donnees <<- paste(dossier.R,"/Data/",sep="")
 
 # Importe les fonctions nécéssaires au lancement des analyses
-source.with.encoding <- function (path, encoding, echo = getOption("verbose"), print.eval = echo,
+source.with.encoding <<- function (path, encoding, echo = getOption("verbose"), print.eval = echo,
     max.deparse.length = 150, chdir = FALSE)
 {
     con = file(path, open = "r", encoding = encoding)

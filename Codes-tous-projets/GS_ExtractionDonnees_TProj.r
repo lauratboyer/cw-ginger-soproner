@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-06 14:23:33 Laura>
+# Time-stamp: <2015-05-28 08:12:33 Laura>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -39,21 +39,21 @@ prep.analyse <- function(check.typo=TRUE) {
   # Ote Id ADECAL/CAGES EXTERIEURES (cf. mail Tom H 6/5/2015)
   info.transect <- filter(info.transect, !grepl("ADECAL.*CAGES_[E|I]", Id))
   info.transect <- info.transect[!duplicated(info.transect$Id),] # ôte les doublons restants
+  info.transect <- filter(info.transect, Utilise.analyse == "Oui")
   rownames(info.transect) <- info.transect$Id
 
   ############################################
   ########### Infos temporelles ##############
   info.transect.tempo <- unique(data.info.temprl)
   rm.all.na <- function(x) !all(is.na(x))
-  print(names(info.transect.tempo ))
   info.transect.tempo <- info.transect.tempo[,sapply(info.transect.tempo, rm.all.na)]
-  print(names(info.transect.tempo ))
   # pareil pour facteurs temporels
   info.transect.tempo <- filter(info.transect.tempo, !grepl("ADECAL.*CAGES_[E|I]", Id))
   info.transect.tempo <- info.transect.tempo[!duplicated(info.transect.tempo$Id),] # ôte les doublons restants
+  info.transect.tempo <- filter(info.transect.tempo, Utilise.analyse == "Oui")
   info.spat.temp <- merge(info.transect, info.transect.tempo, by=c("Id","Client","Site"))
   rownames(info.spat.temp) <- info.spat.temp$Id
-
+print(names(info.spat.temp))
 
   # Nettoyer accents noms géométrie -- à reviser vu encodage changé durant import?
   ########### Données LIT ############
@@ -252,6 +252,7 @@ prep.analyse <- function(check.typo=TRUE) {
   # remettre les valeurs de transect au cas où certaines manquaient
   unique.sans.na <- function(x) unique(na.omit(x))
   proj.ltrans <- tapply(data.poissons$Long.Transct, data.poissons$Projet, unique.sans.na)
+  proj.ltrans <- as.numeric(proj.ltrans)
   if(length(unlist(proj.ltrans))!=length(proj.ltrans)) stop("Longueurs de transect différentes par projet")
   data.poissons$Long.Transct <- proj.ltrans[data.poissons$Projet]
 
@@ -411,7 +412,9 @@ prep.analyse <- function(check.typo=TRUE) {
   }
     id2k <- x$Id[(x$Id %in% info.spat.temp$Id)]
     df <- info.spat.temp[x$Id,c("An","Mois",facteurs.spatio,facteurs.tempo)]
-    data.frame(x, df, row.names=NULL)
+    df <- data.frame(x, df, row.names=NULL)
+    df <- df[!is.na(df$An),] # ôte les rangées sans Id dans info.spat.temp
+    # incluant Utilise.analyse == 'Non'
   }
 
   dbio <- add.infos(dbio) # invertébrés
@@ -818,9 +821,9 @@ id2proj <- function(x) toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*", "\\1",x))
 s_group_by <- function(.data, ...) {
   eval.string.dplyr(.data, "group_by", ...) }
 eval.string.dplyr <- function(.data, .fun.name, ...) {
-  args = list(...)
-  args = unlist(args)
-  code = paste0(.fun.name,"(.data,", paste0(args, collapse=","), ")")
-  df = eval(parse(text=code,srcfile=NULL))
+  args <- list(...)
+  args <- unlist(args)
+  code <- paste0(.fun.name,"(.data,", paste0(args, collapse=","), ")")
+  df <- eval(parse(text=code,srcfile=NULL))
   df
 }

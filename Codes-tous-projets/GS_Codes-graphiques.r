@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: March 15, 2015
-## Time-stamp: <2015-05-06 08:15:04 Laura>
+## Time-stamp: <2015-05-28 08:22:44 Laura>
 
 ## Graphiques à produire:
 ## one variable: barplot
@@ -28,7 +28,7 @@ geomorpho.lab <- c("Recif barriere externe"="RBE",
 ## Niveau des variables catégoriques dans l'ordre désiré pour les graphiques
 xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008",
                      "S_2009","A_2009", "S_2010", "A_2010", "S_2011", "A_2011",
-                     "S_2012", "A_2012","S_2013", "A_2013"),
+                     "S_2012", "A_2012","S_2013", "A_2013", "S_2014", "A_2014"),
                      N_Impact=c("Reference","Impact"),
                      Geomorpho=c("Recif barriere externe",
                        "Recif barriere interne",
@@ -45,13 +45,18 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "PI2", "PK4", "PK5", "PO1", "PROC04", "PROC4", "PV3B", "SOP01",
                        "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6"))
 
+# Oter les campagnes au besoin si filtre sur campagne A ou S
+if(!is.na(fCampagne)) xfact.levels$Campagne <- grep(fCampagne, xfact.levels$Campagne, value=TRUE)
+
 ###### ###### ###### ###### ###### ###### ###### ###### ######
 prep.var <- function(wvar, df) {
 
   df <- data.frame(df)
   if(wvar=="Geomorpho.abbrev") col <- geomorpho.lab[df$Geomorpho]
   else col <- df[,wvar]
-  factor(col, levels=xfact.levels[[wvar]], ordered=TRUE)
+  if(!(wvar %in% c("Groupe","S_Groupe","Famille","Genre"))) {
+    factor(col, levels=xfact.levels[[wvar]], ordered=TRUE)
+  } else { factor(col) }
 }
 
 ###### ###### ###### ###### ###### ###### ###### ###### ######
@@ -66,7 +71,7 @@ fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
                                 silent=TRUE)
 
   dat <- data.frame(dat)
-  if(!missing(typ.taxo)) dat <- filter(dat, Groupe %in% typ.taxo)
+  if(!missing(typ.taxo) & !(typ.taxo=="tous")) dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo))
   if(!missing(filtre)) dat <- filter_(dat, filtre)
 
   dat$var.expl <- dat[,var.expl]
@@ -99,14 +104,13 @@ fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
       theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
             axis.title.x=element_text(vjust=-1), axis.title.y=element_text(vjust=2)) +
               guides(fill=guide_legend(title=var1))
-
-#  p1 + geom_point() #position=pd)
 p1
 }
 
 ###### ###### ###### ###### ###### ###### ###### ###### ######
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var3=NULL, var.expl="dens", filtre,
+                     filtre2,
                      agtaxo="Groupe", typ.taxo="Crustaces",
                      type.fig="Pas.Panneau",
                      dat=dat.stat.inv, tous.niveaux=TRUE) {
@@ -117,8 +121,9 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
                                 silent=TRUE)
 
   dat <- data.frame(dat)
-  if(!missing(typ.taxo)) dat <- filter(dat, Groupe %in% typ.taxo)
+  if(!missing(typ.taxo) & typ.taxo!="tous") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo))
   if(!missing(filtre)) dat <- filter_(dat, filtre)
+  if(!missing(filtre2)) dat <- filter_(dat, filtre2)
 
   dat$var.expl <- dat[,var.expl]
 
