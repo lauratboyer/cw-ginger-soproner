@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: March 15, 2015
-## Time-stamp: <2015-05-28 08:22:44 Laura>
+## Time-stamp: <2015-05-28 12:10:45 Laura>
 
 ## Graphiques à produire:
 ## one variable: barplot

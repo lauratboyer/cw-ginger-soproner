@@ -4,7 +4,9 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: November 25, 2014
-## Time-stamp: <2015-05-28 08:08:52 Laura>
+## Time-stamp: <2015-05-28 12:12:02 Laura>
+
+fCampagne <- NA # filtre appliqué sur les campagnes? modifié par selection.projet()
 
 nom.projets <- function() {
   message("ADECAL_TOUHO\nKNS_KONIAMBO\nSLN_THIO\nSLN_KAALA\nSLN_NEPOUI\nSMSP_BORENDI\n")
