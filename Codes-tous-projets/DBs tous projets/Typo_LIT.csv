@@ -1,0 +1,84 @@
+CODE_LIT,All,General,Forme,Acroporidae,Famille,Genre,Sensibilite
+AA,Assemblage d'algues,Algues,NA,NA,NA,NA,NA
+ACB,Acroporidae branchu,Coraux,Corail branchu,Acroporidae,NA,NA,NA
+ACD,Acroporidae digité,Coraux,Corail digité,Acroporidae,NA,NA,NA
+ACE,Acroporidae encroutant,Coraux,Corail encroutant,Acroporidae,NA,NA,NA
+ACS,Acroporidae sub-massif,Coraux,Corail sub-massif,Acroporidae,NA,NA,NA
+ACT,Acroporidae tabulaire,Coraux,Corail tabulaire,Acroporidae,NA,NA,NA
+BLC,Bloc,Abiotique,NA,NA,NA,NA,NA
+CA,Coraline,Coraline,NA,NA,NA,NA,NA
+CB,Corail branchu,Coraux,Corail branchu,Non-acroporidae,NA,NA,NA
+CE,Corail encroutant,Coraux,Corail encroutant,Non-acroporidae,NA,NA,NA
+CF,Corail foliaire,Coraux,Corail foliaire,Non-acroporidae,NA,NA,NA
+CM,Corail massif,Coraux,Corail massif,Non-acroporidae,NA,NA,NA
+CME,Corail millepora,Corail millepora,Corail millepora,NA,NA,NA,NA
+CMR,Corail solitaire,Coraux,Corail solitaire,Non-acroporidae,NA,NA,NA
+CS,Corail sub-massif,Coraux,Corail sub-massif,Non-acroporidae,NA,NA,NA
+CYA,Cyanobactéries,Cyanobactéries,NA,NA,NA,NA,NA
+DC,Coraux morts récemment,Corail mort,NA,NA,NA,NA,NA
+DCA,Coraux morts recouverts d'algues,Corail mort,NA,NA,NA,NA,NA
+DDD,Donnée manquante,Donnée manquante,Donnée manquante,Donnée manquante,NA,NA,NA
+ND,Non determiné,Non determiné,Non determiné,Non determiné,NA,NA,NA
+HA,Halophila,Phanérogames,NA,NA,NA,NA,NA
+HALI,Halimeda,Algues calcaires,NA,NA,NA,NA,NA
+HER,Phanérogames,Phanérogames,NA,NA,NA,NA,NA
+MA,Macro-algues,Algues,NA,NA,NA,NA,NA
+OT,Autre faune,Autre faune,NA,NA,NA,NA,NA
+R,Débris,Abiotique,NA,NA,NA,NA,NA
+RCK,Dalle,Abiotique,NA,NA,NA,NA,NA
+S,Sable,Abiotique,NA,NA,NA,NA,NA
+SC,Coraux mous,Coraux mous,NA,NA,NA,NA,NA
+SI,Vase,Abiotique,NA,NA,NA,NA,NA
+SP,Eponges,Autre faune,NA,NA,NA,NA,NA
+TA,Turf,Algues,Turf,NA,NA,NA,NA
+TADC,Turf sur corail mort anciennement,Algues,Turf,NA,NA,NA,NA
+TAR,Turf sur débris,Algues,Turf,NA,NA,NA,NA
+TARCK,Turf sur dalle,Algues,Turf,NA,NA,NA,NA
+WA,Crevasse,Crevasse,NA,NA,NA,NA,NA
+ZO,Zoanthidae,Autre faune,NA,NA,NA,NA,NA
+ACROB,Acropora branchu,Coraux,Corail branchu,Acroporidae,Acroporidae,Acropora,1
+ACROD,Acropora digité,Coraux,Corail digité,Acroporidae,Acroporidae,Acropora,1
+ACROT,Acropora tabulaire,Coraux,Corail tabulaire,Acroporidae,Acroporidae,Acropora,1
+ASTREOCE,Astreopora encroutant,Coraux,Corail encroutant,Acroporidae,Acroporidae,Astreopora,2
+CLADIELA,Cladiela,Coraux mous,Coraux mous,NA,Alcyoniidae,Cladiela,NA
+COSCI,Coscinaraea encroutant,Coraux,Corail encroutant,Non-acroporidae,Siderastreidae,Coscinaraea,2
+CYPHACE,Cyphastrea encroutant,Coraux,Corail encroutant,Non-acroporidae,Merulinidae,Cyphastrea,2
+ECHINOPHY,Echinophyllia encroutant,Coraux,Corail encroutant,Non-acroporidae,Pectinidae,Echinophyllia,2
+ECHINOPO,Corail branchu,Coraux,Corail branchu,Non-acroporidae,Merulinidae,Echinopora,2
+FAVIACM,Favia massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Dipsastrea,2
+FAVITESCM,Favites massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Favites,2
+FUNGIA,Fungia solitaire,Coraux,Corail solitaire,Non-acroporidae,Fungiidae,Fungia,2
+GALAX,Galaxea sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Oculinidae,Galaxea,2
+GARDINO,Gardinoseris sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Agariciidae,Gardinoseris,2
+GONIACM,Goniastrea massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Goniastrea,2
+GONIACS,Goniastrea sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Merulinidae,Goniastrea,2
+GONIO,Goniopora massif,Coraux,Corail massif,Non-acroporidae,Poritidae,Goniopora,2
+HYDNOCB,Hydnophora branchu,Coraux,Corail branchu,Non-acroporidae,Merulinidae,Hydnophora,2
+HYDNOCE,Hydnophora encroutant,Coraux,Corail encroutant,Non-acroporidae,Merulinidae,Hydnophora,2
+LEPTACM,Leptastrea massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Leptastrea,2
+LEPTOCM,Leptoria massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Leptoria,2
+LOBOPHYLLIA,Lobophyllia massif,Coraux,Corail massif,Non-acroporidae,Lobophyllidae,Lobophyllia,2
+LOBOPHYTUM,Lobophytum,Coraux mous,Coraux mous,NA,Alcyoniidae,Lobophytum,NA
+MERUCE,Merulina encroutant,Coraux,Corail encroutant,Non-acroporidae,Merulinidae,Merulina,2
+MONTCE,Montipora encroutant,Coraux,Corail encroutant,Acroporidae,Acroporidae,Montipora,2
+MONTCS,Montipora sub-massif,Coraux,Corail sub-massif,Acroporidae,Acroporidae,Montipora,2
+MYCEDIUM,Mycedium foliaire,Coraux,Corail foliaire,Non-acroporidae,Pectinidae,Mycedium,2
+OULO,Oulophyllia massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Oulophyllia,2
+PACHYCE,Pachyseris encroutant,Coraux,Corail encroutant,Non-acroporidae,Agariciidae,Pachyseris,2
+PAVOCS,Pavona sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Agariciidae,Pavona,2
+PECTICS,Pectinia sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Pectinidae,Pectinia,2
+PLATYCM,Platygyra massif,Coraux,Corail massif,Non-acroporidae,Merulinidae,Platygyra,2
+POCILLOCS,Pocillopora sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Pocilloporidae,Pocillopora,2
+PORICB,Porites branchu,Coraux,Corail branchu,Non-acroporidae,Poritidae,Porites,2
+PORICM,Porites massif,Coraux,Corail massif,Non-acroporidae,Poritidae,Porites,2
+PSAMOCS,Psammocora submassif,Coraux,Corail sub-massif,Non-acroporidae,Siderastreidae,Psammocora,2
+RHYT,Rhytisma,Coraux mous,Coraux mous,NA,Alcyoniidae,Rhytisma,NA
+SARCO,Sarcophytum,Coraux mous,Coraux mous,NA,Alcyoniidae,Sarcophytum,NA
+SINU,Sinularia,Coraux mous,Coraux mous,NA,Alcyoniidae,Sinularia,NA
+STYLO,Stylophora submassif,Coraux,Corail sub-massif,Non-acroporidae,Pocilloporidae,Stylophora,2
+TURBICF,Turbinaria foliaire,Coraux,Corail foliaire,Non-acroporidae,Dendrophyllidae,Turbinaria,2
+UNKNOWN1,Unkown1,Coraux,Corail massif,Non-acroporidae,Autre,Unkown1,NA
+UNKNOWN2,Unkown2,Coraux,Corail submassif,Non-acroporidae,Autre,Unkown2,NA
+UNKNOWN3,Unknown3,Coraux,Corail encroutant,Non-acroporidae,Merulinidae,Unknown3,NA
+CTEN,Ctenactis,Coraux,Corail solitaire,Non-acroporidae,Fungiidae,Ctenactis,2
+PORISM,Porites sub-massif,Coraux,Corail sub-massif,Non-acroporidae,Poritidae,Porites,2
