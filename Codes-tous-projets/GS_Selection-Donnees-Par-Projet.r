@@ -4,7 +4,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: November 25, 2014
-## Time-stamp: <2015-05-28 12:12:02 Laura>
+## Time-stamp: <2015-05-29 14:42:44 Laura>
 
 fCampagne <- NA # filtre appliqué sur les campagnes? modifié par selection.projet()
 
@@ -53,6 +53,9 @@ selection.projet <- function(x="KNS_KONIAMBO", filtre.Campagne) {
   dQuad <<- filt.funk(dQuad.TProj)
 
   if(x=="ADECAL_TOUHO") message("Pas de données INV disponibles")
+  # et on re-source le code graphique pour changer les valeurs
+  # des niveaux de campagne, au besoin
+  source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8")
 }
 
 
