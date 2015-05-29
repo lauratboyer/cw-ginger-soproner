@@ -3,7 +3,7 @@
 ## -------------------------------------------------------
 ## Author: Laura Tremblay-Boyer (l.boyer@fisheries.ubc.ca)
 ## Written on: March 15, 2015
-## Time-stamp: <2015-05-28 12:10:45 Laura>
+## Time-stamp: <2015-05-29 08:17:32 Laura>
 
 ## Graphiques à produire:
 ## one variable: barplot
@@ -42,7 +42,7 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "KNS02", "KNS04", "KNS05", "KNS06", "KNS31", "KO4", "LG1B", "LG2B",
                        "LG5B", "LG6B", "LG7B", "LR1", "LR2", "LR3", "OBRK3", "OBRK4",
                        "OBRK5A", "OF1C", "OF2C", "OF3C", "OF4C", "OF9", "PD4B", "PD5B",
-                       "PI2", "PK4", "PK5", "PO1", "PROC04", "PROC4", "PV3B", "SOP01",
+                       "PI2", "PK4", "PK5", "PO1", "PROC4", "PV3B",
                        "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6"))
 
 # Oter les campagnes au besoin si filtre sur campagne A ou S
@@ -112,8 +112,9 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var3=NULL, var.expl="dens", filtre,
                      filtre2,
                      agtaxo="Groupe", typ.taxo="Crustaces",
-                     type.fig="Pas.Panneau",
-                     dat=dat.stat.inv, tous.niveaux=TRUE) {
+                     panneau=NULL,
+                     dat=dat.stat.inv, tous.niveaux=TRUE,
+                     typ.fig="barre", ...) {
 
   dat <- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
                       ftemp=c(facteurs.tempo, "Campagne"),
@@ -127,12 +128,13 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
 
   dat$var.expl <- dat[,var.expl]
 
-  dat.plot <- dat %>% s_group_by(var1, var2, var3) %>%
+  dat.plot <- dat %>% s_group_by(var1, var2, var3, panneau) %>%
     summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE))
 
   dat.plot$vx <- prep.var(var1, dat.plot)
   dat.plot$vy <- prep.var(var2, dat.plot)
   if(!missing(var3)) dat.plot$vz <- prep.var(var3, dat.plot)
+  if(!is.null(panneau)) dat.plot$panneau <- prep.var(panneau, dat.plot)
   dat.plot$v.expl <- dat.plot$mean
 
   if(tous.niveaux & missing(filtre)) {
@@ -141,27 +143,27 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
   dat.plot <- left_join(all.lev, dat.plot)
 }
 
-
+  # objet avec les données pour le graph
+  fig.dat <<- dat.plot
 
   # defining data and main aes/mapping
   # see also aes_string maybe
-  p1 <- ggplot(data=dat.plot, aes(x=vx, y=v.expl,
-                 ymin=v.expl-sd, ymax=v.expl+sd,
-                 fill=vy))
+  p0 <- ggplot(data=dat.plot, aes(x=vx, y=v.expl,
+                 ymin=v.expl-sd, ymax=v.expl+sd))
 
-  #p1 <- ggplot(data=dat.plot, aes(x=vy, y=v.expl,
-   #              ymin=v.expl-sd, ymax=v.expl+sd,
-    #             fill=vy))
+  if(typ.fig=="barre") {
+    p1 <- p0 + aes(fill=vy)
+    p1 <- p1 + geom_bar(stat="identity", width=0.5,
+                      position=position_dodge(0.95), ...)
+  } else {
+    p1 <- p0 + aes(group=vy, colour=vy) + geom_line(...) }
 
-  # defining layers
-  p1 <- p1 + geom_bar(stat="identity", width=0.5,
-                      position=position_dodge(0.95))
 
-  if(type.fig=="Panneau") {
+  if(!is.null(panneau)) {
     if(missing(var3)) {
-      p1 <- p1 + aes(x=vy, y=v.expl, fill=vy) + facet_wrap(~ vx)#, scales="free_x")
+      p1 <- p1  + facet_wrap(~ panneau)#, scales="free_x")
     } else {
-      p1 <- p1 + aes(x=vx, y=v.expl, fill=vy) #+ facet_wrap(~ vx)
+   #   p1 <- p1 + aes(x=vx, y=v.expl, fill=vy) #+ facet_wrap(~ vx)
       p1 <- p1 + facet_wrap(~ vz, scales="free_x")
     }
 }
@@ -169,8 +171,10 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
   p1 <- p1 +
     xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
       theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
-            axis.title.x=element_text(vjust=-1), axis.title.y=element_text(vjust=2)) +
-              guides(fill=guide_legend(title=var2))
+            axis.title.x=element_text(vjust=-1),
+            axis.title.y=element_text(vjust=2)) +
+              guides(fill=guide_legend(title=var2),
+                     col=guide_legend(title=var2))
 
 #  p1 + geom_point() #position=pd)
 p1
@@ -220,5 +224,8 @@ fig.3var <- function(var1="Geomorpho", var2="Campagne", var3="N_Impact",
 
 ###################################
 # Raccourcis pour fonctions ggplot:
+fig.2lign <- function(...) fig.2var(..., typ.fig="ligne")
 verti.x.val <- theme(axis.text.x = element_text(angle = 90))
 no.x.val <- theme(axis.text.x=element_blank())
+
+fig.2var() + geom_errorbar()
