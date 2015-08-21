@@ -19,12 +19,12 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 
   ### 1. ########################################################
   ### Appliquer filtres
-  ### Filtre campagne:
+### Filtre campagne:
   d1 <- filtreTable(dpoissons, filt.camp) # filtre années seulement pour l'instant
 
-  ### Filtre espèces -- défini dans les options générales
+### Filtre espèces -- défini dans les options générales
   ds.calc <- filtreTaxo(d1, action=taxoF.incl,
-                          taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+                        taxtype=taxoF.utaxo, taxnom=taxoF.nom)
   if(!wZeroT) ds.calc <- ds.calc[ds.calc$N>0,] # ôter zéros
 
   # Calcul densité/biomasse par espèce/transect/campagne
@@ -36,20 +36,24 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
   # calcul de la densité/biomasse sur unité spatiale aggrégée et par espèce
   # on dérive la distance moyenne pondérée
   # ... c-a-d la distance moyenne de chaque observation pondérée
-  # par le nombre d'individus observés, i.e. sum(dm*N_i)/sum(N_i)
-  ds.calc$dm.int <- ds.calc$N * (0.5*(ds.calc$D1+ds.calc$D2)+0.5)
-  ds.df <- aggregate(ds.calc[,c("dm.int","N")],as.list(ds.calc[,ff]),sum)
-  ds.df$dm <- ds.df$dm.int/ds.df$N # valeur finale, moyenne pondérée
-  ds.df$dens <- ds.df$N/(2*ds.df$dm*LT) # Densité
+                                        # par le nombre d'individus observés, i.e. sum(dm*N_i)/sum(N_i)
 
+  ds.calc$dm.int <- ds.calc$N * (0.5*(ds.calc$D1+ds.calc$D2)+0.5)
   # Calcul de la biomasse et de la taille moyenne
   ds.calc$bio.int <- ds.calc$N * ds.calc$a * ds.calc$L^ds.calc$b
   ds.calc$TM <- ds.calc$N*ds.calc$L # numérateur taille moyenne
-  num.bio <- aggregate(ds.calc[,c("bio.int","TM")], as.list(ds.calc[,ff]), sum)
-  ds.df$biomasse <- num.bio$bio.int/(2*ds.df$dm*LT) # Biomasse
+
+  # ds.df <- aggregate(ds.calc[,c("dm.int","N")],as.list(ds.calc[,ff]),sum)
+  # num.bio <- aggregate(ds.calc[,c("bio.int","TM")], as.list(ds.calc[,ff]), sum)
+  # replaced two lines above with single dplyr call for speed
+  ds.df <- ds.calc %>% s_group_by(ff) %>% summarize(dm.int=sum(dm.int), N=sum(N), bio.int=sum(bio.int), TM=sum(TM)) %>% data.frame
+  # boom!
+  ds.df$dm <- ds.df$dm.int/ds.df$N # valeur finale, moyenne pondérée
+  ds.df$dens <- ds.df$N/(2*ds.df$dm*LT) # Densité
+  ds.df$biomasse <- ds.df$bio.int/(2*ds.df$dm*LT) # Biomasse
 
   # Taille moyenne pondérée sur le nombre d'individus
-  ds.df$taille.moy <- num.bio$TM/ds.df$N
+  ds.df$taille.moy <- ds.df$TM/ds.df$N
 
   # Biomasse/Dens -> zero si allN=0 mais laisser la taille.moy a NA
   # pour que les moyennes de tailles soient calculees sur les individus
@@ -85,7 +89,7 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
    # }
 
 
-  # Richesse spécifique sur l'unité spatiale par défaut (St)
+                                        # Richesse spécifique sur l'unité spatiale par défaut (St)
   ff.RS <- ff[!(ff == agtaxo)]
   t1.RS <- aggregate(list(RS.aggr.taxo=ds.df[,agtaxo]), as.list(ds.df[,ff.RS]), count)
   BDtable <- merge(ds.df, t1.RS)

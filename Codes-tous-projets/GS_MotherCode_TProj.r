@@ -6,7 +6,8 @@
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
 ### *** N'oubliez pas d'enregistrer tous les changements ***####
-message("à vérifier options pour fenêtre extérieure")
+Sys.setlocale("LC_ALL","fr_FR.UTF-8") # encodage pour les accents
+message("à vérifier options pour fenêtre extérieure sur R Studio")
 # Dossier contenant les codes et où les sorties vont être sauvegardées
 dossier.R <<- getwd() # le 'working directory',
 # ... ou sinon mettre le nom du dossier désiré, e.g. C:/Documents/Codes_R

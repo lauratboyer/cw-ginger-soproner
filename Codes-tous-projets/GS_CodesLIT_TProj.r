@@ -21,7 +21,8 @@ names(cat2keep) <- type.corail
 cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
 
 # formerly TB.lit
-LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT") {
+LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
+                             wZeroT=TRUE, wZeroSt=FALSE) {
 
 
   departFunk() # message de depart
@@ -41,8 +42,20 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT") {
           DL <- filtreTable(DL, filt.camp) }
     LIT.transect.info <- unique(DL[,c("Campagne","St",smpl)])
 
-    # 2. Rajouter infos sur les coraux
-    DL <- data.frame(index.LIT[DL$Code_LIT, type.corail], DL)
+  # Rajouter infos sur les coraux
+  DL <- data.frame(index.LIT[DL$Code_LIT, type.corail], DL)
+
+  # 2. Filter les zeros en fonction de wZeroT et wZeroSt
+  # DL contient deja les zeros pour toutes les combinaisons de campagnes/transects/Code_LIT
+
+  if(wZeroSt) { # si wZeroSt = TRUE, ote les zeros si l'espece est observee sur la station mais pas tous les transects
+      # independemment de la valeur de wZeroT
+      DL.ZeroSt <- DL %>% group_by(Campagne, St, Code_LIT) %>% summarize(status.X=all(X.==0))
+      DL %<>% inner_join(DL.ZeroSt) %>% filter( ((X.>0) | status.X))
+  } else {
+      # si wZeroSt ET wZeroT = FALSE, on ote les zeros partout
+      if(!wZeroT) DL <- filter(DL, X.>0)
+  }
 
     # 3. Calculer couverture moyenne par Campagne/St/Transect/TypeDeCoraux
     ccfunk <- function(wc) {
@@ -93,7 +106,9 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT") {
     }
     attr(dd.i2, "AS") <- filt.camp
     attr(dd.i2, "Projet") <- projet
-    attr(dd.i2, "type.db") <- type.db
+  attr(dd.i2, "type.db") <- type.db
+  attr(dd.i2, "wZeroT") <- wZeroT
+    attr(dd.i2, "wZeroSt") <- wZeroSt
     invisible(dd.i2) }
 
 
@@ -104,6 +119,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT") {
 # par geomorphologie pour une année spécifique
 # formerly LIT.ts1()
 LIT.couvrt.gnrl <- function(ftemp=ftempo.defaut, fspat=fspat.defaut,
+                            wZeroT=TRUE, wZeroSt=FALSE, par.transect="pas implemente",
                             LIT.cat="General",type.db="LIT",
                             filt.camp="X", save=FALSE) {
   # set AS to "A" or "S" based on campagne type
@@ -116,12 +132,16 @@ LIT.couvrt.gnrl <- function(ftemp=ftempo.defaut, fspat=fspat.defaut,
     # vérifier si LIT.brut existe déjà pour la bonne campagne, sinon retourner
     # (filtre par campagne appliqué dans LIT.tableau.brut())
     if(!exists("LIT.brut")) {
-      LIT.brut <<- LIT.tableau.brut(filt.camp=filt.camp, type.db=type.db)
+        LIT.brut <<- LIT.tableau.brut(filt.camp=filt.camp, type.db=type.db,
+                                      wZeroT=wZeroT, wZeroSt=wZeroSt)
       }else{
         if((attr(LIT.brut,"AS")!=filt.camp)|
            (attr(LIT.brut, "Projet")!=projet)|
-           (attr(LIT.brut, "type.db")!=type.db))
-          LIT.brut <<- LIT.tableau.brut(filt.camp=filt.camp, type.db=type.db) }
+           (attr(LIT.brut, "type.db")!=type.db)|
+           (attr(LIT.brut, "wZeroT")!=wZeroT)|
+           (attr(LIT.brut, "wZeroSt")!=wZeroSt))
+            LIT.brut <<- LIT.tableau.brut(filt.camp=filt.camp, type.db=type.db)
+    }
 
     t1 <- LIT.brut # transfert des données à objet t1
 

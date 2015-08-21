@@ -8,16 +8,18 @@
 ## Graphiques à produire:
 ## one variable: barplot
 ## two variables: single fig -- two colours; panel fig -- one var per panel
+## add filtre campagne only
 ## three variables: panel fig -- two var per panel
 
 ## To-do: aes to change space between bars, legend title
-
+message("rajouter nouvel LIT de Tom Aug 21st")
 ## dat.stat.inv: see function INV.stats
 require(ggplot2)
 fig.etiq <- c(Geomorpho="Géomorphologie", N_Impact="Niveau d'impact",
               dens="Densité moyenne",
               Campagne="Campagne",
-              Saison="Saison", St="Station")
+              Saison="Saison", St="Station",
+              taille.moy="Taille moyenne (cm)")
 
 geomorpho.lab <- c("Recif barriere externe"="RBE",
                    "Recif barriere interne"="RBI",
@@ -49,16 +51,48 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
 if(!is.na(fCampagne)) xfact.levels$Campagne <- grep(fCampagne, xfact.levels$Campagne, value=TRUE)
 
 ###### ###### ###### ###### ###### ###### ###### ###### ######
-prep.var <- function(wvar, df) {
+if(!exists("bio.fig")) bio.fig <<- "inv"
+fig.catego <- function(x) {
+    if(missing(x)) {
+        stop("L'une des valeurs suivantes devrait être spécifiée en argument: LIT/lit, quadrats, poissons, INV/inv")
+   }else if (!(x %in% c("LIT","lit","quadrats","poissons","INV","inv"))) {
+    stop("L'une des valeurs suivantes devrait être spécifiée en argument: LIT/lit, quadrats, poissons, INV/inv")
+   }
+
+    bio.fig <<- tolower(x)
+
+    }
+
+###### ###### ###### ###### ###### ###### ###### ###### ######
+prep.var <- function(wvar, df, filt.camp="X") {
 
   df <- data.frame(df)
   if(wvar=="Geomorpho.abbrev") col <- geomorpho.lab[df$Geomorpho]
   else col <- df[,wvar]
   if(!(wvar %in% c("Groupe","S_Groupe","Famille","Genre"))) {
-    factor(col, levels=xfact.levels[[wvar]], ordered=TRUE)
+      all.levs <- xfact.levels[[wvar]]
+      if(wvar == "Campagne" & filt.camp %in% c("A","S")) all.levs <- grepv(filt.camp, all.levs)
+    factor(col, levels=all.levs, ordered=TRUE)
   } else { factor(col) }
 }
 
+##############################################################
+# fonction pour definir les filtres selon le format requis par dplyr
+# a donner en argument a filtre et filtre2
+filtre.incl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
+
+    b <- paste0("'",b,"'", collapse=",") # format b pour inclusion dans c('...','...') avec guillemets simples
+    sprintf("%s %%in%% c(%s)", a, b)
+}
+filtre.excl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
+
+    b <- paste0("'",b,"'", collapse=",") # format b pour inclusion dans c('...','...') avec guillemets simples
+    sprintf("!(%s %%in%% c(%s))", a, b)
+}
+
+
+##############################################################
+############ DEFINITION FONCTIONS GRAPHIQUES #################
 ###### ###### ###### ###### ###### ###### ###### ###### ######
 fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
                      agtaxo="Groupe", typ.taxo="Crustaces",
@@ -79,7 +113,7 @@ fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
   dat.plot <- dat %>% s_group_by(var1) %>%
     summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE))
 
-  dat.plot$vx <- prep.var(var1, dat.plot)
+  dat.plot$vx <- prep.var(var1, dat.plot, filt.camp=filtre.camp)
   dat.plot$v.expl <- dat.plot$mean
 
   if(tous.niveaux & missing(filtre)) {
@@ -101,41 +135,59 @@ fig.1var <- function(var1="Geomorpho", var.expl="dens", filtre,
   # changing display parameters
   p1 <- p1 +
     xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
-      theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
+      theme(plot.margin=unit(c(0.35,0.25,0.15,0.15),"in"),
             axis.title.x=element_text(vjust=-1), axis.title.y=element_text(vjust=2)) +
               guides(fill=guide_legend(title=var1))
 p1
 }
 
+
 ###### ###### ###### ###### ###### ###### ###### ###### ######
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var3=NULL, var.expl="dens", filtre,
-                     filtre2,
+                     filtre2, filtre.camp="A",
                      agtaxo="Groupe", typ.taxo="Crustaces",
-                     panneau=NULL,
+                     groupe=NULL, panneau=NULL,
                      dat=dat.stat.inv, tous.niveaux=TRUE,
                      typ.fig="barre", ...) {
 
-  dat <- INV.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+
+    var.expl.defaut <- c(inv="dens", poissons="dens", lit="Coraux")
+    var.expl <- var.expl.defaut[bio.fig]
+
+    ##################################################
+                                        # extraction des données selon le type d'organisme
+    start.timer()
+    if(bio.fig=="inv"){
+        dat <- INV.dens.gnrl(filt.camp=filtre.camp, fspat=c(facteurs.spatio,"St"),
                       ftemp=c(facteurs.tempo, "Campagne"),
                              agtaxo=agtaxo, par.transect=TRUE,
-                                silent=TRUE)
+                             silent=TRUE)
+    }
+stop.timer()
+    if(bio.fig=="lit")  dat <- LIT.tableau.brut(filt.camp=filtre.camp)
+    if(bio.fig=="poissons")  dat <- POIS.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+           agtaxo="Famille", ftemp=c(facteurs.tempo, "Campagne"), par.transect=TRUE, filt.camp=filtre.camp)
+    dat <- data.frame(dat)
+    ##################################################
+    if(!missing(typ.taxo) & typ.taxo!="tous" & type.fig=="inv") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo))
+    if(!missing(filtre)) dat <- filter_(dat, filtre) # voir aussi fonction filtre.incl() et filtre.excl()
+    if(!missing(filtre2)) dat <- filter_(dat, filtre2)
 
-  dat <- data.frame(dat)
-  if(!missing(typ.taxo) & typ.taxo!="tous") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo))
-  if(!missing(filtre)) dat <- filter_(dat, filtre)
-  if(!missing(filtre2)) dat <- filter_(dat, filtre2)
+    dat$var.expl <- dat[,var.expl] # define response variable for graph (Y)
+    if(typ.fig!="boxplot") {
+        dat.plot <- dat %>% s_group_by(var1, var2, var3, panneau) %>%
+            summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE)) %>%
+                mutate(be.top=mean + sd, be.bot=max(0, mean - sd))
+        dat.plot$var.expl <- dat.plot$mean
 
-  dat$var.expl <- dat[,var.expl]
+    }else{
+        dat.plot <- dat }
 
-  dat.plot <- dat %>% s_group_by(var1, var2, var3, panneau) %>%
-    summarize(mean = mean(var.expl, na.rm=TRUE), sd=sd(var.expl, na.rm=TRUE))
-
-  dat.plot$vx <- prep.var(var1, dat.plot)
-  dat.plot$vy <- prep.var(var2, dat.plot)
-  if(!missing(var3)) dat.plot$vz <- prep.var(var3, dat.plot)
-  if(!is.null(panneau)) dat.plot$panneau <- prep.var(panneau, dat.plot)
-  dat.plot$v.expl <- dat.plot$mean
+  dat.plot$vx <- prep.var(var1, dat.plot, filt.camp=filtre.camp)
+  dat.plot$vy <- prep.var(var2, dat.plot, filt.camp=filtre.camp)
+  if(!missing(var3)) dat.plot$vz <- prep.var(var3, dat.plot, filt.camp=filtre.camp)
+  if(!is.null(panneau)) dat.plot$panneau <- prep.var(panneau, dat.plot, filt.camp=filtre.camp)
 
   if(tous.niveaux & missing(filtre)) {
   all.lev <- expand.grid(var1=levels(dat.plot$vx), var2=levels(dat.plot$vy))
@@ -144,19 +196,25 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
 }
 
   # objet avec les données pour le graph
+  raw.dat <<- dat
   fig.dat <<- dat.plot
 
   # defining data and main aes/mapping
   # see also aes_string maybe
-  p0 <- ggplot(data=dat.plot, aes(x=vx, y=v.expl,
-                 ymin=v.expl-sd, ymax=v.expl+sd))
+  p0 <- ggplot(data=dat.plot, aes(x=vx, y=var.expl))
+
+    pdod <- position_dodge(width=0.4)
 
   if(typ.fig=="barre") {
-    p1 <- p0 + aes(fill=vy)
+    p1 <- p0 + aes(fill=vy, ymin=var.expl-sd, ymax=var.expl+sd) + scale_fill_discrete("")
     p1 <- p1 + geom_bar(stat="identity", width=0.5,
                       position=position_dodge(0.95), ...)
-  } else {
-    p1 <- p0 + aes(group=vy, colour=vy) + geom_line(...) }
+} else if(typ.fig=="boxplot"){
+
+    yl <- quantile(dat.plot$var.expl, 0.975)
+    p1 <- p0 + ylim(0,yl) + geom_boxplot(aes(fill=vy), colour="grey50", width=1, outlier.colour="royalblue3", outlier.size=1.5, alpha=0.75) + facet_grid(~vy)
+}else{
+    p1 <- p0 + aes(group=vy, ymin=be.bot, ymax=be.top, colour=vy) + geom_errorbar(width=0.5, position=pdod) + geom_line(position=pdod, lwd=1, ...) + geom_point(position=pdod)}
 
 
   if(!is.null(panneau)) {
@@ -170,7 +228,7 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
   # changing display parameters
   p1 <- p1 +
     xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
-      theme(plot.margin=unit(c(0.25,0.25,0.35,0.35),"in"),
+      theme(plot.margin=unit(c(0.25,0.25,0.25,0.25),"in"),
             axis.title.x=element_text(vjust=-1),
             axis.title.y=element_text(vjust=2)) +
               guides(fill=guide_legend(title=var2),
@@ -224,8 +282,8 @@ fig.3var <- function(var1="Geomorpho", var2="Campagne", var3="N_Impact",
 
 ###################################
 # Raccourcis pour fonctions ggplot:
-fig.2lign <- function(...) fig.2var(..., typ.fig="ligne")
-verti.x.val <- theme(axis.text.x = element_text(angle = 90))
-no.x.val <- theme(axis.text.x=element_blank())
+#fig.2lign <- function(...) fig.2var(..., typ.fig="ligne")
+verti.x.val <- function(angl=90) theme(axis.text.x = element_text(angle = angl))
+#no.x.val <- theme(axis.text.x=element_blank())
 
-fig.2var() + geom_errorbar()
+#fig.2var() + geom_errorbar()

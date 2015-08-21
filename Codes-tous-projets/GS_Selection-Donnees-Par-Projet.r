@@ -57,5 +57,3 @@ selection.projet <- function(x="KNS_KONIAMBO", filtre.Campagne) {
   # des niveaux de campagne, au besoin
   source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8")
 }
-
-

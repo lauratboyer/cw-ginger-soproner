@@ -53,7 +53,6 @@ prep.analyse <- function(check.typo=TRUE) {
   info.transect.tempo <- filter(info.transect.tempo, Utilise.analyse == "Oui")
   info.spat.temp <- merge(info.transect, info.transect.tempo, by=c("Id","Client","Site"))
   rownames(info.spat.temp) <- info.spat.temp$Id
-print(names(info.spat.temp))
 
   # Nettoyer accents noms géométrie -- à reviser vu encodage changé durant import?
   ########### Données LIT ############
@@ -74,11 +73,11 @@ print(names(info.spat.temp))
 
   # rajouter des abondances nulles pour les groupes observés sur certains
   # transects seulement
-  # catégories identifiées au moins une fois par station/campagne:
-  LIT.uID <- unique(data.LIT[,c("Projet","Campagne","St","Code_LIT")])
+  # catégories identifiées au moins une fois sur la station:
+  LIT.uID <- unique(data.LIT[,c("Projet","St","Code_LIT")])
   # on crée un tableau avec les noms des transects échantillonés
   ### sur chaque combinaison stations x
-  ### campagne (vu que certaines campagnes ont T02 et T04)
+  ### campagne (e.g. vu que certaines campagnes ont T02 et T04, ou T09 manquant)
   LIT.allT <- unique(data.LIT[,c("Id","Projet","Campagne","St","T")])
   # on merge ces deux tableaux ensemble pour associer des densités
   ### nulles aux espèces identifiées
@@ -249,12 +248,11 @@ print(names(info.spat.temp))
   data.poissons$N[is.na(data.poissons$N)] <- 0
   #data.poissons <- data.poissons[!(is.na(data.poissons$L)),] # Taille
 
-  # remettre les valeurs de transect au cas où certaines manquaient
+                                        # remettre les valeurs de transect au cas où certaines manquaient
   unique.sans.na <- function(x) unique(na.omit(x))
   proj.ltrans <- tapply(data.poissons$Long.Transct, data.poissons$Projet, unique.sans.na)
-  proj.ltrans <- as.numeric(proj.ltrans)
   if(length(unlist(proj.ltrans))!=length(proj.ltrans)) stop("Longueurs de transect différentes par projet")
-  data.poissons$Long.Transct <- proj.ltrans[data.poissons$Projet]
+  if(any(is.na(data.poissons$Long.Transct))) stop("Longueurs de transects manquantes pour les poissons")
 
   # Expansion du data frame pour inclure toutes les combinaisons Campagne/St/Code_SP:
   # ... donc pour les poissons les densités sont nulles sur toutes Campagnes/St où
