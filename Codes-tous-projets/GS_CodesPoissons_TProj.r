@@ -10,11 +10,12 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                            agtaxo="G_Sp",
                            par.transect=FALSE,
                            wZeroT=TRUE,
-                           filt.camp="X", save=FALSE) {
+                           filt.camp="X", silent=FALSE, save=FALSE) {
 
   ################################
-  departFunk() # message de depart
-  on.exit(EM())
+    if(!silent) {
+        departFunk() # message de depart
+        on.exit(EM()) }
   ################################
 
   ### 1. ########################################################
@@ -24,7 +25,7 @@ POIS.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
 
 ### Filtre espèces -- défini dans les options générales
   ds.calc <- filtreTaxo(d1, action=taxoF.incl,
-                        taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+                        taxtype=taxoF.utaxo, taxnom=taxoF.nom, silent=silent)
   if(!wZeroT) ds.calc <- ds.calc[ds.calc$N>0,] # ôter zéros
 
   # Calcul densité/biomasse par espèce/transect/campagne

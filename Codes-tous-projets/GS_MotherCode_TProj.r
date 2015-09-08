@@ -9,18 +9,22 @@
 Sys.setlocale("LC_ALL","fr_FR.UTF-8") # encodage pour les accents
 message("à vérifier options pour fenêtre extérieure sur R Studio")
 # Dossier contenant les codes et où les sorties vont être sauvegardées
-dossier.R <<- getwd() # le 'working directory',
+dossier.R <- getwd() # le 'working directory',
 # ... ou sinon mettre le nom du dossier désiré, e.g. C:/Documents/Codes_R
 # Dossier de sauvegarde des fichiers .csv des bases de données
-dossier.DB <<- paste(getwd(), "/DBs tous projets", sep="")
+dossier.DB <- paste(getwd(), "/DBs tous projets", sep="")
 setwd(dossier.R)
+############################################
+## Reformatter les tableaux ou charger ceux deja formattés? TRUE ou FALSE
+## Pour importer les nouvelles données (mises sous .csv dans le dossier Data), mettre à TRUE
+refaire.tableaux <- TRUE
 
 ############################################
 ## Variables spatiales et temporelles dans les tableaux
 ## 'Facteurs_...' à mettre disponible pour les analyses
-facteurs.spatio <<- c("Geomorpho","N_Impact","Cote","Lieu")
-facteurs.tempo <<- c("Période.BACI","Saison")
-facteurs.taxo <<- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
+facteurs.spatio <- c("Geomorpho","N_Impact","Cote","Lieu")
+facteurs.tempo <- c("Période.BACI","Saison")
+facteurs.taxo <- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
                        poissons=c("Famille","Genre","G_Sp","GTlabel","moblabel","Peche","Cible"),
                        LIT=c("General","Forme","Acroporidae","Sensibilite","Famille","Genre"))
 
@@ -30,9 +34,9 @@ facteurs.taxo <<- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
 ## (i.e. les fonctions de calcul vont utiliser ces
 ## valeurs à moins qu'une valeur différente soit directement
 ## spécifiée dans l'argument de la fonction)
-agtaxo.defaut <<- "Groupe"
-fspat.defaut <<- "St"
-ftempo.defaut <<- "Campagne"
+agtaxo.defaut <- "Groupe"
+fspat.defaut <- "St"
+ftempo.defaut <- "Campagne"
 
 ################################################################
 ### Contenu du code:
@@ -44,7 +48,7 @@ ftempo.defaut <<- "Campagne"
 ############################
 ### 1. Filtre sur ANNEES ###
 ############################
-filtre.annees <<- 2006:2015 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
+filtre.annees <- 2006:2015 # indiquer quelles années à inclure dans l'analyse - tableau filtre généré automatiquement
                             # exemples de format:
                             # c(2006,2007,2009,2012), 2006:2012, seq(2006,2012,by=2)
 
@@ -52,11 +56,11 @@ filtre.annees <<- 2006:2015 # indiquer quelles années à inclure dans l'analyse
 ### 2. Filtre sur ESPECES ###
 #############################
 ## a. Filtre famille par défaut (spécifié dans Filtre-taxo_Famille.csv)
-filtre.famille <<- TRUE
+filtre.famille <- TRUE
 
 #############################
 ## b. Général
-filtre.sur.especes <<- FALSE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
+filtre.sur.especes <- FALSE # pour inclure un filtre sur especes: filtre.sur.especes <- TRUE
 if(filtre.sur.especes) {
 
     ## Modifiez les valeurs pour le filtre sur espèces ici!!! Voir ***
@@ -123,6 +127,8 @@ if(!(exists("data.read"))) { import.tableaux()
 
 }
 
+library(Hmisc)
+library(tools)
 lp <- try(library(reshape)) # load package reshape
 lp2 <- try(library(Rcpp)) # load package Rcpp
 lp3 <- try(library(dplyr)) # load package dplyr
@@ -153,7 +159,7 @@ refaire.image <- TRUE
 
 if(refaire.image) {
 charger.codes()
-save.image(file="Objets-DB-Codes-R.Rdata")
+#save.image(file="Objets-DB-Codes-R.Rdata")
 } else {
 charger.db()
 }

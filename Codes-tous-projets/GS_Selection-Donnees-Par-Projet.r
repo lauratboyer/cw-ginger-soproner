@@ -56,4 +56,63 @@ selection.projet <- function(x="KNS_KONIAMBO", filtre.Campagne) {
   # et on re-source le code graphique pour changer les valeurs
   # des niveaux de campagne, au besoin
   source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8")
+  do.fig.tables() # faire tableaux de bases pour graphiques
+}
+
+
+do.fig.tables <- function() {
+
+
+
+    message("");
+    message("Création de tableaux pré-formattés pour faire les graphiques")
+    message("------------------------------------------------------------")
+
+    # Invertebres:
+    inv.taxo <- c("Groupe","S_Groupe","Famille","Genre")
+    message("");
+    message("Invertébrés:")
+    dmm <- lapply(inv.taxo, function(i) {
+                      obj <- INV.dens.gnrl(filt.camp="X", fspat=c(facteurs.spatio,"St"),
+                                       ftemp=c(facteurs.tempo, "Campagne"),
+                                       agtaxo=i, par.transect=TRUE,
+                                           silent=TRUE);
+                      objname <- paste0("figdat.inv.",i,".w0");
+                      message(objname);
+                      assign(objname, obj, .GlobalEnv)
+                  })
+    # Tableaux sans zeros
+    dmm <- lapply(inv.taxo, function(i) {
+                      obj <- INV.dens.gnrl(filt.camp="X", fspat=c(facteurs.spatio,"St"),
+                                       ftemp=c(facteurs.tempo, "Campagne"),
+                                           agtaxo=i, par.transect=TRUE, wZeroT=FALSE, silent=TRUE);
+                       objname <- paste0("figdat.inv.",i);
+                      message(objname);
+                      assign(objname, obj, .GlobalEnv)
+                  })
+
+                                        # Poissons
+    message("");     message("Poissons:")
+    figdat.poissons.w0 <<- POIS.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+                                          agtaxo="Famille", ftemp=c(facteurs.tempo, "Campagne"),
+                                          par.transect=TRUE, filt.camp="X", silent=TRUE)
+    message("figdat.poissons.w0")
+    figdat.poissons <<- POIS.dens.gnrl(fspat=c(facteurs.spatio,"St"),
+                                       agtaxo="Famille", ftemp=c(facteurs.tempo, "Campagne"),
+                                       wZeroT=FALSE, par.transect=TRUE, filt.camp="X", silent=TRUE)
+    message("figdat.poissons")
+
+                                        # LIT
+    message("")
+    message("LIT:")
+    figdat.LIT.w0 <<- LIT.tableau.brut(filt.camp="X", silent=TRUE)
+    message("figdat.LIT.w0")
+    figdat.LIT <<- LIT.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
+    message("figdat.LIT")
+                   message("")
+    message("Quadrats:")
+    figdat.Quad.w0 <<- Quad.tableau.brut(filt.camp="X", silent=TRUE)
+    message("figdat.Quad.w0")
+    figdat.Quad <<- Quad.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
+    message("figdat.Quad")
 }

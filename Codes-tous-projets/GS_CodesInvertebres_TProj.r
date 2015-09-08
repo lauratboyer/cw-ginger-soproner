@@ -12,18 +12,20 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                           wZeroSt=FALSE, wZeroT=TRUE, save=FALSE,
                           silent=FALSE) {
 
-    if(!silent) departFunk() # message de depart
-    on.exit(EM())
+    if(!silent) {departFunk() # message de depart
+    on.exit(EM())}
 
     ### 1. ########################################################
     ### Appliquer filtres campagnes et taxonomiques ###############
     # Filtre campagnes -- défini dans les arguments de la fonction
     wf <- paste("T",filt.camp,"inv",sep="_") # formatter nom du filtre
+    if(!silent) start.timer()
     ta.rawF <- filtreTable(dbio, wf)
+    if(!silent) stop.timer()
 
     # Filtre espèces -- défini dans les options générales
     ta.rawF <- filtreTaxo(ta.rawF, action=taxoF.incl,
-                          taxtype=taxoF.utaxo, taxnom=taxoF.nom)
+                          taxtype=taxoF.utaxo, taxnom=taxoF.nom, silent=silent)
     if(!wZeroT) ta.rawF <- ta.rawF[ta.rawF$D > 0,]
 
     ## Densité par transect:

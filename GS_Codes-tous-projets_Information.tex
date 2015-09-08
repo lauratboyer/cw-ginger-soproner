@@ -3,8 +3,13 @@
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
 \usepackage{parskip}
-\input{/Users/Laura/Projects/misc-ressources/Laura's-latex-tools.tex}
+\input{/Users/lauratb/Projects/misc-ressources/misc-latex-tools.tex}
 \newcommand{\mcode} {\texttt{GS\_MotherCode\_TProj.r}{ }}
+\hypersetup{colorlinks, 
+linkcolor=PineGreen, 
+filecolor=TealBlue, 
+urlcolor=PineGreen, 
+citecolor=NavyBlue}
 \begin{document}
 
 {\Large \textbf{Description des codes R développés pour les analyses
@@ -13,7 +18,7 @@ Auteur: Laura Tremblay-Boyer, contact: lauratboyer@gmail.com\\
 Nouméa le 25 février 2015\\
 
 \section{À compléter}
-table des matières
+
 vérifier format couleurs
 relecture finale
 
@@ -177,7 +182,10 @@ Ce code lance automatiquement la fonction \hllb{\texttt{import.tableaux()}},
 qui importe les bases de données dans R, et la fonction
 \hllb{\texttt{prep.analyse()}} qui nettoie les données pour l'analyse.
 
+\subsubsection{Rajout de nouvelles données}
+Si vous avez de nouvelles données à incorporer dans les bases R, sauvegarder les tableaux sous format .csv et mettez les nouvelles versions dans le dossier indiqué sous \texttt{dossier.DB} (et non \texttt{dossier.donnees}). Dans une nouvelle session R, allez dans \mcode, changez la valeur de la variable \hl{\texttt{refaire.tableaux}} à \texttt{TRUE} et lancer le script avec \texttt{source(...)}. Si le script tourne sans erreurs (vérifiez que de nouveaux objets ont été créés dans le dossier Tableaux-pour-analyses), re-changez la valeur de \hl{\texttt{refaire.tableaux}} à \texttt{FALSE} pour sauver du temps les prochaines fois lorsque vous lancez les scripts (les objets seront déja formattés, donc le chargement sera beaucoup plus rapide).
 % si le chargement a déjà été fait vous pouvez sauvegarder une image...
+
 \subsection{Filtre taxonomique} \label{ftaxo}
 
 Le filtre sur espèces est défini par trois objets:
@@ -377,12 +385,19 @@ utiliser les fonctions \texttt{LIT.tableau.brut()} et
 
 \section{Abondances nulles}
 A partir du moment où une espèce est observée sur un transect pour un
-projet, une abondance nulle est rajoutér sur tous les transects,
-stations et campagnes où l'espèce est absente. Ceci est valide pour   pro sur certains
-transects seulement d'une station/campagne, on rajoute une abondance
-nulle pour l'espèce pour les transects manquants de la campagne (donc,
-pas d'abondances nulles pour les campagnes précédentes si l'espèce
-était absente).
+projet, une abondance nulle est rajoutée sur tous les transects,
+stations et campagnes où l'espèce est absente. 
+% a verifier
+%Ceci est valide pour 
+%\hl{pro sur certains
+%transects seulement d'une station/campagne, on rajoute une abondance
+%nulle pour l'espèce pour les transects manquants de la campagne (donc,
+%pas d'abondances nulles pour les campagnes précédentes si l'espèce
+%était absente).}
+
+
+\section{Création de tableaux formattés}
+
 
 \section{Trucs pour trouver la source de l'erreur}
 

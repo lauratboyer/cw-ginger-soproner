@@ -12,6 +12,7 @@ pour définir l'emplacement des codes et des dossiers")
 
 prep.analyse <- function(check.typo=TRUE) {
 
+    if(refaire.tableaux) { # défini dans mother_code
   #######################################################################
   ###################### Formattage des tableaux ########################
   #######################################################################
@@ -39,6 +40,7 @@ prep.analyse <- function(check.typo=TRUE) {
   # Ote Id ADECAL/CAGES EXTERIEURES (cf. mail Tom H 6/5/2015)
   info.transect <- filter(info.transect, !grepl("ADECAL.*CAGES_[E|I]", Id))
   info.transect <- info.transect[!duplicated(info.transect$Id),] # ôte les doublons restants
+  ID.util.Non <-   filter(info.transect, Utilise.analyse == "Non")$Id
   info.transect <- filter(info.transect, Utilise.analyse == "Oui")
   rownames(info.transect) <- info.transect$Id
 
@@ -50,10 +52,12 @@ prep.analyse <- function(check.typo=TRUE) {
   # pareil pour facteurs temporels
   info.transect.tempo <- filter(info.transect.tempo, !grepl("ADECAL.*CAGES_[E|I]", Id))
   info.transect.tempo <- info.transect.tempo[!duplicated(info.transect.tempo$Id),] # ôte les doublons restants
+  ID.util.Non <-  unique(c(ID.util.Non, filter(info.transect.tempo, Utilise.analyse == "Non")$Id))
   info.transect.tempo <- filter(info.transect.tempo, Utilise.analyse == "Oui")
   info.spat.temp <- merge(info.transect, info.transect.tempo, by=c("Id","Client","Site"))
   rownames(info.spat.temp) <- info.spat.temp$Id
 
+  message(sprintf("%s IDs exclus de l'analyse", length(ID.util.Non)))
   # Nettoyer accents noms géométrie -- à reviser vu encodage changé durant import?
   ########### Données LIT ############
   ####################################
@@ -404,7 +408,7 @@ prep.analyse <- function(check.typo=TRUE) {
   # Rajouter les infos transects aux tableaux de données principaux:
   add.infos <- function(x) {
 
-    id.manq <- unique(x$Id)[!(unique(x$Id) %in% info.spat.temp$Id)]
+      id.manq <- unique(x$Id)[!(unique(x$Id) %in% c(info.spat.temp$Id, ID.util.Non))]
     if(length(id.manq)>0) {
     message(sprintf("Id manquants dans info.transect: %s",paste(id.manq,collapse=", ")))
   }
@@ -426,266 +430,10 @@ prep.analyse <- function(check.typo=TRUE) {
   index.invSp$type <- "Inv"
   index.tt.especes <- rbind(index.invSp, index.Poissons[,-c(1,3)])
 
-  #######################################################
-  ###### Filtres campagnes annuelles/semestrielles ######
-  #######################################################
-  # filtre.Camp: tableau des campagnes à utiliser pour analyses temporelles
-  # modif après discussion avec Antoine 12 Octobre 2012:
-  # re-créer tableau filtre à partir des années désirées pour l'analyse
-
-  creerFiltre <<- function(qAnnees) {
-
-    if(length(qAnnees)==1) stop("Attention: spécifiez 2 années ou plus")
-    tb <- unique(dbio[,c("St","Campagne")])
-    tb$echtl <- 1
-    tb2 <- cast(tb, St ~ Campagne, value="echtl")
-
-    # sélectionner les colonnes avec les années désirées pour le filtre
-    # campagnes annuelles et semestrielles
-    keySmstrl <- c(paste("A_",qAnnees,sep=""),paste("S_",qAnnees,sep=""))
-    tb3 <- tb2[,unlist(sapply(keySmstrl,function(x) grep(x,names(tb2))))]
-    wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
-    T_AeS_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
-
-    # campagnes annuelles
-    keyAnnuel <- paste("A_",qAnnees,sep="")
-    tb3 <- tb2[,unlist(sapply(keyAnnuel,function(x) grep(x,names(tb2))))]
-    if("data.frame" %in% class(tb3)) { wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
-                                   }else{
-                                     wStat <- tb2$St[which(na.omit(tb3==1))]}
-    T_A_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
-
-    # campagnes semestrielles
-    keyAnnuel <- paste("S_",qAnnees,sep="")
-    tb3 <- tb2[,unlist(sapply(keyAnnuel,function(x) grep(x,names(tb2))))]
-    if("data.frame" %in% class(tb3)) { wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
-                                   }else{
-                                     wStat <- tb2$St[which(na.omit(tb3==1))]}
-    T_S_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
-
-    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T <- T_AeS_inv))
-  }
-
-  ###################################################
-  ######## Fonctions génériques #####################
-  # Définition de fonctions qui seront utilisées couramment dans le code
-
-  # 1. Applique le filtre spécifié au tableau donné en argument
-  filtreTable <<- function(wtable, wfiltre) {
-    if((length(filtre.annees)>1) & (wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv"))) { # appliquer le filtre si spécifié
-      message(paste("Stations filtrees par",wfiltre))
-      filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
-
-      wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
-      dd.filt <- merge(data.frame("key"=filtre.Camp[[wfiltre]]),
-                     wtable,by="key", drop.x="key")
-      dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
-  } else {
-    if(wfiltre %in% c("A","S")) {
-    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
-  } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
-    wfiltre <- gsub("._(.)_.*","\\1",wfiltre)
-    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
-  } else {
-    CmpTag <- paste(filtre.annees,collapse="|") }
-    wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-
-    dd.filt <- data.frame(filter(wtable, Campagne %in% wCampKeep))
-
-    }
-
-    if(nrow(dd.filt)==0) warning(
-           sprintf("Attention!! \n\nAucune des données ne sont sélectionnées par le filtre sur stations:
-\nFiltre %s, années %s\n", wfiltre, paste(filtre.annees,collapse=", ")))
-    return(dd.filt)  }
-
-  # 2. Converti les noms de campagne en année (charactère -> numérique)
-  as.year <<- function(x) as.numeric(sub("[AS]_","",x))
-
-  # 3. Dessine les barres d'erreurs
-  draw.SE <<- function(mat, couleur=1, typel=1) {
-  # Inclure matrice avec x en colonne 1 et valeur min/max en colonne 2 et 3
-  mat$diff <- mat[,3]-mat[,2]
-  mat <- mat[mat$diff != 0,] # garder seulement les valeurs de SE existantes
-  mat[,2][mat[,2]<0] <- 0
-  dmm <- sapply(1:nrow(mat),function(i) arrows(mat[i,1],mat[i,3],
-                                                  mat[i,1],mat[i,2],code=3,lty=typel,
-                                                  col=couleur,angle=90,length=0.1)) }
-
-
-  # 4. Calcul du nombre de stations échantillonées par groupement spatial, selon le filtre
-  # Groupement spatial: géomorphologie, ou géomorphologie/impact
-  # défini pour les invertébrés mais pourrait être appliqué aux poisssons
-  # (Retourne aussi le nom des stations)
-  nst.par.gs <<- function(AS="A",impact=FALSE, allyr=FALSE) {
-    # lorsque allyr=TRUE, calcule le nombre de campagnes effectuées sur chaque
-    # géomorphologie +/- impact
-    # sinon, calcule le nombre de stations *par campagne* sur chaque géomorpho +/- impact
-
-    if(AS %in% c("A","S")) { dd <- filtreTable(dbio, wfiltre=paste("T",AS,"inv",sep="_"))
-                             } else {
-                               keySmstrl <- c(paste("A_",filtre.annees,sep=""),
-                                              paste("S_",filtre.annees,sep=""))
-                               dd <- dbio[dbio$Campagne %in% keySmstrl,] }
-    ff <- c("Campagne","Geomorpho","N_Impact","St")
-    # conserver seulement les facteurs spécifiés en arguments
-    ff <- ff[c(1, 2, impact*3, (!allyr)*4)]
-    dd2 <- merge(dd, info.transect, by="St")
-    dd.St <- unique(dd2[,ff])
-
-    ff <- ff[!(ff %in% c("St",ifelse(allyr, "Campagne","")))]
-    dd.St2 <- aggregate(dd.St[,ifelse(allyr,"Campagne","St")],
-                     lapply(ff, function(x) dd.St[,x]), length)
-    names(dd.St2) <- c(ff, "N.u")
-    return(list("numSt"=dd.St2, "nomsSt"=dd.St))
-    }
-
-  # Filtre les donnees analysees par groupe taxonomique lorsque specifie
-  filtreTaxo <<- function(wtable,action="inclure",
-                          taxtype="Groupe",taxnom="Tous") {
-
-
-      if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "Tous")) {
-      # Pas de filtre
-      message("Pas de filtre sur espèces appliqué")
-          } else {
-
-      # Extraction du type d'espèces analysées maintenant
-      sc <<- sys.calls() # fonctions en cours
-
-      # Extraction de la catégorie d'espèces présente dans le filtre
-      # E.g. si toutes les espèces filtrées sont des invertébrés, le filtre
-      # taxonomique n'est pas appliqué aux poissons
-      qtype <- unique(index.tt.especes[index.tt.especes[,taxoF.utaxo]
-                                       %in% taxoF.nom,"type"])
-
-      # Appliquer le filtre si la categorie d'espèce mentionnée dans le filtre
-      # correspond aux analyses présentes (e.g. pas de filtre poissons sur les
-      # invertébrés)
-      if(any(grepl(tolower(qtype),tolower(sc)))) {
-
-      # On filtre les rangees selon les especes/groupes taxo specifie
-      message(paste(c("Filtre sur espèces",capitalize(action),qtype,taxtype,
-                    paste(sort(taxnom),collapse=", ")),collapse=" :: "))
-
-      if(tolower(action) == "inclure") { # inclusion des groupes X
-        filt.string <- sprintf("%s %%in%% c('%s')", taxtype, paste(taxnom, collapse="', '"))
-        wtable <- wtable %>% filter_(filt.string)
-      } else { # exclusion des groupes X
-      wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}}
-
-    return(as.data.frame(wtable)) # switch out of dplyr df format
-  }
-
-  # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
-  # "inclure" ou "exclure" / unité taxonomique / nom
-  def.filtre.especes <<- function(taxoF.incl="tous", taxoF.utaxo, taxoF.nom) {
-
-    if(taxoF.incl == "tous") {
-       taxoF.incl <<- "inclure"
-       taxoF.utaxo <<- "Groupe"
-       taxoF.nom <<- "Tous"
-     } else {
-       if(missing(taxoF.incl)) {
-       message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
-         taxoF.incl <- tolower(readline("Inclure ou exclure? "))
-       }else{ taxoF.incl <- tolower(taxoF.incl)}
-
-       if(missing(taxoF.utaxo)) {
-         mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
-         taxoF.utaxo <- capitalize(tolower(readline(mm)))
-       }else{ taxoF.utaxo <- capitalize(tolower(taxoF.utaxo)) }
-
-       taxoF.utaxo <- taxoF.utaxo
-       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <- "S_Groupe"
-       if(taxoF.utaxo == "Espece") taxoF.utaxo <- "G_Sp"
-
-       if(missing(taxoF.nom)) {
-         taxoF.nom <- readline("Nom? ")
-         taxoF.nom <- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
-       }else{ taxoF.nom <- capitalize(tolower(taxoF.nom)) }
-
-       taxoF.incl <<- taxoF.incl
-       taxoF.utaxo <<- taxoF.utaxo
-       taxoF.nom <<- taxoF.nom
-  }
-}
-  # Fonction qui permet de sélectionner un fichier .csv pour importer
-  # sous R une liste de noms d'espèces/genre/famille
-  # à utiliser dans le filtre taxonomique
-  # argument "action" défini taxoF.incl
-  # argument "niveau" défini le niveau taxonique, taxoF.utaxo
-  # argument "titre" défini si la première rangée est le nom de la colonne dans le
-  # ... fichier .csv (si non, spécifier titre = FALSE)
-  import.filtre.taxo <<- function(fichier, niveau="Famille",action="inclure",titre=FALSE,sepval=";") {
-
-    if(missing(fichier)) fichier <- file.choose()
-      lnoms <- read.csv(fichier,header=titre,sep=sepval) # sélectionner le fichier dans l'ordi
-      if(class(lnoms)=="data.frame") lnoms <- lnoms[,1]
-      lnoms <- capitalize(tolower(trim(lnoms))) # nettoyer format des noms
-      taxoF.incl <<- action
-      taxoF.utaxo <<- niveau
-      taxoF.nom <<- lnoms
-
-      voir.filtre.taxo()
-  }
-
-  # Fonction qui montre la valeur présente des filtres taxonomiques
-  # Tapez "voir.filtre.taxo()" dans la console
-  voir.filtre.taxo <<- function() {
-      fltre.now <- list(taxoF.incl, taxoF.utaxo, sort(taxoF.nom))
-      names(fltre.now) <- c("taxoF.incl","taxoF.utaxo","taxoF.nom")
-      print(fltre.now) }
-
-  # Cette fonction retourne une version abbrégée des noms des groupes taxonomiques
-  # inclus (ou exclus) au besoin
-  taxotagFunk <<- function() {
-
-    if(taxoF.incl=="inclure" & taxoF.utaxo == "Groupe" & any(taxoF.nom %in% "Tous")) {
-      return("") # si tous les groupes sont inclus, ne pas modifier le nom de fichiers
-    } else {
-        if(length(taxoF.nom) <= 5) {
-            taxotag <- paste(paste(c(capitalize(taxoF.utaxo),abbreviate(c(capitalize(taxoF.incl),
-                                                                          sort(taxoF.nom)))), collapse="-"),"_",sep="")
-        } else {taxotag <- paste(paste(c(capitalize(taxoF.utaxo),
-                                         abbreviate(c(capitalize(taxoF.incl),
-                                                      sort(taxoF.nom)[1:5], "etc",
-                                                      paste("N=",length(taxoF.nom),sep="")))), collapse="-"),"_",sep="")}
-        return(taxotag) }
-  }
-
-  # Ces fonctions sont utilisées pour indiquer le départ et la fin
-  # des codes compris dans une fonction
-  departFunk <<- function() {
-      sc <- sys.calls()
-      fname <- as.character(sc[[length(sc)-1]])[1] # extrait le nom de la fonction parent
-      packageStartupMessage(sprintf("\nDepart %s()...",fname))
-      try(print(unlist(mget(names(formals(fname)), envir=sys.frame(-1)))),
-          silent=TRUE)
-      message("#################\n")
-      }
-  finFunk <<- function() {
-      message("\n#################")
-      sc <- sys.calls()
-      fname <- as.character(sc[[length(sc)-2]])[1] # extrait le nom de la fonction parent
-      packageStartupMessage(sprintf("---> fin %s().",fname)) }
-
-  ## Si erreur dans une fonction, indiquer la fonction où l'erreur se produit
-  ## EM() est donnée en argument a la fonction on.exit() qui tourne automatiquement
-  ## l'argument spécifié quand une fonction se termine, naturellement ou avec
-  ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
-  ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
-  EM <<- function() {
-      tb <- try(get(".Traceback",envir=baseenv()),silent=TRUE) # extraire messages d'erreur
-      if(identical(paste(lastval(tb)), paste(sys.calls()[1]))) {
-          message(sprintf("Erreur dans la fonction %s()",
-                      paste(sys.calls()[[1]][1])))
-          assign(".Traceback"[[1]],999,envir=baseenv())
-          } else { finFunk()} }
 
   ###  ###  ###  ###  ###  ###  ###  ###  ###  ###  ###
   ### Faire rapport d'erreurs de frappe possible
-  if(check.typo) {
+  if(refaire.tableaux & check.typo) {
     typo.finder(dbio$G_Sp, tag="Invertébrés, G_Sp")
     typo.finder(dbio$Genre, tag="Invertébrés, Genre")
     typo.finder(dbio$Famille, tag="Invertébrés, Famille")
@@ -697,34 +445,81 @@ prep.analyse <- function(check.typo=TRUE) {
 
   ###################################################
   ###################################################
-  # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
-  if(filtre.famille) import.filtre.taxo("Filtre-taxo_Famille.csv","Famille")
+                                        # Définir objets à mettre dans l'environnement global pour utilisation subséquente:
+    # import filtre famille
+    if(filtre.famille) {
+        message("filtre.famille=TRUE --> chargement automatique du filtre famille Filtre-taxo_Famille.csv")
+        import.filtre.taxo("Filtre-taxo_Famille.csv","Famille")
+    }
+
+  if(!any(grepl("Tableaux-pour-analyses", list.dirs()))) dir.create("Tableaux-pour-analyses")
+  setwd("Tableaux-pour-analyses")
   info.transect.TProj <<- info.spat.temp
+  save(info.transect.TProj, file="info-transect-TProj.RData")
   dpoissons.TProj <<- data.poissons
+  save(dpoissons.TProj, file="dpoissons-TProj.RData")
   dbio.TProj <<- dbio
+  save(dbio.TProj, file="dbio-TProj.RData")
   index.invSp <<- index.invSp
+  save(index.invSp, file="index-invSp.RData")
   index.Poissons <<- index.Poissons
+  save(index.Poissons, file="index-Poissons.RData")
   bioeco <<- bioeco
+  save(bioeco, file="bioeco.RData")
   bioeco.all <<- bioeco.all
+  save(bioeco.all, file="bioeco-all.RData")
   data.LIT.TProj <<- data.LIT
+  save(data.LIT.TProj, file="data-LIT-TProj.RData")
   index.LIT <<- index.LIT
+  save(index.LIT, file="index-LIT.RData")
   dQuad.TProj <<- data.quad
+  save(dQuad.TProj, file="dQuad-TProj.RData")
   coraux.fig <<- coraux.fig
+  save(coraux.fig, file="coraux-fig.RData")
   index.tt.especes <<- index.tt.especes
+  save(index.tt.especes, file="index-tt-especes.RData")
+  setwd("../")
+  message("\n\n***********************\nFonction prep.analyse() complétée: tableaux formattés et analyses prêtes à lancer.
+\n***********************\nPour sélectionner un projet, utilisez selection.projet()\n
+\n***********************\nPour lancer les analyses, utilisez les fonctions:\n
+-- Invertébrés: INV.dens.gnrl(), INV.biodiv.gnrl() \n-- LIT: LIT.couvrt.gnrl(); Quad.couvrt.gnrl() \n-- Poissons: POIS.dens.gnrl()\n\n***********************\n")
+} else { # refaire tableaux = FALSE, on charge les tableaux pre-formattes
+    # import filtre famille
+    if(filtre.famille) {
+        message("filtre.famille=TRUE --> chargement automatique du filtre famille Filtre-taxo_Famille.csv")
+        import.filtre.taxo("Filtre-taxo_Famille.csv","Famille")
+    }
+  setwd("Tableaux-pour-analyses")
+  load(file="info-transect-TProj.RData", .GlobalEnv)
+  load(file="dpoissons-TProj.RData", .GlobalEnv)
+  load(file="dbio-TProj.RData", .GlobalEnv)
+  load(file="index-invSp.RData", .GlobalEnv)
+  load(file="index-Poissons.RData", .GlobalEnv)
+  load(file="bioeco.RData", .GlobalEnv)
+  load(file="bioeco-all.RData", .GlobalEnv)
+  load(file="data-LIT-TProj.RData", .GlobalEnv)
+  load(file="index-LIT.RData", .GlobalEnv)
+  load(file="dQuad-TProj.RData", .GlobalEnv)
+  load(file="coraux-fig.RData", .GlobalEnv)
+  load(file="index-tt-especes.RData", .GlobalEnv)
+  setwd("../")
+  message("\n\n***********************\nFonction prep.analyse() complétée: tableaux pré-formattés chargés. Pour re-formatter les tableaux,
+spécifiez refaire.tableaux = TRUE dans GS_mother-code_TProj.r.\n\n
+\n***********************\nPour sélectionner un projet, utilisez selection.projet()\n
+\n***********************\nPour lancer les analyses utilisez les fonctions:\n
+-- Invertébrés: INV.dens.gnrl(), INV.biodiv.gnrl() \n-- LIT: LIT.couvrt.gnrl(); Quad.couvrt.gnrl() \n-- Poissons: POIS.dens.gnrl()\n\n***********************\n")
+}
 
   # Tag TRUE when data read with no bugs
   data.read <<- TRUE
   wd.now <- dossier.R
   setwd(wd.now)
 
-  message("\n\n***********************\nFonction prep.analyse() complétée: tableaux formattés et analyses prêtes à lancer.
-Pour lancer les analyses manuellement utiliser les fonctions:\n
--- Invertébrés: INV.dens.gnrl(), INV.biodiv.gnrl() \n-- LIT: LIT.couvrt.gnrl(); Quad.couvrt.gnrl() \n-- Poissons: POIS.dens.gnrl()\n\n***********************\n")
+
 }
 
 ##################### Fin de la fonction prep.analyse() #####################
-
-
+#############################################################################
 ### Fonctions utiles pour formattage
 if(!exists("capitalize")) { # rajoute une lettre majuscule au debut
   capitalize <- function(x) {
@@ -815,6 +610,7 @@ typo.finder <- function(vect, typo.sensi=2, tag, ote.prem=TRUE) {
 # Extraire nom du projet du champ 'Id'
 id2proj <- function(x) toupper(gsub("([A-Za-z]*_[A-Za-z]*)_.*", "\\1",x))
 
+########################################################
 # Fonctions dplyr:
 s_group_by <- function(.data, ...) {
   eval.string.dplyr(.data, "group_by", ...) }
@@ -825,3 +621,259 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
   df <- eval(parse(text=code,srcfile=NULL))
   df
 }
+
+#######################################################
+  ###### Filtres campagnes annuelles/semestrielles ######
+  #######################################################
+  # filtre.Camp: tableau des campagnes à utiliser pour analyses temporelles
+  # modif après discussion avec Antoine 12 Octobre 2012:
+  # re-créer tableau filtre à partir des années désirées pour l'analyse
+
+  creerFiltre <- function(qAnnees) {
+
+    if(length(qAnnees)==1) stop("Attention: spécifiez 2 années ou plus")
+    tb <- unique(dbio[,c("St","Campagne")])
+    tb$echtl <- 1
+    tb2 <- cast(tb, St ~ Campagne, value="echtl")
+
+    # sélectionner les colonnes avec les années désirées pour le filtre
+    # campagnes annuelles et semestrielles
+    keySmstrl <- c(paste("A_",qAnnees,sep=""),paste("S_",qAnnees,sep=""))
+    tb3 <- tb2[,unlist(sapply(keySmstrl,function(x) grep(x,names(tb2))))]
+    wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
+    T_AeS_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
+
+    # campagnes annuelles
+    keyAnnuel <- paste("A_",qAnnees,sep="")
+    tb3 <- tb2[,unlist(sapply(keyAnnuel,function(x) grep(x,names(tb2))))]
+    if("data.frame" %in% class(tb3)) { wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
+                                   }else{
+                                     wStat <- tb2$St[which(na.omit(tb3==1))]}
+    T_A_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
+
+    # campagnes semestrielles
+    keyAnnuel <- paste("S_",qAnnees,sep="")
+    tb3 <- tb2[,unlist(sapply(keyAnnuel,function(x) grep(x,names(tb2))))]
+    if("data.frame" %in% class(tb3)) { wStat <- tb2$St[rowSums(tb3,na.rm=TRUE)==ncol(tb3)]
+                                   }else{
+                                     wStat <- tb2$St[which(na.omit(tb3==1))]}
+    T_S_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
+
+    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T <- T_AeS_inv))
+  }
+
+  ###################################################
+  ######## Fonctions génériques #####################
+  # Définition de fonctions qui seront utilisées couramment dans le code
+
+  # 1. Applique le filtre spécifié au tableau donné en argument
+  filtreTable <- function(wtable, wfiltre) {
+    if((length(filtre.annees)>1) & (wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv"))) { # appliquer le filtre si spécifié
+        message(paste("Stations filtrees par",wfiltre))
+        filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
+        wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
+        dd.filt <- filter(wtable, key %in% filtre.Camp[[wfiltre]])
+      dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
+  } else {
+    if(wfiltre %in% c("A","S")) {
+    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
+  } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
+    wfiltre <- gsub("._(.)_.*","\\1",wfiltre)
+    CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
+  } else {
+    CmpTag <- paste(filtre.annees,collapse="|") }
+    wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
+
+    dd.filt <- data.frame(filter(wtable, Campagne %in% wCampKeep))
+
+    }
+
+    if(nrow(dd.filt)==0) warning(
+           sprintf("Attention!! \n\nAucune des données ne sont sélectionnées par le filtre sur stations:
+\nFiltre %s, années %s\n", wfiltre, paste(filtre.annees,collapse=", ")))
+    return(dd.filt)  }
+
+  # 2. Converti les noms de campagne en année (charactère -> numérique)
+  as.year <- function(x) as.numeric(sub("[AS]_","",x))
+
+  # 3. Dessine les barres d'erreurs
+  draw.SE <- function(mat, couleur=1, typel=1) {
+  # Inclure matrice avec x en colonne 1 et valeur min/max en colonne 2 et 3
+  mat$diff <- mat[,3]-mat[,2]
+  mat <- mat[mat$diff != 0,] # garder seulement les valeurs de SE existantes
+  mat[,2][mat[,2]<0] <- 0
+  dmm <- sapply(1:nrow(mat),function(i) arrows(mat[i,1],mat[i,3],
+                                                  mat[i,1],mat[i,2],code=3,lty=typel,
+                                                  col=couleur,angle=90,length=0.1)) }
+
+
+  # 4. Calcul du nombre de stations échantillonées par groupement spatial, selon le filtre
+  # Groupement spatial: géomorphologie, ou géomorphologie/impact
+  # défini pour les invertébrés mais pourrait être appliqué aux poisssons
+  # (Retourne aussi le nom des stations)
+  nst.par.gs <- function(AS="A",impact=FALSE, allyr=FALSE) {
+    # lorsque allyr=TRUE, calcule le nombre de campagnes effectuées sur chaque
+    # géomorphologie +/- impact
+    # sinon, calcule le nombre de stations *par campagne* sur chaque géomorpho +/- impact
+
+    if(AS %in% c("A","S")) { dd <- filtreTable(dbio, wfiltre=paste("T",AS,"inv",sep="_"))
+                             } else {
+                               keySmstrl <- c(paste("A_",filtre.annees,sep=""),
+                                              paste("S_",filtre.annees,sep=""))
+                               dd <- dbio[dbio$Campagne %in% keySmstrl,] }
+    ff <- c("Campagne","Geomorpho","N_Impact","St")
+    # conserver seulement les facteurs spécifiés en arguments
+    ff <- ff[c(1, 2, impact*3, (!allyr)*4)]
+    dd2 <- merge(dd, info.transect, by="St")
+    dd.St <- unique(dd2[,ff])
+
+    ff <- ff[!(ff %in% c("St",ifelse(allyr, "Campagne","")))]
+    dd.St2 <- aggregate(dd.St[,ifelse(allyr,"Campagne","St")],
+                     lapply(ff, function(x) dd.St[,x]), length)
+    names(dd.St2) <- c(ff, "N.u")
+    return(list("numSt"=dd.St2, "nomsSt"=dd.St))
+    }
+
+  # Filtre les donnees analysees par groupe taxonomique lorsque specifie
+  filtreTaxo <- function(wtable,action="inclure",
+                          taxtype="Groupe",taxnom="Tous", silent=FALSE) {
+
+
+      if(action == "inclure" & taxtype == "Groupe" & any(taxnom %in% "Tous")) {
+      # Pas de filtre
+      message("Pas de filtre sur espèces appliqué")
+          } else {
+
+      # Extraction du type d'espèces analysées maintenant
+      sc <<- sys.calls() # fonctions en cours
+
+      # Extraction de la catégorie d'espèces présente dans le filtre
+      # E.g. si toutes les espèces filtrées sont des invertébrés, le filtre
+      # taxonomique n'est pas appliqué aux poissons
+      qtype <- unique(index.tt.especes[index.tt.especes[,taxoF.utaxo]
+                                       %in% taxoF.nom,"type"])
+
+      # Appliquer le filtre si la categorie d'espèce mentionnée dans le filtre
+      # correspond aux analyses présentes (e.g. pas de filtre poissons sur les
+      # invertébrés)
+      if(any(grepl(tolower(qtype),tolower(sc)))) {
+
+                                        # On filtre les rangees selon les especes/groupes taxo specifie
+          if(!silent) {
+      message(paste(c("Filtre sur espèces",capitalize(action),qtype,taxtype,
+                    paste(sort(taxnom),collapse=", ")),collapse=" :: "))
+  }
+      if(tolower(action) == "inclure") { # inclusion des groupes X
+        filt.string <- sprintf("%s %%in%% c('%s')", taxtype, paste(taxnom, collapse="', '"))
+        wtable <- wtable %>% filter_(filt.string)
+      } else { # exclusion des groupes X
+      wtable <- wtable[!(wtable[,taxtype] %in% taxnom),] }}}
+
+    return(as.data.frame(wtable)) # switch out of dplyr df format
+  }
+
+  # Fonction interactive utilisée pour définir les variables du filtre sur les espèces
+  # "inclure" ou "exclure" / unité taxonomique / nom
+  def.filtre.especes <- function(taxoF.incl="tous", taxoF.utaxo, taxoF.nom) {
+
+    if(taxoF.incl == "tous") {
+       taxoF.incl <<- "inclure"
+       taxoF.utaxo <<- "Groupe"
+       taxoF.nom <<- "Tous"
+     } else {
+       if(missing(taxoF.incl)) {
+       message("Definition des filtres taxonomiques (pas besoin de mettre des guillemets):")
+         taxoF.incl <- tolower(readline("Inclure ou exclure? "))
+       }else{ taxoF.incl <- tolower(taxoF.incl)}
+
+       if(missing(taxoF.utaxo)) {
+         mm <- "Unité taxomique? (Groupe/Sous-Groupe/Famille/Genre/Espece) "
+         taxoF.utaxo <- capitalize(tolower(readline(mm)))
+       }else{ taxoF.utaxo <- capitalize(tolower(taxoF.utaxo)) }
+
+       taxoF.utaxo <- taxoF.utaxo
+       if(taxoF.utaxo == "Sous-Groupe") taxoF.utaxo <- "S_Groupe"
+       if(taxoF.utaxo == "Espece") taxoF.utaxo <- "G_Sp"
+
+       if(missing(taxoF.nom)) {
+         taxoF.nom <- readline("Nom? ")
+         taxoF.nom <- capitalize(tolower(trim(unlist(strsplit(taxoF.nom,",")))))
+       }else{ taxoF.nom <- capitalize(tolower(taxoF.nom)) }
+
+       taxoF.incl <<- taxoF.incl
+       taxoF.utaxo <<- taxoF.utaxo
+       taxoF.nom <<- taxoF.nom
+  }
+}
+  # Fonction qui permet de sélectionner un fichier .csv pour importer
+  # sous R une liste de noms d'espèces/genre/famille
+  # à utiliser dans le filtre taxonomique
+  # argument "action" défini taxoF.incl
+  # argument "niveau" défini le niveau taxonique, taxoF.utaxo
+  # argument "titre" défini si la première rangée est le nom de la colonne dans le
+  # ... fichier .csv (si non, spécifier titre = FALSE)
+  import.filtre.taxo <- function(fichier, niveau="Famille",action="inclure",titre=FALSE,sepval=";") {
+
+    if(missing(fichier)) fichier <- file.choose()
+      lnoms <- read.csv(fichier,header=titre,sep=sepval) # sélectionner le fichier dans l'ordi
+      if(class(lnoms)=="data.frame") lnoms <- lnoms[,1]
+      lnoms <- capitalize(tolower(trim(lnoms))) # nettoyer format des noms
+      taxoF.incl <<- action
+      taxoF.utaxo <<- niveau
+      taxoF.nom <<- lnoms
+
+      voir.filtre.taxo()
+  }
+
+  # Fonction qui montre la valeur présente des filtres taxonomiques
+  # Tapez "voir.filtre.taxo()" dans la console
+  voir.filtre.taxo <- function() {
+      fltre.now <- list(taxoF.incl, taxoF.utaxo, sort(taxoF.nom))
+      names(fltre.now) <- c("taxoF.incl","taxoF.utaxo","taxoF.nom")
+      print(fltre.now) }
+
+  # Cette fonction retourne une version abbrégée des noms des groupes taxonomiques
+  # inclus (ou exclus) au besoin
+  taxotagFunk <- function() {
+
+    if(taxoF.incl=="inclure" & taxoF.utaxo == "Groupe" & any(taxoF.nom %in% "Tous")) {
+      return("") # si tous les groupes sont inclus, ne pas modifier le nom de fichiers
+    } else {
+        if(length(taxoF.nom) <= 5) {
+            taxotag <- paste(paste(c(capitalize(taxoF.utaxo),abbreviate(c(capitalize(taxoF.incl),
+                                                                          sort(taxoF.nom)))), collapse="-"),"_",sep="")
+        } else {taxotag <- paste(paste(c(capitalize(taxoF.utaxo),
+                                         abbreviate(c(capitalize(taxoF.incl),
+                                                      sort(taxoF.nom)[1:5], "etc",
+                                                      paste("N=",length(taxoF.nom),sep="")))), collapse="-"),"_",sep="")}
+        return(taxotag) }
+  }
+
+  # Ces fonctions sont utilisées pour indiquer le départ et la fin
+  # des codes compris dans une fonction
+  departFunk <- function() {
+      sc <- sys.calls()
+      fname <- as.character(sc[[length(sc)-1]])[1] # extrait le nom de la fonction parent
+      packageStartupMessage(sprintf("\nDepart %s()...",fname))
+      try(print(unlist(mget(names(formals(fname)), envir=sys.frame(-1)))),
+          silent=TRUE)
+      message("#################\n")
+      }
+  finFunk <- function() {
+      message("\n#################")
+      sc <- sys.calls()
+      fname <- as.character(sc[[length(sc)-2]])[1] # extrait le nom de la fonction parent
+      packageStartupMessage(sprintf("---> fin %s().",fname)) }
+
+  ## Si erreur dans une fonction, indiquer la fonction où l'erreur se produit
+  ## EM() est donnée en argument a la fonction on.exit() qui tourne automatiquement
+  ## l'argument spécifié quand une fonction se termine, naturellement ou avec
+  ## une erreur. Ici EM() identifie si la fonction a eu une erreur, et si c'est
+  ## le cas imprime le nom de la fonction pour faciliter l'identification du bug.
+  EM <- function() {
+      tb <- try(get(".Traceback",envir=baseenv()),silent=TRUE) # extraire messages d'erreur
+      if(identical(paste(lastval(tb)), paste(sys.calls()[1]))) {
+          message(sprintf("Erreur dans la fonction %s()",
+                      paste(sys.calls()[[1]][1])))
+          assign(".Traceback"[[1]],999,envir=baseenv())
+          } else { finFunk()} }

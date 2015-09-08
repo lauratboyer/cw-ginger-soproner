@@ -42,15 +42,17 @@ type.tbl <- c("inv","data.LIT","typo.LIT","data.quad","poissons","bioeco","trans
   obj.files <- c(fc.inv, fc.LIT, fc.typoLIT, fc.quad, fc.poissons, fc.bioeco,
                  fc.transect, fc.fct.temprl)
   names(obj.files) <- type.tbl
+  # extraire date de creation des fichiers
+  DBinf.now <- lapply(type.tbl,function(x)
+                    file.info(paste(dossier.DB,obj.files[x],sep="/"))$mtime)
+  names(DBinf.now) <- obj.names
+
+  if(refaire.tableaux) { # cette partie du code ré-importe et reformatte les nouvelles données, voir
 
   dmm <- sapply(obj.files, function(on)
                 file.copy(paste(dossier.DB,on,sep="//"),
                           paste(dossier.donnees,on,sep="//"),
                           overwrite=TRUE))
-
-  DBinf.now <- lapply(type.tbl,function(x)
-                    file.info(paste(dossier.DB,obj.files[x],sep="/"))$mtime)
-  names(DBinf.now) <- obj.names
 
   # Imprimer avertissement au sujet des guillements:
   # s'il y a des guillements non-fermés dans les
@@ -98,7 +100,8 @@ type.tbl <- c("inv","data.LIT","typo.LIT","data.quad","poissons","bioeco","trans
 
 
   # extraire des fichiers csv et assigner aux noms d'objets (voir obj.names)
-  dmm <- sapply(1:length(obj.names),function(x) {
+  do.imprt <- function(x) {
+      print(paste("Import:", obj.names[x]))
       # vérifier séparateur de colonnes
       cs <- scan(paste(dossier.donnees, obj.files[x], sep=""),
                  "character",quiet=TRUE)
@@ -108,13 +111,40 @@ type.tbl <- c("inv","data.LIT","typo.LIT","data.quad","poissons","bioeco","trans
                          sep=seprt, dec=".", fileEncoding="iso-8859-1") # point décimal "." (voir aussi tradfunk())
       objnow <- objnow[!apply(objnow,1,is.empty),]; # ôter les rangées vides
       objnow <- data.frame(lapply(objnow, tradfunk))
-      assign(obj.names[x], objnow, .GlobalEnv)}) # créer l'objet dans l'envir global
+      assign(obj.names[x], objnow, .GlobalEnv) # créer l'objet dans l'envir global
+
+  }
+
+  dmm <- sapply(1:length(obj.names), do.imprt)
+
+  if(!any(grepl("Tableaux-pour-analyses", list.dirs(dossier.R)))) dir.create(paste0(dossier.R,"/Tableaux-pour-analyses"))
+  setwd(paste0(dossier.R, "/Tableaux-pour-analyses"))
+  save(data.inv, file="data-inv-brut.Rdata")
+  save(data.LIT, file="data-LIT-brut.Rdata")
+  save(index.LIT, file="index-LIT-brut.Rdata")
+  save(data.quad, file="data-quad-brut.Rdata")
+  save(data.poissons, file="data-poissons-brut.Rdata")
+  save(data.bioeco, file="data-bioeco-brut.Rdata")
+  save(data.info.transect, file="data-info-trans-brut.Rdata")
+  save(data.info.temprl, file="data-info-trans-tempo-brut.Rdata")
+  setwd("../")
+  message("\n\nBases de données importées avec succès. Lancement du formattage des tableaux...\n\n")
+
+} else {
+  setwd(paste0(dossier.R, "/Tableaux-pour-analyses"))
+  load("data-inv-brut.Rdata", .GlobalEnv)
+  load("data-LIT-brut.Rdata", .GlobalEnv)
+  load("index-LIT-brut.Rdata", .GlobalEnv)
+  load("data-quad-brut.Rdata", .GlobalEnv)
+  load("data-poissons-brut.Rdata", .GlobalEnv)
+  load("data-bioeco-brut.Rdata", .GlobalEnv)
+  load("data-info-trans-brut.Rdata", .GlobalEnv)
+  setwd("../")
+}
 
   print("Tableaux importés + dernière date de modification des fichiers .csv")
-
   print(DBinf.now[obj.names %in% ls(.GlobalEnv)])
 
-  message("\n\nBases de données importées avec succès. Lancement du formattage des tableaux...\n\n")
   ############################################################
   ############################################################
   if(prep.tbl) prep.analyse() # lance préparation données + création tableaux annexes

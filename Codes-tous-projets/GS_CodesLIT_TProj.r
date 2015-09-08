@@ -22,11 +22,13 @@ cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
 
 # formerly TB.lit
 LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
-                             wZeroT=TRUE, wZeroSt=FALSE) {
+                             wZeroT=TRUE, wZeroSt=FALSE, silent=FALSE) {
 
 
+    if(!silent) {
   departFunk() # message de depart
   on.exit(EM())
+}
 
   # Creer tableau donnees brutes pour analyses subsequentes
   # Sélectionner tableau de données LIT ou quadrat
