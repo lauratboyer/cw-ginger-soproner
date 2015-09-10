@@ -16,8 +16,8 @@ dossier.DB <- paste(getwd(), "/DBs tous projets", sep="")
 setwd(dossier.R)
 ############################################
 ## Reformatter les tableaux ou charger ceux deja formattés? TRUE ou FALSE
-## Pour importer les nouvelles données (mises sous .csv dans le dossier Data), mettre à TRUE
-refaire.tableaux <- TRUE
+## Pour importer les nouvelles données (mises sous .csv dans le dossier DBs tous projets), mettre à TRUE
+refaire.tableaux <- FALSE
 
 ############################################
 ## Variables spatiales et temporelles dans les tableaux

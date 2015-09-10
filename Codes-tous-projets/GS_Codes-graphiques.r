@@ -22,17 +22,17 @@ require(ggplot2)
 custom.colpal <- function(n=12) {
 
     fb35 <- "#AC2020" #intermediate firebrick 3-4
-    colvect <- c("wheat3","gold","seagreen2","turquoise3", "dodgerblue","navy") # <-- modifier 'colvect' pour avoir une nouvelle palette
+    #colvect <- c("wheat3","gold","seagreen2","turquoise3", "dodgerblue","navy") # <-- modifier 'colvect' pour avoir une nouvelle palette
     #colvect <- brewer.pal(11, "Spectral")
     # voir display.brewer.all() pour options de palettes toutes faites
     # dev.new(); display.brewer.all(); brewer.pal(7,"Set1")
 # other option going from neutral to red
 #    colvect <- c("wheat3","wheat2","orange1","indianred1","firebrick2",fb35)
- #   colvect <- c("royalblue3","deepskyblue1","gold","orange1","indianred1","firebrick2",fb35)
+    colvect <- c("royalblue3","deepskyblue1","gold","orange1","indianred1","firebrick2",fb35)
     colorRampPalette(colvect)(n)
 }
 
-fig.etiq <- c(Geomorpho="Géomorphologie", N_Impact="Niveau d'impact",
+fig.etiq <- c(Geomorpho="Géomorphologie", Geomorpho.abbrev="Géomorphologie", N_Impact="Niveau d'impact",
               dens="Densité moyenne",
               Campagne="Campagne",
               Saison="Saison", St="Station",
@@ -59,7 +59,8 @@ geomorpho.lab <- c("Recif barriere externe"="RBE",
 ## Niveau des variables catégoriques dans l'ordre désiré pour les graphiques
 xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008",
                      "S_2009","A_2009", "S_2010", "A_2010", "S_2011", "A_2011",
-                     "S_2012", "A_2012","S_2013", "A_2013", "S_2014", "A_2014"),
+                         "S_2012", "A_2012","S_2013", "A_2013", "S_2014", "A_2014",
+                                "S_2015","A_2015"),
                      N_Impact=c("Reference","Impact"),
                      Geomorpho=c("Recif barriere externe",
                        "Recif barriere interne",
@@ -198,11 +199,9 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
                                         # (could also use aes_string...?)
 
     if(var2 %in% c("Geomorpho","N_Impact")) { # ajuster la legende pour variables avec accents
-        vy.labs <- xfact.levels.accents[[var2]][sort(unique(dat.plot$vy))]
-    }else{vy.labs <- sort(unique(dat.plot$vy)) }
-
+        vy.labs <- xfact.levels.accents[[var2]][sort(unique(dat.plot$vy[!is.na(dat.plot$var.expl)]))]
+    }else{vy.labs <- sort(unique(dat.plot$vy[!is.na(dat.plot$var.expl)])) }
     colv <- custom.colpal(length(vy.labs))
-    print(length(colv))
     p0 <- ggplot(data=dat.plot, aes(x=vx, y=var.expl)) +
         scale_fill_manual(labels=vy.labs, values=colv) + #, palette=couleurs.palette) +
             scale_colour_manual(labels=vy.labs, values=colv) #, palette=couleurs.palette)
@@ -269,7 +268,7 @@ Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
 
 ###################################
 ###################################
-# shortcuts for function by survey type
+# fonction raccourcis pour fig.2var par type de données
 inv.fig <- function(...) { bio.fig <<- "inv"; fig.2var(...)}
 poissons.fig <- function(...) {bio.fig <<- "poissons"; fig.2var(...)}
 LIT.fig <- function(...) {bio.fig <<- "LIT"; fig.2var(...)}

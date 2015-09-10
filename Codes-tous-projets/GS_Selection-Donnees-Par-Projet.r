@@ -51,8 +51,6 @@ selection.projet <- function(x="KNS_KONIAMBO", filtre.Campagne) {
   dpoissons <<- filt.funk(dpoissons.TProj)
   dLIT <<- filt.funk(data.LIT.TProj)
   dQuad <<- filt.funk(dQuad.TProj)
-
-  if(x=="ADECAL_TOUHO") message("Pas de données INV disponibles")
   # et on re-source le code graphique pour changer les valeurs
   # des niveaux de campagne, au besoin
   source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8")
@@ -62,8 +60,6 @@ selection.projet <- function(x="KNS_KONIAMBO", filtre.Campagne) {
 
 do.fig.tables <- function() {
 
-
-
     message("");
     message("Création de tableaux pré-formattés pour faire les graphiques")
     message("------------------------------------------------------------")
@@ -71,6 +67,7 @@ do.fig.tables <- function() {
     # Invertebres:
     inv.taxo <- c("Groupe","S_Groupe","Famille","Genre")
     message("");
+    if(nrow(dbio) > 0) {
     message("Invertébrés:")
     dmm <- lapply(inv.taxo, function(i) {
                       obj <- INV.dens.gnrl(filt.camp="X", fspat=c(facteurs.spatio,"St"),
@@ -90,7 +87,8 @@ do.fig.tables <- function() {
                       message(objname);
                       assign(objname, obj, .GlobalEnv)
                   })
-
+} else { message("Pas de données invertébrés") }
+    if(nrow(dpoissons)>0) {
                                         # Poissons
     message("");     message("Poissons:")
     figdat.poissons.w0 <<- POIS.dens.gnrl(fspat=c(facteurs.spatio,"St"),
@@ -101,7 +99,8 @@ do.fig.tables <- function() {
                                        agtaxo="Famille", ftemp=c(facteurs.tempo, "Campagne"),
                                        wZeroT=FALSE, par.transect=TRUE, filt.camp="X", silent=TRUE)
     message("figdat.poissons")
-
+}else { message("Pas de données pour les poissons") }
+    if(nrow(dLIT)>0) {
                                         # LIT
     message("")
     message("LIT:")
@@ -109,10 +108,14 @@ do.fig.tables <- function() {
     message("figdat.LIT.w0")
     figdat.LIT <<- LIT.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
     message("figdat.LIT")
-                   message("")
+    message("")
+} else { message("Pas de données LIT")}
+
+    if(nrow(dQuad)>0) {
     message("Quadrats:")
     figdat.Quad.w0 <<- Quad.tableau.brut(filt.camp="X", silent=TRUE)
     message("figdat.Quad.w0")
     figdat.Quad <<- Quad.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
     message("figdat.Quad")
+} else { message("Pas de données quadrats")}
 }

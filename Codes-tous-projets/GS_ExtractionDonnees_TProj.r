@@ -674,22 +674,22 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
         wtable$key <- paste(wtable$St, wtable$Campagne, sep="_")
         dd.filt <- filter(wtable, key %in% filtre.Camp[[wfiltre]])
       dd.filt <- dd.filt[,names(dd.filt) != "key"] #ôter colonne key
-  } else {
+    } else {
+
     if(wfiltre %in% c("A","S")) {
     CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
   } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
     wfiltre <- gsub("._(.)_.*","\\1",wfiltre)
     CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
-  } else {
+} else {
+
     CmpTag <- paste(filtre.annees,collapse="|") }
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
-
     dd.filt <- data.frame(filter(wtable, Campagne %in% wCampKeep))
-
     }
 
     if(nrow(dd.filt)==0) warning(
-           sprintf("Attention!! \n\nAucune des données ne sont sélectionnées par le filtre sur stations:
+           sprintf("Attention!! \n\nAucunes des données ne sont sélectionnées par le filtre sur stations:
 \nFiltre %s, années %s\n", wfiltre, paste(filtre.annees,collapse=", ")))
     return(dd.filt)  }
 
