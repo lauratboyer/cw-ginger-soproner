@@ -109,6 +109,7 @@ source.with.encoding <<- function (path, encoding, echo = getOption("verbose"), 
         chdir = chdir)
 }
 
+source.with.encoding("GS_Codes-utils.r",encoding="UTF-8") # lance les codes LIT
 source.with.encoding("GS_Selection-Donnees-Par-Projet.r",encoding="UTF-8")
 source.with.encoding("GS_MiseAJourDB_TProj.r",encoding="UTF-8") # contient la fonction import.tableaux()
 source.with.encoding("GS_ExtractionDonnees_TProj.r",encoding="UTF-8") # contient la fonction prep.analyse()

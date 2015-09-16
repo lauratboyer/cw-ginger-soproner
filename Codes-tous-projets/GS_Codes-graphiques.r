@@ -75,7 +75,7 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "LG5B", "LG6B", "LG7B", "LR1", "LR2", "LR3", "OBRK3", "OBRK4",
                        "OBRK5A", "OF1C", "OF2C", "OF3C", "OF4C", "OF9", "PD4B", "PD5B",
                        "PI2", "PK4", "PK5", "PO1", "PROC4", "PV3B",
-                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6"))
+                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "CAGES", "REF"))
 
 # avec accents pour étiquette légende et axes seulements
 xfact.levels.accents <- xfact.levels
