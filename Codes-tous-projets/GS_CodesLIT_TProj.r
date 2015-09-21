@@ -7,18 +7,19 @@
 # CODE_DET -> All
 # Misc: ôté 'Coraux mous' de cat2keep$Acroporidae car absent du nouvel index.LIT
     type.corail <- c("General","Acroporidae",
-                     "Forme","All") #"Sensibilite",
+                     "Forme","Genre","All") #"Sensibilite",
     cat2keep <- list(c("Coraux","Coraline","Corail mort","Coraux mous","Algues",
                        "Abiotique","Autre faune"),
                      c("Acroporidae","Non-Acroporidae"),
                      c("Corail branchu","Corail tabulaire",
                        "Corail massif","Corail encroutant",
                        "Corail foliaire","Corail sub-Massif","Corail digite"),
-                     c("Corail sensible 1","Corail sensible 2"),
+                     c("Montipora","Acropora","Pavona"),
                      c("Macro-Algues","Assemblage d'Algues"))
-
+# Catégories sensibilité (ôtées car non-utilisées):
+#c("Corail sensible 1","Corail sensible 2"),
 names(cat2keep) <- type.corail
-cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
+#cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
 
 # formerly TB.lit
 LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
@@ -86,7 +87,9 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
     dd.i <- merge(dd[[1]]$dat, dd[[2]]$dat, by=c("Campagne","St", smpl))
     dd.i <- merge(dd.i, dd[[3]]$dat, by=c("Campagne","St", smpl))
     dd.i <- merge(dd.i, dd[[4]]$dat, by=c("Campagne","St", smpl))
-#    dd.i <- merge(dd.i, dd[[5]]$dat, by=c("Campagne","St", smpl))
+    dd.i <- merge(dd.i, dd[[5]]$dat, by=c("Campagne","St", smpl))
+    # ... à rajouter au besoin si une sixième catégorie est nécéssaire (e.g. Sensibilite)
+    #dd.i <- merge(dd.i, dd[[6]]$dat, by=c("Campagne","St", smpl))
 
     # 4. Rajouter colonnes infos additionelles
     # Geomorphologies
@@ -115,7 +118,6 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
 
 
 #################################################################
-
 
 # Tableau moyenne/SE suivant categories dans "S_Corail_All",
 # par geomorphologie pour une année spécifique
