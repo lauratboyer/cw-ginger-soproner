@@ -3,58 +3,80 @@
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
 \usepackage{parskip}
-\input{/Users/lauratb/Projects/misc-ressources/misc-latex-tools.tex}
+%\input{/Users/lauratb/Projects/misc-ressources/misc-latex-tools.tex}
+\input{C:/Projects/LTB.misc/misc-latex-tools.tex}
 \newcommand{\mcode} {\texttt{GS\_MotherCode\_TProj.r}{ }}
 \hypersetup{colorlinks, 
 linkcolor=PineGreen, 
 filecolor=TealBlue, 
 urlcolor=PineGreen, 
 citecolor=NavyBlue}
+\newcommand{\codegraph}{\texttt{GS\_Codes-graphiques.r}}
 \begin{document}
+\def\mydate{\leavevmode\hbox{\twodigits\day.\twodigits\month.\the\year}}
+\def\twodigits#1{\ifnum#1<10 0\fi\the#1}
 
 {\Large \textbf{Graphiques}}\\
-Auteur: Laura Tremblay-Boyer, contact: lauratboyer@gmail.com\\
-Nouméa le 8 septembre 2015\\
+Auteur: Laura Tremblay-Boyer, contact: laura.t.boyer@gmail.com\\
+Derniers changements: Nouméa, \mydate\\
 
 
 
 Fichier: \texttt{GS\_Codes-graphiques.r}\\
 Fonctions: \texttt{fig.2var()}
 
-Les fonctionalités graphiques sont codées en utilisant les fonctions de la librairie \texttt{ggplot} car elle donne plus de flexibilité au niveau du type de graphique et vous permettent de customiser certains aspects visuels sans avoir à changer le code. Vous pouvez aussi sauvegarder l'image sous un object de classe ggplot (en utilisant la fonction \texttt{save}) qui contient le graphique mais aussi les données utilisées pour le bâtir. Finalement, il y a beaucoup de ressources d'aide pour ggplot en ligne qui pourront vous permettre de créer des nouveaux types de graphique une fois la ‘base’ ggplot assemblée avec les données/l’aggrégation désirée.
+Les fonctionalités graphiques sont codées en utilisant la librairie \texttt{ggplot2} car elle donne plus de flexibilité au niveau du type de graphique et vous permet de customiser certains aspects visuels sans avoir à changer le code. Vous pouvez aussi sauvegarder l'image sous un object de classe ggplot (en utilisant la fonction \texttt{save}) qui contient le graphique ainsi que les données utilisées pour le bâtir. Finalement, il y a beaucoup de ressources d'aide pour ggplot en ligne qui vous permettront de créer des nouveaux types de graphique une fois la ‘base’ ggplot assemblée avec les données/l’aggrégation désirée.
 
-Vous avez l'option de faire 3 types de graphiques principaux, tous accessibles avec la fonction \texttt{fig.2var()}: boxplot (typ.fig='boxplot'), barres (typ.fig='barre') et lignes/séries temporelles (typ.fig='ligne'). Ces deux derniers incluent la barre d'erreur supérieur définie par la moyenne + l'écart type.
+Vous avez l'option de faire 3 types de graphiques principaux, tous accessibles avec la fonction \texttt{fig.2var()}: boxplot (typ.fig=`boxplot'), barres (typ.fig=`barre') et lignes/ séries temporelles (typ.fig=`ligne'). Ces deux derniers incluent la barre d'erreur supérieure définie par la moyenne + l'écart type.
 
-\subsection{Spécification du type de données}
-Pour définir le type de données utilisées, vous spécifiez directement dans la console la valeur de l'objet \texttt{bio.fig} comme: 'inv', 'poissons', 'LIT', 'Quad' (valeur = 'inv' par défaut). Alternativement, les fonctions \texttt{inv.fig}, \texttt{poissons.fig}, \texttt{LIT.fig()} et \texttt{Quad.fig()} sont des raccourcis qui accèdent directement à fig.2var() en changeant la valeur de l'object bio.fig automatiquement.
+\section{Spécification de la catégorie de données}
+La valeur de l'objet \texttt{\hl{bio.fig}} détermine la catégorie de données utilisée dans le graphique. L'option la plus facile est d'utiliser les fonctions\\
 
-\subsection{Options de la fonction \texttt{fig.2var()}}
+\texttt{\hllb{inv.fig()}}\hllb{\texttt{poissons.fig()}}\hllb{\texttt{LIT.fig()}}\hllb{\texttt{Quad.fig()}}\\
 
-\subsubsection{Options de base}
+qui sont des raccourcis qui accèdent directement à \texttt{fig.2var()} et modifient la valeur de l'object \texttt{bio.fig} automatiquement pour vous. Sinon, vous pouvez spécifier directement dans la console la valeur de l'objet \texttt{bio.fig} comme: `inv', `poissons', `LIT', `Quad' (valeur = `inv' par défaut), et utiliser \texttt{fig.2var()} directement.
+
+\ra Lorsque \texttt{selection.projet()} est lancée, les tableaux nécéssaires à la création des graphiques pour le projet sont automatiquement créés dans l'environnement R. Vous pourrez les consulter directement au besoin.
+Le nom des objets contenant ces tableaux est imprimé sur la console une première fois lors du lancement de \texttt{selection.projet()}, et ensuite à chaque fois que la fonction \texttt{fig.2var} est utilisée.
+
+\section{Options de la fonction \texttt{fig.2var()}}
+
+\subsection{Options de base}
 \begin{enumerate}
-\item \hl{\texttt{typ.fig}}: le type de graph produit, 'barre', 'boxplot' ou 'ligne' (par défaut, 'barre')
-\item \hl{\texttt{var.expl}}: la variable de réponse qui sera représentée dans le graph, 
-si non-spécifiée, les valeurs par défaut sont la densité pour les invertébrés et les poissons, et la couverture (en \%) de la catégorie Coraux pour LIT et quadrats. 
+\item \hl{\texttt{typ.fig}}: le type de graph produit, `barre', `boxplot' ou `ligne' (par défaut, `barre')
+\item \hl{\texttt{var.expl}}: la variable de réponse qui sera représentée dans le graphique, 
+si non-spécifiée, les valeurs par défaut sont la densité pour les invertébrés et les poissons, et la couverture (en \%) de la catégorie Général/Coraux pour LIT et quadrats. 
 \item \hl{\texttt{var1}}: la variable explicative en X (horizontal), par défaut la géomorphologie
 \item \hl{\texttt{var2}}: la variable explicative en Y (vertical), par défaut les campagnes (à noter que cette variable est aussi représentée par les couleurs du graphique)
-\item \hl{\texttt{panneau}} (optionnel): une variable explicative à inclure sous forme de fenêtre individuelle pour chaque niveau de la variable
+\item \hl{\texttt{panneau}} (optionnel): une variable explicative à inclure sous forme de fenêtre individuelle pour chaque niveau de la variable. 
+
+
 
 \end{enumerate}
-\subsubsection{Options pour filtrer}
+\ra Les variables explicatives disponibles sont définies dans les objets \\\texttt{facteurs.spatio}, \texttt{facteurs.tempo} et \texttt{facteurs.taxo}. Pour LIT et Quadrats seulement, une variable additionelle, \texttt{LIT.lev}, peut être utilisée pour representer les niveaux définis dans la catégorie LIT spécifiée (voir argument \texttt{agLIT} ci-bas).
+\subsection{Options pour filtrer}
 \begin{enumerate}
 
 \item \hl{\texttt{filtre.camp}}: un filtre sur le type de campagne, `A' pour les campagnes annuelles, `S' pour les campagnes semestrielles (`A' par défaut)
 
-\item \hl{\texttt{filtre, filtre2}}: un (ou deux) filtre optionel sur n'importe quelle autre variable tant qu'elle soit présente sous forme de colonne dans le jeu de données. Vous pouvez spécifiez directement sous l'argument \texttt{filtre} ou \texttt{filtre2} e.g. si vous voulez juste sélectionner les valeurs de la station “ST1”, vous entreriez: \texttt{fig.2var(…, filtre = “ St == ‘ST1’”)} (attention à inclure des guillemets simples à l'intérieur des guillemets doubles), ou bien utiliser deux fonctions raccourcis qui font le formattage du filtre pour vous selon si vous désirez inclure ---\hllb{\texttt{filtre.incl()}}--- ou exclure ---\hllb{\texttt{filtre.excl()}}--- la valeur spécifiée. Ces fonctions s'utilisent comme suit: le premier argument est la variable/colonne sur lequel le filtre doit être appliqué, le deuxième argument est la (ou les) valeur(s) à inclure ou exclure: \\
+\item \hl{\texttt{filtre, filtre2}}: un (ou deux) filtre(s) optionel(s) sur n'importe quelle autre variable tant qu'elle soit présente sous forme de colonne dans le jeu de données. Vous pouvez utiliser deux fonctions raccourcis qui font le formattage du filtre pour vous selon si vous désirez inclure ---\hllb{\texttt{filtre.incl()}}--- ou exclure ---\hllb{\texttt{filtre.excl()}}--- la valeur spécifiée. Ces fonctions s'utilisent comme suit: le premier argument est la variable/colonne sur lequel le filtre doit être appliqué, le deuxième argument est la (ou les) valeur(s) à inclure ou exclure: \\
 \\
-\texttt{> fig.2var(..., filtre=filtre.incl("St", "ST1"))\\
-> fig.2var(..., filtre=filtre.excl("Campagne", c("A\_2006","A\_2007","A\_2008"))) \# c()
-}
-\item \hl{\texttt{tous.niveaux}}: cette option, à mettre en TRUE (défaut) ou FALSE, détermine si les combinaisons de niveaux non-échantillonées sont incluses ou pas. C'est surtout important pour l’esthétique du graph, car normalement ggplot montre seulement les combinaisons de variables qui existent et peut changer la largeur ou répartition des barres/points pour remplir l’espace disponible (\texttt{tous.niveaux = FALSE}), alors que des fois on veut explicitement montrer qu’il n’y pas de valeurs pour une certaine variable (\texttt{tous.niveaux = TRUE}, e.g. garder un espace vide si une station n’a pas été échantillonée pendant plusieurs campagne). Ça peut valoir la peine de comparer les deux options lorsque vous faites un graph.
-\item \underline{Pour les invertébrés seulement}, \hl{\texttt{agtaxo}}: l’aggrégation taxonomique (Groupe, S\_Groupe, Famille, Genre) et \hl{\texttt{typ.taxo}}: la valeur à sélectionner dans l’aggrégation, eg. si agtaxo = ``Groupe”, typ.taxo pourrait être ``Crustaces”, ``Mollusques”, etc. (valeurs par défaut, Groupe et ``Crustaces")
+Pour une valeur unique:\\
+\footnotesize{\texttt{> fig.2var(..., filtre=filtre.incl("St", "ST1"))}}\\
+
+Pour créer un vecteur avec de multiples valeurs à inclure ou exclure:\\
+{\footnotesize\texttt{> fig.2var(..., filtre=filtre.excl("Campagne",c("A\_2006","A\_2007","A\_2008")))}}
+ 
+Alternativement, vous pouvez spécifier directement la valeur sous l'argument \texttt{filtre} ou \texttt{filtre2}, e.g. pour sélectionner les valeurs de la station “ST1”, vous entreriez:\\ \texttt{fig.2var(…, filtre = "St == ‘ST1’”)}, ou, pour plusieurs valeurs,\\ \texttt{fig.2var(…, filtre = "Campagne \%in\% c(‘A\_2013’,`A\_2014')”)} (attention à inclure des guillemets simples à l'intérieur des guillemets doubles... les fonctions \texttt{filtre.incl()} et \texttt{filtre.excl()} font ce travail de formattage de la ponctuation pour vous).
+
+\item \hl{\texttt{tous.niveaux}}: cette option, à mettre en TRUE (défaut) ou FALSE, détermine si les combinaisons de niveaux non-échantillonées sont incluses ou pas. C'est surtout important pour l’esthétique du graph, car normalement ggplot montre seulement les combinaisons de variables qui existent et peut changer la largeur ou répartition des barres/points pour remplir l’espace disponible (\texttt{tous.niveaux = FALSE}), alors que des fois on veut explicitement montrer qu’il n’y pas de valeurs pour une certaine variable (\texttt{tous.niveaux = TRUE}, e.g. garder un espace vide si une station n’a pas été échantillonée pendant plusieurs campagnes). Ça peut valoir la peine de comparer les deux options lorsque vous faites un graph.
+
+\item \underline{Pour les invertébrés seulement}, \hl{\texttt{agtaxo}}: l’aggrégation taxonomique (Groupe, S\_Groupe,\\ Famille, Genre) et \hl{\texttt{typ.taxo}}: la valeur à sélectionner dans l’aggrégation, eg. si agtaxo = ``Groupe”, typ.taxo pourrait être ``Crustaces”, ``Mollusques”, etc. (valeurs par défaut, Groupe et ``Crustaces").
+
+\item \underline{Pour LIT et Quadrats seulement}, \hl{\texttt{agLIT}}: la catégorie LIT à représenter (voir les colonnes de l'objet \texttt{index.LIT}: General, Acroporidae, Forme, Genre, All) (valeur par défaut: "General"). 
 
 \end{enumerate}
-
+\subsection{fig.etiq et definir des nouveaux niveaux}
 
 \subsection{Ajustements des paramètres visuels}
 Plusieurs aspects visuels du graph peuvent être modifiés en rajoutant \hllb{\texttt{+ \emph{commande}}} directement après la fonction qui lance le graph ou après un objet ggplot sauvegardé, soit: \\
@@ -65,25 +87,37 @@ Plusieurs aspects visuels du graph peuvent être modifiés en rajoutant \hllb{\t
 > obj + commande\\
 }
 
-Les commandes principales sont décrites ci-bas, suivi d'un astérisque lorsque ce sont des fonctions déjà incluses avec ggplot.
-Plusieurs commandes additionelles peuvent être trouvées en ligne en recherchant dans le manuel de ggplot (ou le forum de Stack Overflow avec l'option \texttt{[R]}). Notamment, la fonction \texttt{theme()} contrôle de nombreux paramètres visuels et est décrite ici: \url{...}, à voir aussi les fonctions utilisées par ggplot pour changer l'aspect du texte, \texttt{element\_text()}.
+Et plus concrètement, avec les vrais commandes:\\
 
-\subsubsection{Titre du graphique} \texttt{\hl{ggtitle*()}}
-\subsubsection{Limites du graphique en X et Y} \texttt{\hl{coords\_cartesian*()}}
+\texttt{
+fig.2var(… )  \# plot produit...\\
+obj = fig.2var() \# mais si j’assigne à un object, pas de plot produit\\
+obj + xlab("vavoum!!”) \# plot  avec nouvelle étiquette en abscisse\\
+fig.2var(...) + ggtitle("je suis un titre”) \# ça fonctionne aussi\\
+obj + verti.x.val \# pour changer l’orientation des étiquettes\\
+obj + no.x.val \# ôter les étiquettes en X}
+
+Les commandes principales sont décrites ci-bas, suivi d'un astérisque lorsque ce sont des fonctions déjà incluses avec ggplot.
+Plusieurs commandes additionelles peuvent être trouvées en ligne en recherchant dans le manuel de ggplot (ou le forum de Stack Overflow avec l'option \texttt{[R]}). Notamment, la fonction \texttt{theme()} contrôle de nombreux paramètres visuels et est décrite ici: \url{http://docs.ggplot2.org/current/theme.html}, à voir aussi les fonctions utilisées par ggplot pour changer l'aspect du texte, \texttt{element\_text()}.
+
+\hl{inclure exemple modif texte, et rajouter boite autour de la legende, ... + theme vs. theme set?)}
+\begin{itemize}
+\item[] \texttt{\hllb{+ ggtitle("mon titre")}}: titre du graphique  (*)
+\item[] \texttt{\hllb{+ coords\_cartesian(xlim=c(xmin, xmax), ylim=c(ymin, ymax)))}}:\\ limites du graphique  (*)
+\item[] \texttt{\hllb{+ verti.x.val(angl=45, ...)}}: change le format des valeurs sur l'ordonnée (voir \texttt{?element\_text} pour les options de paramètres
+\item[] \texttt{\hllb{+ no.x.val}}: ôte les valeurs de l'axe des abscisses 
+\end{itemize}
+
 \subsubsection{Palette de couleurs}
-\subsubsection{Etiquette en absisses}
-\subsubsection{Abbréviations pour géomorphologie}
+Vous avez quelques options de palettes en addition de celle que j'ai spécifiée par défaut. Pour la changer, modifier la valeur de l'objet \hl{\texttt{palette.de.couleurs}} dans \codegraph. Les options sont définies sous des objets s'appellant custom.colpal.a, custom.colpal.b, custom.colpal.c, custom.colpal.d. Vous pourrez aussi faire votre propre palette en suivant le modèle défini dans les custom.colpal.X. Plus de détails sont inclus dans le commentaire de la section Couleurs de \codegraph.
+
+\subsubsection{Abbréviations pour géomorphologie} Les étiguettes pour la géomorphologie sont très longues et s'emboîtent souvent l'une sur l'autre. Pour utiliser un acronyme à la place du mot en entier, spécifiez "Geomorpho.abbrev" à la place de "Geomorpho" sous l'argument voulu.
 
 
 J’ai gardé les couleurs par défaut pour l’instant (arc-en-ciel =  youpi!) mais on discutera du genre d’options que vous voulez.
 
-Rajouter des options ggplot. Si vous voulez rajouter un titre (ou changer l’étiquette d’un des axes):
-fig.2var(… )  \# plot produit...
-obj = fig.2var( ) \# mais si j’assigne à un object, pas de plot produit
-obj + xlab(“vavoum!!”) \# je tape le nom de l’objet dans la console avec “+” d’autres options ggplot, e.g. ici une nouvelle étiquette en X
-obj + ggtitle(“je suis un titre”)
-obj + verti.x.val \# pour changer l’orientation des étiquettes, raccourci que j’ai écrit pour vous (donc pas une commande ggplot officielle)
-obj + no.x.val \# ôter les étiquettes en X
+Rajouter des options ggplot. Si vous voulez rajouter un titre (ou changer l’étiquette d’un des axes):\\
+
 
 \subsection{Sauvegarde des graphiques}
 La fonction \texttt{ggsave()} permet de sauvegarder le graphique actif (voir la barre en haut de la fenêtre graphique) sous plusieurs formats (entre autres, .pdf et .png) ou un object formatté de class ggplot. Il suffit de spécifier l'argument \texttt{filename} en incluant l'extension graphique souhaitée, e.g.\\
@@ -92,6 +126,9 @@ ggsave("nom-de-fichier-voulu.pdf")\\
 ggsave("nom-de-fichier-voulu.pdf", gg1) \# gg1 est un objet ggplot
 
 Voir ?ggsave pour les autres paramètres, entre autres \texttt{width} et \texttt{height} qui contrôlent les dimensions de l'image. 
+
+%\subsection{theme\_set}
+%font, legend keys, etc.
 
 \section{Exemples d'utilisation}
 
@@ -117,16 +154,15 @@ Voici quelques exemples d'implémentation, c’est aussi important de jouer avec
 \addcenterfignocap{boum}{inv-st-camp-filtre-incl-panneau-bp.png}
 \clearpage
 
-
-\texttt{LIT.fig(typ.fig="ligne")}
-\addcenterfignocap{boum}{inv-geo-camp-ligne.png}
-\clearpage
-
-\texttt{LIT.fig(var1="Campagne", var2="Geomorpho", typ.fig="ligne")}
+\texttt{LIT.fig(var1="Campagne", var2="Geomorpho", typ.fig="ligne", filtre=filtre.incl("LIT.lev", "Coraux"))}
 \addcenterfignocap{boum}{inv-camp-geo-ligne.png}
 \clearpage
 
-\texttt{LIT.fig(var.expl="Corail branchu")}
+\texttt{LIT.fig(var1="Geomorpho.abbrev", agLIT="Acroporidae", tous.niveaux=FALSE, panneau="LIT.lev", typ.fig="boxplot)}
+\addcenterfignocap{boum}{LIT-panneau-acroporidae-ex.png}
+\clearpage
+
+\texttt{LIT.fig(agLIT="Forme", filtre=filtre.incl("LIT.lev", "Corail branchu"))}
 \addcenterfignocap{boum}{lit-camp-geo-corail-branchu-bp.png}
 \clearpage
 \end{document}
