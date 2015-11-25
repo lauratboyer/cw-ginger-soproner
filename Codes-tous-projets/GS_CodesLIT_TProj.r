@@ -8,17 +8,17 @@
 # Misc: ôté 'Coraux mous' de cat2keep$Acroporidae car absent du nouvel index.LIT
     type.corail <- c("General","Acroporidae",
                      "Forme","Genre","All") #"Sensibilite",
-    cat2keep <- list(c("Coraux","Coraline","Corail mort","Coraux mous","Algues",
+    cat2keep <- list(General=c("Coraux","Coraline","Corail mort","Coraux mous","Algues",
                        "Abiotique","Autre faune"),
-                     c("Acroporidae","Non-Acroporidae"),
-                     c("Corail branchu","Corail tabulaire",
+                    Acroporidae=c("Acroporidae","Non-Acroporidae"),
+                     Forme=c("Corail branchu","Corail tabulaire",
                        "Corail massif","Corail encroutant",
                        "Corail foliaire","Corail sub-Massif","Corail digite"),
-                     c("Montipora","Acropora","Pavona"),
-                     c("Macro-Algues","Assemblage d'Algues"))
+                     Genre=c("Montipora","Acropora","Pavona"),
+                     All=c("Macro-Algues","Assemblage d'Algues"))
 # Catégories sensibilité (ôtées car non-utilisées):
 #c("Corail sensible 1","Corail sensible 2"),
-names(cat2keep) <- type.corail
+#names(cat2keep) <- type.corail
 #cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
 
 # formerly TB.lit
@@ -46,7 +46,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
     LIT.transect.info <- unique(DL[,c("Campagne","St",smpl)])
 
   # Rajouter infos sur les coraux
-  DL <- data.frame(index.LIT[DL$Code_LIT, type.corail], DL)
+    DL <- data.frame(index.LIT[DL$Code_LIT, type.corail], DL)
 
   # 2. Filter les zeros en fonction de wZeroT et wZeroSt
   # DL contient deja les zeros pour toutes les combinaisons de campagnes/transects/Code_LIT
@@ -62,7 +62,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
 
     # 3. Calculer couverture moyenne par Campagne/St/Transect/TypeDeCoraux
     ccfunk <- function(wc) {
-
+print(wc)
       # défini les niveaux de 'wc' existants dans la base
       nivfact <- unique(DL[,wc])
       nivfact <- nivfact[nivfact %in% cat2keep[[wc]]]
@@ -178,3 +178,92 @@ LIT.couvrt.gnrl <- function(ftemp=ftempo.defaut, fspat=fspat.defaut,
 # wrap pour les deux fonctions LIT en Quad
 Quad.tableau.brut <- function(...) LIT.tableau.brut(..., type.db="Quadrat")
 Quad.couvrt.gnrl <- function(...) LIT.couvrt.gnrl(..., type.db="Quadrat")
+
+
+
+###########################################################################
+###########################################################################
+###########################################################################
+## exploring alternative way of processing transect summaries by LIT category
+LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
+                     wZeroT=TRUE, wZeroSt=FALSE,
+                     frmt.ret="wide", silent=FALSE) {
+
+  # Creer tableau donnees brutes pour analyses subsequentes
+  # Sélectionner tableau de données LIT ou quadrat
+    if(type.db=="LIT") { DL <- dLIT
+                         smpl <- "T"}
+    if(type.db=="Quadrat") { DL <- dQuad
+                             smpl <- "Quadrat" }
+
+    # Filtrer par campagne
+    # Option d'appliquer un filtre sur le tableau final
+    # filt.camp a la valeur "A" ou "S"
+      if(filt.camp %in% c("A","S")) {
+          DL <- filtreTable(DL, filt.camp) }
+    LIT.transect.info <- unique(DL[,c("Campagne","St",smpl)])
+
+  # Rajouter infos sur les coraux
+    DL <- data.frame(index.LIT[DL$Code_LIT, type.corail], DL)
+
+  # 2. Filter les zeros en fonction de wZeroT et wZeroSt
+  # DL contient deja les zeros pour toutes les combinaisons de campagnes/transects/Code_LIT
+
+  if(wZeroSt) { # si wZeroSt = TRUE, ote les zeros si l'espece est observee sur la station mais pas tous les transects
+      # independemment de la valeur de wZeroT
+      DL.ZeroSt <- DL %>% group_by(Campagne, St, Code_LIT) %>% summarize(status.X=all(X.==0))
+      DL %<>% inner_join(DL.ZeroSt) %>% filter( ((X.>0) | status.X))
+  } else {
+      # si wZeroSt ET wZeroT = FALSE, on ote les zeros partout
+      if(!wZeroT) DL <- filter(DL, X.>0)
+  }
+
+    DL$smpl.unit <- DL[,smpl]
+    subs <- DL[,c("Id","Code_LIT",names(cat2keep),"Campagne","St","smpl.unit","X.")]
+    indx.X <- DL[, c("Id","Code_LIT","X.")] # couverture
+    d1 <- melt(subs, id.vars=c("Campagne","St","smpl.unit","Id","Code_LIT", "X."))
+    cat2keep.id <- paste(rep(names(cat2keep), sapply(cat2keep, length)), unlist(cat2keep))
+    d2 <- d1 %>% filter(paste(variable, value) %in% cat2keep.id) %>%
+        group_by(Campagne, St, smpl.unit, Id, variable, value) %>%
+            summarize(sum.val=sum(X., na.rm=TRUE)) %>% data.frame
+    d2$sum.val[is.na(d2$sum.val)] <- 0
+    d2.wide <- dcast(d2, Campagne + St + smpl.unit + Id ~ value, value.var="sum.val", fill=0)
+    d2[,smpl] <- d2$smpl.unit
+    d2.wide[,smpl] <- d2.wide$smpl.unit
+
+
+    # 4. Rajouter colonnes infos additionelles
+    # Geomorphologies
+    indx.fields <- unique(c("Campagne","St","Id",facteurs.spatio, facteurs.tempo))
+    dd.i2 <- merge(unique(info.transect[,indx.fields]), d2.wide)
+    dd.i2 <- merge(LIT.transect.info, dd.i2) # only keep transect initially present in dataset
+                                             # ... could be removed I think
+    if(frmt.ret == "long") {
+        dd.i2.long <- inner_join(unique(info.transect[,indx.fields]), d2)
+        names(dd.i2.long)[names(dd.i2.long)=="variable"] <- "LIT.cat"
+        names(dd.i2.long)[names(dd.i2.long)=="value"] <- "LIT.lev"
+        names(dd.i2.long)[names(dd.i2.long)=="sum.val"] <- "pcouv"
+
+    }
+
+    # 5. Reordonner selon instructions
+    niv.all <- unique(d2$value) # niveaux existants dans la base
+    dd.i2 <- dd.i2[,c(indx.fields, niv.all)]
+
+    if(save) {
+        # nametag pour filtre au besoin
+        ftag <- ifelse(filt.camp %in% c("A","S"),sprintf("%s_",filt.camp),"")
+        write.csv(dd.i2, file=paste(tabl.dir,"GS_",type.db,"_TableauBrut_",ftag,
+                             Sys.Date(),".csv",sep=""),
+                             row.names=FALSE)
+    }
+
+    if(frmt.ret == "long") dd.i2 <- dd.i2.long
+    attr(dd.i2, "AS") <- filt.camp
+    attr(dd.i2, "Projet") <- projet
+    attr(dd.i2, "type.db") <- type.db
+    attr(dd.i2, "wZeroT") <- wZeroT
+    attr(dd.i2, "wZeroSt") <- wZeroSt
+
+    invisible(dd.i2)
+}

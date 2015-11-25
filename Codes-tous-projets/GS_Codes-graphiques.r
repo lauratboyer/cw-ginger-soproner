@@ -19,21 +19,40 @@
 ## dat.stat.inv: see function INV.stats
 require(ggplot2)
 
-custom.colpal <- function(n=12) {
+##################### Section THEME ########################
+theme.GS <- theme_bw() + theme(plot.margin=unit(c(0.25,0.25,0.25,0.25),"in"),
+                               axis.title.x=element_text(vjust=-1),
+                               axis.title.y=element_text(vjust=2),
+                               legend.key=element_blank(), strip.text=element_text(colour="white", size=12.5, vjust=0.35),
+                               strip.background=element_rect(fill="slategray", colour=NA))
 
-    fb35 <- "#AC2020" #intermediate firebrick 3-4
-    #colvect <- c("wheat3","gold","seagreen2","turquoise3", "dodgerblue","navy") # <-- modifier 'colvect' pour avoir une nouvelle palette
-    #colvect <- brewer.pal(11, "Spectral")
-    # voir display.brewer.all() pour options de palettes toutes faites
-    # dev.new(); display.brewer.all(); brewer.pal(7,"Set1")
-# other option going from neutral to red
-#    colvect <- c("wheat3","wheat2","orange1","indianred1","firebrick2",fb35)
-    colvect <- c("royalblue3","deepskyblue1","gold","orange1","indianred1","firebrick2",fb35)
+##################### Section COULEUR ######################
+palette.de.couleurs <- "custom.colpal.a" # a definir entre guillemets
+custom.colpal.a <- function(n=12) {
+    colvect <- c("royalblue3","deepskyblue1","gold","orange1","indianred1","firebrick2","#AC2020")
     colorRampPalette(colvect)(n)
 }
+custom.colpal.b <- function(n=12) { # other option going from neutral to red
+     colvect <- c("wheat3","wheat2","orange1","indianred1","firebrick2","#AC20202")
+    colorRampPalette(colvect)(n)
+}
+custom.colpal.c <- function(n=12) { # other option going from neutral to red
+    # <-- modifier 'colvect' pour avoir une nouvelle palette
+    colvect <- c("wheat3","gold","seagreen2","turquoise3", "dodgerblue","navy")
+    colorRampPalette(colvect)(n)
+}
+custom.colpal.d <- function(n=12, which.brewer.pal="Spectral") { # other option using RColorBrewer
+    colvect <- brewer.pal(11, which.brewer.pal)
+    # voir display.brewer.all() pour options de palettes toutes faites Brewer, et remplacer l'argument which.brewer.pal
+    # e.g.
+    # dev.new(); display.brewer.all(); brewer.pal(7,"Set1")
+}
+custom.colpal <- get(palette.de.couleurs) # ne pas changer: enregistre la palette a utiliser sous bas dans le code
 
+##################### Section ETIQUETTES ######################
 fig.etiq <- c(Geomorpho="Géomorphologie", Geomorpho.abbrev="Géomorphologie", N_Impact="Niveau d'impact",
               dens="Densité moyenne",
+              pcouv="Couverture en %",
               Campagne="Campagne",
               Saison="Saison", St="Station",
               taille.moy="Taille moyenne (cm)",
@@ -75,7 +94,12 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "LG5B", "LG6B", "LG7B", "LR1", "LR2", "LR3", "OBRK3", "OBRK4",
                        "OBRK5A", "OF1C", "OF2C", "OF3C", "OF4C", "OF9", "PD4B", "PD5B",
                        "PI2", "PK4", "PK5", "PO1", "PROC4", "PV3B",
-                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "CAGES", "REF"))
+                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "CAGES", "REF"),
+                     LIT.lev=c("Abiotique", "Acroporidae", "Algues", "Assemblage d'Algues",
+"Autre faune", "Corail branchu", "Corail digite", "Corail encroutant",
+"Corail foliaire", "Corail massif", "Corail mort", "Corail sub-Massif",
+"Corail tabulaire", "Coraline", "Coraux", "Coraux mous", "Macro-Algues",
+"Non-Acroporidae"))
 
 # avec accents pour étiquette légende et axes seulements
 xfact.levels.accents <- xfact.levels
@@ -92,7 +116,7 @@ if(!exists("bio.fig")) bio.fig <<- "inv"
 fig.catego <- function(x) {
     if(missing(x)) {
         stop("L'une des valeurs suivantes devrait être spécifiée en argument: LIT/lit, quadrats, poissons, INV/inv")
-   }else if (!(x %in% c("LIT","lit","quadrats","poissons","INV","inv"))) {
+   }else if (!(x %in% c("LIT","lit","Quad","quadrats","poissons","INV","inv"))) {
     stop("L'une des valeurs suivantes devrait être spécifiée en argument: LIT/lit, quadrats, poissons, INV/inv")
    }
 
@@ -147,7 +171,7 @@ filtre.excl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var.expl, filtre,
                      filtre2, filtre.camp="A",
-                     agtaxo="Groupe", typ.taxo="Crustaces",
+                     agLIT="General", agtaxo="Groupe", typ.taxo="Crustaces",
                      groupe=NULL, panneau=NULL,
                      dat=dat.stat.inv, tous.niveaux=TRUE,
                      wZeroT=TRUE,
@@ -155,7 +179,7 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
 
 
     # Définition de la variable de réponse
-    var.expl.defaut <- c(inv="dens", poissons="dens", LIT="Coraux", lit="Coraux", Quad="Coraux")
+    var.expl.defaut <- c(inv="dens", poissons="dens", LIT="pcouv", lit="pcouv", Quad="pcouv")
     if(missing(var.expl)) var.expl <- var.expl.defaut[bio.fig] # si non spécifiée, utilise la valeur par défaut
 
     ##################################################
@@ -164,8 +188,12 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
                    ifelse(wZeroT, ".w0", "")) # re-creer le nom de l'objet contenant les donnes necessaires
     message(sprintf("Tableau utilisé: %s", ntbl))
     dat <- get(ntbl) %>% data.frame
-   ##################################################
-                                        # filter les donnees par campagne
+    #################################################
+    # pour les LIT/Quad
+    if(bio.fig %in% c("LIT","Quadrat")) dat <- filter(dat, LIT.cat == agLIT)
+
+    ##################################################
+    # filtre les donnees par campagne
     if(bio.fig=="inv") filtre.camp <- paste("T",filtre.camp,"inv",sep="_") # formatter nom du filtre pour invertebres
     start.timer()
     dat <- filtreTable(dat, filtre.camp)
@@ -220,8 +248,9 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     } else if(typ.fig=="boxplot") {
 
     yl <- quantile(dat.plot$var.expl, 0.975, na.rm=TRUE)
-    p1 <- p0 + ylim(0,yl) + geom_boxplot(aes(fill=vy), colour="grey50",
-                                         position=position_dodge(0.5), width=0.5, outlier.colour="royalblue3", outlier.size=1.5, alpha=0.75) #+ facet_grid(~vy)
+    p1 <- p0 + ylim(0,yl) + geom_boxplot(aes(fill=vy), color="grey", size=0.5,
+                                         position=position_dodge(0.5), width=0.5, outlier.colour="royalblue3", outlier.size=1.5,
+                                         alpha=0.95)
 
     # type de graphique 3
     #
@@ -248,17 +277,8 @@ Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
     ############################################
     # fonction theme(...) et, pour la légende, guides(...)
     p1 <- p1 +
-    xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme_bw() +
-      theme(plot.margin=unit(c(0.25,0.25,0.25,0.25),"in"),
-            axis.title.x=element_text(vjust=-1),
-            axis.title.y=element_text(vjust=2),
-            legend.key=element_blank()) +
-          # couleur bordure panneau:
-          theme(strip.text=element_text(colour="white", size=12.5, vjust=0.35), strip.background=element_rect(fill="slategray", colour=NA)) +
-
-              guides(fill=guide_legend(title=var2),
-                     col=guide_legend(title=var2))
-
+        xlab(fig.etiq[var1]) + ylab(fig.etiq[var.expl]) + theme.GS  +
+            guides(fill=guide_legend(title=var2), col=guide_legend(title=var2))
 
     # Fini!!!
     #########################################

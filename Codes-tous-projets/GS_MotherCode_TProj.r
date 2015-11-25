@@ -130,12 +130,12 @@ if(!(exists("data.read"))) { import.tableaux()
 
 library(Hmisc)
 library(tools)
-lp <- try(library(reshape)) # load package reshape
+lp <- try(library(reshape2)) # load package reshape
 lp2 <- try(library(Rcpp)) # load package Rcpp
 lp3 <- try(library(dplyr)) # load package dplyr
 if(class(lp)=="try-error") {
-      install.packages("reshape") # installe reshape si requis
-library(reshape)}
+      install.packages("reshape2") # installe reshape si requis
+library(reshape2)}
 if(class(lp2)=="try-error") {
       install.packages("Rcpp") # installe reshape si requis
 library(Rcpp)}

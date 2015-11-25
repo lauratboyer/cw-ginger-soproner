@@ -104,18 +104,18 @@ do.fig.tables <- function() {
                                         # LIT
     message("")
     message("LIT:")
-    figdat.LIT.w0 <<- LIT.tableau.brut(filt.camp="X", silent=TRUE)
+    figdat.LIT.w0 <<- LIT.tableau.brut(filt.camp="X", silent=TRUE, frmt.ret="long")
     message("figdat.LIT.w0")
-    figdat.LIT <<- LIT.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
+    figdat.LIT <<- LIT.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE, frmt.ret="long") # sans zeros
     message("figdat.LIT")
     message("")
 } else { message("Pas de données LIT")}
 
     if(nrow(dQuad)>0) {
     message("Quadrats:")
-    figdat.Quad.w0 <<- Quad.tableau.brut(filt.camp="X", silent=TRUE)
+    figdat.Quad.w0 <<- Quad.tableau.brut(filt.camp="X", silent=TRUE, frmt.ret="long")
     message("figdat.Quad.w0")
-    figdat.Quad <<- Quad.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE) # sans zeros
+    figdat.Quad <<- Quad.tableau.brut(filt.camp="X", wZeroT=FALSE, silent=TRUE, frmt.ret="long") # sans zeros
     message("figdat.Quad")
 } else { message("Pas de données quadrats")}
 }
