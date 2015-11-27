@@ -173,7 +173,7 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      filtre2, filtre.camp="A",
                      agLIT="General", agtaxo="Groupe", typ.taxo="Crustaces",
                      groupe=NULL, panneau=NULL,
-                     dat=dat.stat.inv, tous.niveaux=TRUE,
+                     dat, tous.niveaux=TRUE,
                      wZeroT=TRUE,
                      typ.fig="barre", ...) {
 
@@ -186,22 +186,23 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     # Extraction des données selon le type d'organisme
     ntbl <- paste0("figdat.", bio.fig, ifelse(bio.fig=="inv", paste0(".",agtaxo), ""),
                    ifelse(wZeroT, ".w0", "")) # re-creer le nom de l'objet contenant les donnes necessaires
-    message(sprintf("Tableau utilisé: %s", ntbl))
-    dat <- get(ntbl) %>% data.frame
+    if(missing(dat)) {
+        message(sprintf("Tableau utilisé: %s", ntbl))
+        dat <- get(ntbl) %>% data.frame
+    }
     #################################################
     # pour les LIT/Quad
+
     if(bio.fig %in% c("LIT","Quadrat")) dat <- filter(dat, LIT.cat == agLIT)
 
     ##################################################
     # filtre les donnees par campagne
     if(bio.fig=="inv") filtre.camp <- paste("T",filtre.camp,"inv",sep="_") # formatter nom du filtre pour invertebres
-    start.timer()
     dat <- filtreTable(dat, filtre.camp)
-    stop.timer()
 
     ##################################################
     # Filtre sur les données selon les arguments
-    if(!missing(typ.taxo) & typ.taxo!="tous" & bio.fig=="inv") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo)) # invertébrés
+    if(!missing(typ.taxo) & typ.taxo!="tous" & bio.fig == "inv") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo)) # invertébrés
     if(!missing(filtre)) dat <- filter_(dat, filtre) # voir aussi fonction filtre.incl() et filtre.excl()
     if(!missing(filtre2)) dat <- filter_(dat, filtre2)
 
@@ -263,11 +264,11 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
       if(!is.null(panneau)) bp.df$panneau <- gsub(lab.string,"\\3",bp.df$fact)
 
       bp.df <- filter(bp.df, !is.na(mid))
-      yl <- quantile(dat.plot$var.expl, 0.975, na.rm=TRUE)
+      yl <- quantile(dat.plot$var.expl, 1, na.rm=TRUE)
       p1 <- ggplot(data=bp.df, aes(x=vx, ymin=ymin, lower=low, middle=mid, upper=top, ymax=ymax, fill=vy)) +
           scale_fill_manual(labels=vy.labs, values=colv) +
               ylim(0,yl) + geom_boxplot(stat="identity",
-                                        color="grey", size=0.5,
+                                        color="grey", size=0.25,
                                         position=position_dodge(0.5), width=0.5,
                                         outlier.colour="royalblue3", outlier.size=1.5, alpha=0.95)
 
@@ -288,7 +289,7 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
             message("\n--------------------
 Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
         }
-print("hiop")
+
 
     if(!is.null(panneau)) p1 <- p1  + facet_wrap(~ panneau, scales="free_x")
 
