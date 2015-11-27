@@ -52,6 +52,9 @@ custom.colpal <- get(palette.de.couleurs) # ne pas changer: enregistre la palett
 ##################### Section ETIQUETTES ######################
 fig.etiq <- c(Geomorpho="Géomorphologie", Geomorpho.abbrev="Géomorphologie", N_Impact="Niveau d'impact",
               dens="Densité moyenne",
+              RS="Richesse spécifique",
+              taille.moy="Taille moyenne",
+              biomasse="Biomasse",
               pcouv="Couverture en %",
               Campagne="Campagne",
               Saison="Saison", St="Station",
@@ -94,24 +97,24 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "LG5B", "LG6B", "LG7B", "LR1", "LR2", "LR3", "OBRK3", "OBRK4",
                        "OBRK5A", "OF1C", "OF2C", "OF3C", "OF4C", "OF9", "PD4B", "PD5B",
                        "PI2", "PK4", "PK5", "PO1", "PROC4", "PV3B",
-                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "CAGES", "REF"),
-                     LIT.lev=c("Abiotique", "Acroporidae", "Algues", "Assemblage d'Algues",
-"Autre faune", "Corail branchu", "Corail digite", "Corail encroutant",
-"Corail foliaire", "Corail massif", "Corail mort", "Corail sub-Massif",
-"Corail tabulaire", "Coraline", "Coraux", "Coraux mous", "Macro-Algues",
-"Non-Acroporidae"))
+                         "SOP1", "SOP2", "ST1", "ST2", "ST3", "ST4", "ST5", "ST6", "CAGES", "REF"))
+xfact.levels$LIT.lev <- lapply(index.LIT, function(x) na.omit(unique(x)))
 
 # avec accents pour étiquette légende et axes seulements
 xfact.levels.accents <- xfact.levels
 xfact.levels.accents$N_Impact <- c(Reference="Référence", Impact="Impact")
-xfact.levels.accents$Geomorpho <- c("Récif barrière externe", "Récif barrière interne",
-                                    "Récif frangeant", "Récif réticulé", "Passe")
+xfact.levels.accents$Geomorpho <- factor(c("Récif barrière externe", "Récif barrière interne",
+                                           "Récif frangeant", "Récif réticulé", "Passe"),
+                                         levels=c("Récif barrière externe", "Récif barrière interne",
+                                    "Récif frangeant", "Récif réticulé", "Passe"), ordered=TRUE)
 names(xfact.levels.accents$Geomorpho) <- xfact.levels$Geomorpho
 
 # Oter les campagnes au besoin si filtre sur campagne A ou S
 if(!is.na(fCampagne)) xfact.levels$Campagne <- grep(fCampagne, xfact.levels$Campagne, value=TRUE)
 
-###### ###### ###### ###### ###### ###### ###### ###### ######
+########################################################################
+########################## Section CODE DE SUPPORT #####################
+########################################################################
 if(!exists("bio.fig")) bio.fig <<- "inv"
 fig.catego <- function(x) {
     if(missing(x)) {
@@ -119,35 +122,36 @@ fig.catego <- function(x) {
    }else if (!(x %in% c("LIT","lit","Quad","quadrats","poissons","INV","inv"))) {
     stop("L'une des valeurs suivantes devrait être spécifiée en argument: LIT/lit, quadrats, poissons, INV/inv")
    }
-
     bio.fig <<- tolower(x)
-
-    }
-
-###### ###### ###### ###### ###### ###### ###### ###### ######
-prep.var <- function(wvar, df, filt.camp="X") {
+}
+########################################################################
+## prep.var() formatte les variables et attribue les niveaux selon xfact.levels ci-haut
+prep.var <- function(wvar, df, filt.camp="X", agLIT=NULL) {
 
     df <- data.frame(df)
     if(wvar=="Geomorpho.abbrev") col <- geomorpho.lab[df$Geomorpho]
   else col <- df[,wvar]
   if(!(wvar %in% c("Groupe","S_Groupe","Famille","Genre"))) {
       all.levs <- xfact.levels[[wvar]]
+      if(wvar == "LIT.lev") all.levs <- all.levs[[agLIT]] # niveaux pour la categorie LIT specifiee seulement
       if(wvar == "Campagne" & filt.camp %in% c("A","S")) all.levs <- grepv(filt.camp, all.levs)
       if(wvar=="Geomorpho.abbrev") col <- geomorpho.lab[df$Geomorpho]
-    factor(col, levels=all.levs, ordered=TRUE)
+      factor(col, levels=all.levs, ordered=TRUE)
   } else { factor(col) }
 }
 
 ##############################################################
-                                        # Barres d'erreur
+# Barres d'erreur superieure: moyenne + ecart type
 sd.top <- function(x) mean(x, na.rm=TRUE) + sd(x, na.rm=TRUE)
+# Barres d'erreur inferieure: moyenne - ecart type, ou zero
 sd.bot <- function(x) {
     rval <- mean(x, na.rm=TRUE) - sd(x, na.rm=TRUE)
     sapply(rval, max, 0) # mettre a 0 si valeur negative
 }
 ##############################################################
-# fonction pour definir les filtres selon le format requis par dplyr
+# Fonctions raccourcies pour definir les filtres selon le format requis par dplyr
 # a donner en argument a filtre et filtre2
+# (peuvent s'utiliser directement dans la console pour voir la syntaxe requise)
 filtre.incl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
 
     b <- paste0("'",b,"'", collapse=",") # format b pour inclusion dans c('...','...') avec guillemets simples
@@ -159,15 +163,11 @@ filtre.excl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
     sprintf("!(%s %%in%% c(%s))", a, b)
 }
 
-
 ##############################################################
-############ DEFINITION FONCTIONS GRAPHIQUES #################
-###### ###### ###### ###### ###### ###### ###### ###### ######
+############ Section CODES GRAPHIQUES ########################
+##############################################################
 
-
-###### ###### ###### ###### ###### ###### ###### ###### ############ ###### ###### ###### ###### ###### ###### ###### ######
-###### ###### ###### ###### ###### ###### ###### ###### ############ ###### ###### ###### ###### ###### ###### ###### ######
-
+# fig.2var() est la fonction principale utilisee pour faire les graphiques
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var.expl, filtre,
                      filtre2, filtre.camp="A",
@@ -210,10 +210,9 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     dat$var.expl <- dat[,var.expl] # define response variable for graph (Y)
     dat.plot <- dat
 
-    dat.plot$vx <- prep.var(var1, dat.plot, filt.camp=filtre.camp) # variable en X
-    dat.plot$vy <- prep.var(var2, dat.plot, filt.camp=filtre.camp) # variable explicative en Y
-    if(!is.null(panneau)) dat.plot$panneau <- prep.var(panneau, dat.plot, filt.camp=filtre.camp)
-
+    dat.plot$vx <- prep.var(var1, dat.plot, filt.camp=filtre.camp, agLIT=agLIT) # variable en X
+    dat.plot$vy <- prep.var(var2, dat.plot, filt.camp=filtre.camp, agLIT=agLIT) # variable explicative en Y
+    if(!is.null(panneau)) dat.plot$panneau <- prep.var(panneau, dat.plot, filt.camp=filtre.camp, agLIT=agLIT)
     # rajouter rangees manquantes si tous.niveaux=TRUE
     if(tous.niveaux & missing(filtre)) {
         if(is.null(panneau)) all.lev <- expand.grid(vx=levels(dat.plot$vx), vy=levels(dat.plot$vy))
@@ -226,31 +225,51 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     # defining data and main aes/mapping
                                         # (could also use aes_string...?)
 
+    if(var1 %in% c("Geomorpho","N_Impact")) {
+        dat.plot$vx <- xfact.levels.accents[[var1]][dat.plot$vx]
+    }
     if(var2 %in% c("Geomorpho","N_Impact")) { # ajuster la legende pour variables avec accents
         vy.labs <- xfact.levels.accents[[var2]][sort(unique(dat.plot$vy[!is.na(dat.plot$var.expl)]))]
     }else{vy.labs <- sort(unique(dat.plot$vy[!is.na(dat.plot$var.expl)])) }
     colv <- custom.colpal(length(vy.labs))
-    p0 <- ggplot(data=dat.plot, aes(x=vx, y=var.expl)) +
-        scale_fill_manual(labels=vy.labs, values=colv) + #, palette=couleurs.palette) +
-            scale_colour_manual(labels=vy.labs, values=colv) #, palette=couleurs.palette)
+    p0 <- ggplot(data=dat.plot) +
+        scale_fill_manual(labels=vy.labs, values=colv) +
+            scale_colour_manual(labels=vy.labs, values=colv)
     pdod <- position_dodge(width=0.95)
 
     # type de graphique 1
     # barres = geom_bar
     if(typ.fig=="barre") {
-      p1 <- p0 + aes(fill=vy)  +
+      p1 <- p0 + aes(x=vx, y=var.expl, fill=vy)  +
           stat_summary(fun.ymin=sd.bot, fun.ymax=sd.top, geom="linerange", position=position_dodge(0.95)) +
               stat_summary(fun.y=mean, geom="bar", width=0.5, position=position_dodge(0.95))
 
 
     # type de graphique 2
     # fonction geom_boxplot
-    } else if(typ.fig=="boxplot") {
+  } else if(typ.fig=="boxplot") {
+                                        # calcul des parametres de BP via boxplot car plus rapide que ggplot
+      if(is.null(panneau)) {
+          bp.raw <- boxplot(as.numeric(var.expl) ~ vx*vy, dat.plot, plot=FALSE)
+      }else{
+          bp.raw <- boxplot(as.numeric(var.expl) ~ vx*vy*panneau, dat.plot, plot=FALSE)
+      }
+      bp.df <- t(bp.raw$stats) %>% data.frame
+      names(bp.df) <- c("ymin","low","mid","top","ymax")
+      bp.df$fact <- bp.raw$names
+      lab.string <- ifelse(is.null(panneau),"(.*)\\.(.*)","(.*)\\.(.*)\\.(.*)")
+      bp.df$vx <- gsub(lab.string,"\\1",bp.df$fact)
+      bp.df$vy <- gsub(lab.string,"\\2",bp.df$fact)
+      if(!is.null(panneau)) bp.df$panneau <- gsub(lab.string,"\\3",bp.df$fact)
 
-    yl <- quantile(dat.plot$var.expl, 0.975, na.rm=TRUE)
-    p1 <- p0 + ylim(0,yl) + geom_boxplot(aes(fill=vy), color="grey", size=0.5,
-                                         position=position_dodge(0.5), width=0.5, outlier.colour="royalblue3", outlier.size=1.5,
-                                         alpha=0.95)
+      bp.df <- filter(bp.df, !is.na(mid))
+      yl <- quantile(dat.plot$var.expl, 0.975, na.rm=TRUE)
+      p1 <- ggplot(data=bp.df, aes(x=vx, ymin=ymin, lower=low, middle=mid, upper=top, ymax=ymax, fill=vy)) +
+          scale_fill_manual(labels=vy.labs, values=colv) +
+              ylim(0,yl) + geom_boxplot(stat="identity",
+                                        color="grey", size=0.5,
+                                        position=position_dodge(0.5), width=0.5,
+                                        outlier.colour="royalblue3", outlier.size=1.5, alpha=0.95)
 
     # type de graphique 3
     #
@@ -269,8 +288,8 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
             message("\n--------------------
 Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
         }
+print("hiop")
 
-    # rajouter panneau au besoin
     if(!is.null(panneau)) p1 <- p1  + facet_wrap(~ panneau, scales="free_x")
 
     # Paramètres visuels (axes, etc.)
@@ -286,20 +305,25 @@ Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
 }
 
 
-###################################
-###################################
-# fonction raccourcis pour fig.2var par type de données
+######################################################################
+######################################################################
+# Fonctions raccourcis pour fig.2var par type de données
 inv.fig <- function(...) { bio.fig <<- "inv"; fig.2var(...)}
 poissons.fig <- function(...) {bio.fig <<- "poissons"; fig.2var(...)}
 LIT.fig <- function(...) {bio.fig <<- "LIT"; fig.2var(...)}
 Quad.fig <- function(...) {bio.fig <<- "Quad"; fig.2var(...)}
 
 
-###################################
-###################################
+######################################################################
 # Raccourcis pour fonctions ggplot:
-#fig.2lign <- function(...) fig.2var(..., typ.fig="ligne")
 verti.x.val <- function(angl=90, size=1, ...) theme(axis.text.x = element_text(angle = angl, size=size, ...))
 no.x.val <- theme(axis.text.x=element_blank())
 
-#fig.2var() + geom_errorbar()
+######################################################################
+# Raccourci pour sauvegarder directement dans le dossier du projet
+ggsave.proj <- function(...) {
+    cdir <- getwd()
+    setwd(fig.dir)
+    ggsave(...)
+    setwd(cdir)
+}

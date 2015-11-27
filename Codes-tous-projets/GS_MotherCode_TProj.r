@@ -26,7 +26,11 @@ facteurs.spatio <- c("Geomorpho","N_Impact","Cote","Lieu")
 facteurs.tempo <- c("Période.BACI","Saison")
 facteurs.taxo <- list(INV=c("Groupe","S_Groupe","Famille","Genre","G_Sp"),
                        poissons=c("Famille","Genre","G_Sp","GTlabel","moblabel","Peche","Cible"),
-                       LIT=c("General","Forme","Acroporidae","Sensibilite","Famille","Genre"))
+                      LIT=c("General","Forme","Acroporidae","Sensibilite","Famille","Genre"))
+facteurs.var.expl <- list(INV="dens",
+                          poissons=c("dens","biomasse","RS","taille.moy"),
+                          LIT="pcouv")
+attr(facteurs.var.expl,"Note") <- "Le premier élement est utilisé par défaut dans fig.2var()"
 
 ############################################
 ## Valeurs par défaut pour l'aggrégation taxonomique,
