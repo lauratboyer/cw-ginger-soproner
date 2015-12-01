@@ -120,7 +120,6 @@ source.with.encoding("GS_ExtractionDonnees_TProj.r",encoding="UTF-8") # contient
 source.with.encoding("GS_CodesInvertebres_TProj.r",encoding="UTF-8") # contient la fonction Run.INV.biodiv()
 source.with.encoding("GS_CodesPoissons_TProj.r",encoding="UTF-8") # lance les codes poissons
 source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes LIT
-source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes LIT
 
 # si l'objet "data.read" n'existe pas, ou data.read existe
 # mais a la valeur "FALSE"
@@ -128,7 +127,11 @@ source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes
 if(!(exists("data.read"))) { import.tableaux()
                          } else { if(!data.read) import.tableaux() }
 # (par défaut import.tableaux() lance la fonction prep.analyse()
-# ... une fois les tableaux importés)
+                                        # ... une fois les tableaux importés)
+# et on source codes-graphiques apres que les tableaux aient ete formattes
+source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes LIT
+
+
 
 }
 
