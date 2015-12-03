@@ -1,6 +1,6 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-28 07:51:31 Laura>
+# Time-stamp: <2015-12-01 15:03:05 lauratb>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
@@ -127,12 +127,10 @@ source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes L
 if(!(exists("data.read"))) { import.tableaux()
                          } else { if(!data.read) import.tableaux() }
 # (par défaut import.tableaux() lance la fonction prep.analyse()
-                                        # ... une fois les tableaux importés)
-# et on source codes-graphiques apres que les tableaux aient ete formattes
+# ... une fois les tableaux importés)
+# ... et on charge les codes graphiques une fois les autres tableaux importés
+# pour faciliter la création des légendes de graphs
 source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes LIT
-
-
-
 }
 
 library(Hmisc)

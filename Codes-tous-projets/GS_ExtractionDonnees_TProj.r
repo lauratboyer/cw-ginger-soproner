@@ -149,7 +149,7 @@ prep.analyse <- function(check.typo=TRUE) {
                      "Non-acroporidae","Macro-Algues","Assemblage d'algues",
                      "Corail branchu","Corail tabulaire","Corail massif",
                      "Corail encroutant","Corail foliaire","Corail sub-Massif",
-                     "Corail digite"))
+                       "Corail digite"))
 
 
   ###### Information biologie/écologie poissons #######
