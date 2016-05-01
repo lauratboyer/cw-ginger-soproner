@@ -9,7 +9,7 @@
     type.corail <- c("General","Acroporidae",
                      "Forme","Genre","All") #"Sensibilite",
     cat2keep <- list(General=c("Coraux","Coraline","Corail mort","Coraux mous","Algues",
-                       "Abiotique","Autre faune"),
+                       "Abiotique","Autre faune", "Coraux blanchis"),
                     Acroporidae=c("Acroporidae","Non-Acroporidae"),
                      Forme=c("Corail branchu","Corail tabulaire",
                        "Corail massif","Corail encroutant",
