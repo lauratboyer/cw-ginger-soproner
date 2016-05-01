@@ -16,13 +16,14 @@
                        "Corail foliaire","Corail sub-Massif","Corail digite"),
                      Genre=c("Montipora","Acropora","Pavona"),
                      All=c("Macro-Algues","Assemblage d'Algues"))
+
 # Catégories sensibilité (ôtées car non-utilisées):
 #c("Corail sensible 1","Corail sensible 2"),
 #names(cat2keep) <- type.corail
 #cat2keep <- cat2keep[!(names(cat2keep)=="Sensibilite")]
 
 # formerly TB.lit
-LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
+LIT.tableau.brut.OLD <- function(save=FALSE,filt.camp="X",type.db="LIT",
                              wZeroT=TRUE, wZeroSt=FALSE, silent=FALSE) {
 
 
@@ -155,7 +156,7 @@ LIT.couvrt.gnrl <- function(ftemp=ftempo.defaut, fspat=fspat.defaut,
     if(type.db=="Quadrat") smpl <- "Quadrat"
 
     # Groupes de coraux
-    gC <- coraux.fig[[LIT.cat]]
+    gC <- cat2keep[[LIT.cat]]
     gC <- gC[gC %in% names(t1)] # conserver ceux présent dans la DB
 
     # Moyenne par station
@@ -185,6 +186,7 @@ Quad.couvrt.gnrl <- function(...) LIT.couvrt.gnrl(..., type.db="Quadrat")
 ###########################################################################
 ###########################################################################
 ## exploring alternative way of processing transect summaries by LIT category
+## derniere version utilisee
 LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
                      wZeroT=TRUE, wZeroSt=FALSE,
                      frmt.ret="wide", silent=FALSE) {
@@ -231,9 +233,8 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
     d2[,smpl] <- d2$smpl.unit
     d2.wide[,smpl] <- d2.wide$smpl.unit
 
-
     # 4. Rajouter colonnes infos additionelles
-    # Geomorphologies
+                                        # Geomorphologies
     indx.fields <- unique(c("Campagne","St","Id",facteurs.spatio, facteurs.tempo))
     dd.i2 <- merge(unique(info.transect[,indx.fields]), d2.wide)
     dd.i2 <- merge(LIT.transect.info, dd.i2) # only keep transect initially present in dataset
@@ -248,7 +249,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
 
     # 5. Reordonner selon instructions
     niv.all <- unique(d2$value) # niveaux existants dans la base
-    dd.i2 <- dd.i2[,c(indx.fields, niv.all)]
+    dd.i2 <- dd.i2[,c(indx.fields, smpl, niv.all)]
 
     if(save) {
         # nametag pour filtre au besoin

@@ -121,7 +121,6 @@ source.with.encoding("GS_CodesInvertebres_TProj.r",encoding="UTF-8") # contient 
 source.with.encoding("GS_CodesPoissons_TProj.r",encoding="UTF-8") # lance les codes poissons
 source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes LIT
 
-
 # Import des tableaux dans R --- si la valeur de refaire.tableaux = TRUE, ils seront ré-importés et reformattés
 # (par défaut import.tableaux() lance la fonction prep.analyse()
 # ... une fois les tableaux importés)

@@ -161,8 +161,8 @@ filtre.excl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
 # fig.2var() est la fonction principale utilisee pour faire les graphiques
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var.expl, filtre,
-                     filtre2, filtre.camp="A",
-                     agLIT="General", agtaxo="Groupe", typ.taxo="tous",
+                     filtre2, filtre.camp="X",
+                     agLIT="General", agtaxo="Groupe", typ.taxo="Crustaces",
                      groupe=NULL, panneau=NULL,
                      dat, tous.niveaux=TRUE,
                      wZeroT=TRUE,
