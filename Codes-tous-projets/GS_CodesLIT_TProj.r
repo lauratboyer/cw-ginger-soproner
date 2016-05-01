@@ -62,7 +62,7 @@ LIT.tableau.brut <- function(save=FALSE,filt.camp="X",type.db="LIT",
 
     # 3. Calculer couverture moyenne par Campagne/St/Transect/TypeDeCoraux
     ccfunk <- function(wc) {
-print(wc)
+
       # défini les niveaux de 'wc' existants dans la base
       nivfact <- unique(DL[,wc])
       nivfact <- nivfact[nivfact %in% cat2keep[[wc]]]

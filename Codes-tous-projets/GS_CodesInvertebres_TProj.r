@@ -106,7 +106,7 @@ INV.dens.gnrl <- function(fspat=fspat.defaut, ftemp=ftempo.defaut,
                             Sys.Date(),".csv",sep=""),row.names=FALSE)
   }
 
-  invisible(tb.all)
+  invisible(as.data.frame(tb.all))
 }
 
 #################################################

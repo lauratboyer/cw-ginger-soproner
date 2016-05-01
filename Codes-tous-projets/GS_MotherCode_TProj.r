@@ -1,13 +1,13 @@
 # Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-12-01 15:03:05 lauratb>
+# Time-stamp: <2016-02-18 14:13:16 lauratb>
 
 ################################################################
 ###### Définition des variables principales pour l'analyse #####
 ## Cette partie du code est à MODIFIER MANUELLEMENT au besoin ##
 ### *** N'oubliez pas d'enregistrer tous les changements ***####
-Sys.setlocale("LC_ALL","fr_FR.UTF-8") # encodage pour les accents
 message("à vérifier options pour fenêtre extérieure sur R Studio")
+
 # Dossier contenant les codes et où les sorties vont être sauvegardées
 dossier.R <- getwd() # le 'working directory',
 # ... ou sinon mettre le nom du dossier désiré, e.g. C:/Documents/Codes_R
@@ -122,13 +122,11 @@ source.with.encoding("GS_CodesPoissons_TProj.r",encoding="UTF-8") # lance les co
 source.with.encoding("GS_CodesLIT_TProj.r",encoding="UTF-8") # lance les codes LIT
 
 
-# si l'objet "data.read" n'existe pas, ou data.read existe
-# mais a la valeur "FALSE"
-# (ré)extraire et (re)formatter les données
-if(!(exists("data.read"))) { import.tableaux()
-                         } else { if(!data.read) import.tableaux() }
+# Import des tableaux dans R --- si la valeur de refaire.tableaux = TRUE, ils seront ré-importés et reformattés
 # (par défaut import.tableaux() lance la fonction prep.analyse()
 # ... une fois les tableaux importés)
+import.tableaux()
+
 # ... et on charge les codes graphiques une fois les autres tableaux importés
 # pour faciliter la création des légendes de graphs
 source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes LIT
@@ -136,11 +134,11 @@ source.with.encoding("GS_Codes-graphiques.r",encoding="UTF-8") # lance les codes
 
 library(Hmisc)
 library(tools)
-lp <- try(library(reshape2)) # load package reshape
+lp <- try(library(reshape)) # load package reshape (for some reason cast function not in reshape2)
 lp2 <- try(library(Rcpp)) # load package Rcpp
 lp3 <- try(library(dplyr)) # load package dplyr
 if(class(lp)=="try-error") {
-      install.packages("reshape2") # installe reshape si requis
+      install.packages("reshape") # installe reshape si requis
 library(reshape2)}
 if(class(lp2)=="try-error") {
       install.packages("Rcpp") # installe reshape si requis

@@ -5,15 +5,6 @@
 ## Written on: March 15, 2015
 ## Time-stamp: <2015-05-29 08:17:32 Laura>
 
-## Graphiques à produire:
-## one variable: barplot
-## two variables: single fig -- two colours; panel fig -- one var per panel
-## add filtre campagne only
-## three variables: panel fig -- two var per panel
-
-## To-do: aes to change space between bars, legend title
-                                        # option: oter legende
-
 # missing 2014 for quadrats? fig.2var(typ.fig="boxplot", panneau="N_Impact")
 
 ## dat.stat.inv: see function INV.stats
@@ -76,7 +67,7 @@ geomorpho.lab <- c("Recif barriere externe"="RBE",
                    "Recif barriere interne"="RBI",
                    "Recif frangeant"="RF",
                    "Recif reticule"="RR",
-                   "Passe"="PS")
+                   "Passe"="P")
 
 ## Niveau des variables catégoriques dans l'ordre désiré pour les graphiques
 xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008",
@@ -88,7 +79,7 @@ xfact.levels <- list(Campagne=c("A_2006", "S_2007", "A_2007", "S_2008", "A_2008"
                        "Recif barriere interne",
                        "Recif frangeant",
                        "Recif reticule", "Passe"),
-                     Geomorpho.abbrev=c("RBE","RBI","RF","RR","PS"),
+                     Geomorpho.abbrev=c("RBE","RBI","RF","RR","P"),
                      Saison=c("Froide","Inter","Chaude"),
                      St=c("CLC2", "FR1", "FR2", "FR3", "IBR1", "IBR2", "IBR2B", "IBR3",
                        "IRD01", "IRD05", "IRD06", "IRD12", "IRD15", "IRD23", "IRD24",
@@ -171,11 +162,11 @@ filtre.excl <- function(a, b) { # inclusion des niveaux 'b' de la variable 'a'
 fig.2var <- function(var1="Geomorpho", var2="Campagne",
                      var.expl, filtre,
                      filtre2, filtre.camp="A",
-                     agLIT="General", agtaxo="Groupe", typ.taxo="Crustaces",
+                     agLIT="General", agtaxo="Groupe", typ.taxo="tous",
                      groupe=NULL, panneau=NULL,
                      dat, tous.niveaux=TRUE,
                      wZeroT=TRUE,
-                     typ.fig="barre", ...) {
+                     typ.fig="barre", panel.scale="free_x", ...) {
 
 
     # Définition de la variable de réponse
@@ -189,11 +180,11 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     if(missing(dat)) {
         message(sprintf("Tableau utilisé: %s", ntbl))
         dat <- get(ntbl) %>% data.frame
-    }
+    } #else { dat %<>% data.frame}
     #################################################
     # pour les LIT/Quad
 
-    if(bio.fig %in% c("LIT","Quadrat")) dat <- filter(dat, LIT.cat == agLIT)
+    if(bio.fig %in% c("LIT","Quad","Quadrat")) dat <- filter(dat, LIT.cat == agLIT)
 
     ##################################################
     # filtre les donnees par campagne
@@ -202,9 +193,10 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
 
     ##################################################
     # Filtre sur les données selon les arguments
-    if(!missing(typ.taxo) & typ.taxo!="tous" & bio.fig == "inv") dat <- filter_(dat, paste(agtaxo,"%in%", typ.taxo)) # invertébrés
+    if(!missing(typ.taxo) & typ.taxo[1]!="tous" & bio.fig == "inv") dat <- filter_(dat, paste0(agtaxo," %in% c(", paste0("'",typ.taxo,"'",collapse=", "), ")")) # invertébrés
     if(!missing(filtre)) dat <- filter_(dat, filtre) # voir aussi fonction filtre.incl() et filtre.excl()
     if(!missing(filtre2)) dat <- filter_(dat, filtre2)
+    
 
     ##################################################
     var.expl <- gsub("[ -]", ".", var.expl)
@@ -275,9 +267,12 @@ fig.2var <- function(var1="Geomorpho", var2="Campagne",
     # type de graphique 3
     #
     } else if (typ.fig=="ligne") {
-        p1 <- p0 + aes(x=vx, y=var.expl, group=vy, colour=vy) +
-          stat_summary(fun.y=mean, fun.ymin=sd.bot, fun.ymax=sd.top, geom="pointrange", alpha=0.75, position=position_dodge(0.2))+
-              stat_summary(fun.y=mean, geom="line", position=position_dodge(0.2), size=0.6)
+      if(var1 != var2) p1 <- p0 + aes(x=vx, y=var.expl, group=vy, colour=vy) 
+      if(var1 == var2) p1 <- p0 + aes(x=vx, y=var.expl, group=1, colour=vy) 
+          p1 <- p1 +
+          stat_summary(fun.y=mean, geom="line", position=position_dodge(0.2), size=0.6) + 
+          stat_summary(fun.y=mean, fun.ymin=sd.bot, fun.ymax=sd.top, geom="pointrange", alpha=0.75, position=position_dodge(0.2))
+              #stat_summary(fun.y=mean, geom="line", position=position_dodge(0.2), size=0.6)
 
 
         # type de graphique 4
@@ -291,7 +286,7 @@ Erreur! Spécifiez typ.fig = 'barre', 'boxplot', ou 'ligne'"); stop()
         }
 
 
-    if(!is.null(panneau)) p1 <- p1  + facet_wrap(~ panneau, scales="free_x")
+    if(!is.null(panneau)) p1 <- p1  + facet_wrap(~ panneau, scales=panel.scale)
 
     # Paramètres visuels (axes, etc.)
     ############################################

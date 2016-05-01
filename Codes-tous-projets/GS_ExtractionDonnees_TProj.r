@@ -1,6 +1,6 @@
 ## Analyses des données KNS (Ginger/Soproner)
 # Auteur: Laura Tremblay-Boyer, contact: l.boyer@fisheries.ubc.ca
-# Time-stamp: <2015-05-28 08:12:33 Laura>
+# Time-stamp: <2016-01-26 08:17:47 lauratb>
 
 # Sujet: Formattage des tableaux de données brutes pré-analyse,
 # création de tableaux annexes + fonctions de base pour l'analyse
@@ -411,7 +411,7 @@ prep.analyse <- function(check.typo=TRUE) {
       id.manq <- unique(x$Id)[!(unique(x$Id) %in% c(info.spat.temp$Id, ID.util.Non))]
     if(length(id.manq)>0) {
     message(sprintf("Id manquants dans info.transect: %s",paste(id.manq,collapse=", ")))
-  }
+}
     id2k <- x$Id[(x$Id %in% info.spat.temp$Id)]
     df <- info.spat.temp[x$Id,c("An","Mois",facteurs.spatio,facteurs.tempo)]
     df <- data.frame(x, df, row.names=NULL)
@@ -514,8 +514,6 @@ spécifiez refaire.tableaux = TRUE dans GS_mother-code_TProj.r.\n\n
   data.read <<- TRUE
   wd.now <- dossier.R
   setwd(wd.now)
-
-
 }
 
 ##################### Fin de la fonction prep.analyse() #####################
@@ -631,8 +629,7 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
 
   creerFiltre <- function(qAnnees) {
 
-    if(length(qAnnees)==1) stop("Attention: spécifiez 2 années ou plus")
-    tb <- unique(dbio[,c("St","Campagne")])
+    tb <- unique(dbio[,c("St","Campagne")]) # index stations/Campagnes
     tb$echtl <- 1
     tb2 <- cast(tb, St ~ Campagne, value="echtl")
 
@@ -658,8 +655,7 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
                                    }else{
                                      wStat <- tb2$St[which(na.omit(tb3==1))]}
     T_S_inv <- apply(expand.grid(wStat,names(tb3)),1,paste,collapse="_")
-
-    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T <- T_AeS_inv))
+    return(list("T_S_inv"=T_S_inv, "T_A_inv"=T_A_inv, "T_AeS_inv"=T_AeS_inv))
   }
 
   ###################################################
@@ -668,6 +664,10 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
 
   # 1. Applique le filtre spécifié au tableau donné en argument
   filtreTable <- function(wtable, wfiltre) {
+    
+    if(length(unique(wtable$Campagne))==1) { message("Une campagne seulement dans les données, aucun filtre appliqué")
+      dd.filt <- wtable
+      } else {
     if((length(filtre.annees)>1) & (wfiltre %in% c("T_A_inv","T_S_inv","T_AeS_inv"))) { # appliquer le filtre si spécifié
         message(paste("Stations filtrees par",wfiltre))
         filtre.Camp <<- creerFiltre(filtre.annees) # recreer le tableau filtre
@@ -678,16 +678,15 @@ eval.string.dplyr <- function(.data, .fun.name, ...) {
 
     if(wfiltre %in% c("A","S")) {
     CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
-  } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
+    } else if (wfiltre %in% c("T_A_inv","T_S_inv")) {
     wfiltre <- gsub("._(.)_.*","\\1",wfiltre)
     CmpTag <- paste(wfiltre,filtre.annees,sep="_",collapse="|")
-} else {
-
+    } else {
     CmpTag <- paste(filtre.annees,collapse="|") }
     wCampKeep <- grep(CmpTag, unique(wtable$Campagne), value=TRUE)
     dd.filt <- data.frame(filter(wtable, Campagne %in% wCampKeep))
     }
-
+        }
     if(nrow(dd.filt)==0) warning(
            sprintf("Attention!! \n\nAucunes des données ne sont sélectionnées par le filtre sur stations:
 \nFiltre %s, années %s\n", wfiltre, paste(filtre.annees,collapse=", ")))
